@@ -1,5 +1,5 @@
 <?php
-namespace Sdk\Middleware;
+namespace RC\Sdk\Middleware;
 
 use Psr\Http\Message\RequestInterface;
 use Ramsey\Uuid\Uuid;

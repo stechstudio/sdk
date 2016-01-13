@@ -1,7 +1,7 @@
 <?php
-namespace Sdk\Service;
+namespace RC\Sdk\Service;
 
-use Sdk\AbstractService;
+use RC\Sdk\AbstractService;
 
 class MyFirstSdk extends AbstractService
 {

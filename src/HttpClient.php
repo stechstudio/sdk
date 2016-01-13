@@ -1,5 +1,5 @@
 <?php
-namespace Sdk;
+namespace RC\Sdk;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;

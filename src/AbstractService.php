@@ -1,10 +1,12 @@
 <?php
-namespace Sdk;
+namespace RC\Sdk;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
-use Sdk\Middleware\CorrelationID;
+use Illuminate\Container\Container;
+use Illuminate\Pipeline\Pipeline;
+use RC\Sdk\Middleware\CorrelationID;
 
 /**
  * Class AbstractClient
@@ -15,7 +17,12 @@ class AbstractService
     /**
      * @var GuzzleClient
      */
-    protected $client = null;
+    protected $client;
+
+    /**
+     * @var Pipeline
+     */
+    protected $pipeline;
 
     /**
      * @var array
@@ -40,12 +47,15 @@ class AbstractService
      * AbstractClient constructor.
      *
      * @param HttpClient $client
+     * @param Pipeline   $pipeline
      */
-    public function __construct(HttpClient $client)
+    public function __construct(HttpClient $client, Pipeline $pipeline)
     {
         $this->client = $client;
         $this->client->setRequestMiddleware($this->requestMiddleware);
         $this->client->setResponseMiddleware($this->requestMiddleware);
+
+        $this->pipeline = $pipeline;
     }
 
     /**
@@ -53,7 +63,7 @@ class AbstractService
      */
     public static function create()
     {
-        return new self(new HttpClient());
+        return new static(new HttpClient(), new Pipeline(new Container()));
     }
 
     /**

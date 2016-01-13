@@ -11,5 +11,10 @@
             "name": "Joseph Szobody",
             "email": "joseph@stechstudio.com"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "RC\\Sdk\\": "src/"
+        }
+    }
 }

@@ -7,6 +7,7 @@ use GuzzleHttp\Middleware;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
+use RC\Sdk\Pipeline\ValidateParameters;
 
 /**
  * Class AbstractClient
@@ -18,6 +19,11 @@ class AbstractService
      * @var GuzzleClient
      */
     protected $client;
+
+    /**
+     * @var string|null
+     */
+    protected $baseUrl = null;
 
     /**
      * @var Pipeline
@@ -39,9 +45,19 @@ class AbstractService
     /**
      * @var array
      */
-    protected $responseMiddleware = [
+    protected $responseMiddleware = [];
 
+    /**
+     * @var array
+     */
+    protected $pipes = [
+        ValidateParameters::class,
+        // BuildBody::class,
+        // BuildUrl::class,
+        // SendRequest::class
     ];
+
+    protected $result = null;
 
     /**
      * AbstractClient constructor.
@@ -71,23 +87,47 @@ class AbstractService
      *
      * @param $name
      * @param $arguments
+     *
+     * @return array
      */
     public function __call($name, $arguments) {
         if(!array_key_exists($name, $this->description)) {
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
-        return $this->handle($this->description[$name], $arguments);
+        return $this->handle($this->prepareRequest($this->description[$name], $arguments));
+    }
+
+    /**
+     * @param $config
+     * @param $arguments
+     *
+     * @return Request
+     */
+    protected function prepareRequest($config, $arguments)
+    {
+        return new Request($this->getClient(), $this->baseUrl, $config, $arguments);
     }
 
     /**
      * Real work begins here
      *
-     * @param $config
-     * @param $arguments
+     * @param $request
+     *
+     * @return array
      */
-    private function handle($config, $arguments)
+    private function handle($request)
     {
+        $this->pipeline->send($request)
+            ->through($this->pipes)
+            ->then(function($request) {
+                $this->result = json_decode($request->response); // maybe?
+
+                var_dump($this->result);
+                die();
+            });
+
+        return $this->result;
         /*
          * 1. Validate arguments against config
          * 2. Build the body payload
@@ -95,10 +135,6 @@ class AbstractService
          * 4. Prepare and send the Guzzle request
          * 5. Unserialize the response
          */
-
-        $client = $this->getClient();
-
-        return $unserializedResponse;
     }
 
     /**

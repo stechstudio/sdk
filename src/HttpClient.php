@@ -24,6 +24,27 @@ class HttpClient
      */
     protected $responseMiddleware = [];
 
+
+    public function getGuzzle(){
+        return $this->getClient();
+    }
+
+    /**
+     * @return array
+     */
+    public function getRequestMiddleware()
+    {
+        return $this->requestMiddleware;
+    }
+
+    /**
+     * @return array
+     */
+    public function getResponseMiddleware()
+    {
+        return $this->responseMiddleware;
+    }
+
     /**
      * @param array $middleware
      */

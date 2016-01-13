@@ -1,0 +1,14 @@
+{
+    "name": "stechstudio/sdk",
+    "require": {
+        "guzzlehttp/guzzle": "^6.1",
+        "illuminate/validation": "^5.2",
+        "ramsey/uuid": "^3.1"
+    },
+    "authors": [
+        {
+            "name": "Joseph Szobody",
+            "email": "joseph@stechstudio.com"
+        }
+    ]
+}

@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "829cb9dbe36c3f432b56746f6bf10d11",
-    "content-hash": "aca253c101df3588b5a1bcf4351a8ce3",
+    "hash": "0a1353d02d72d0fa1af73055945e4878",
+    "content-hash": "522fd4b809c1ea27f41aaec2a71d990b",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -329,6 +329,50 @@
             "description": "The Illuminate Contracts package.",
             "homepage": "http://laravel.com",
             "time": "2015-12-19 14:25:38"
+        },
+        {
+            "name": "illuminate/pipeline",
+            "version": "v5.2.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/pipeline.git",
+                "reference": "f0a17a378db86dba4bfab561a1826c633c3bece8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/pipeline/zipball/f0a17a378db86dba4bfab561a1826c633c3bece8",
+                "reference": "f0a17a378db86dba4bfab561a1826c633c3bece8",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "5.2.*",
+                "illuminate/support": "5.2.*",
+                "php": ">=5.5.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "5.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Pipeline\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylorotwell@gmail.com"
+                }
+            ],
+            "description": "The Illuminate Pipeline package.",
+            "homepage": "http://laravel.com",
+            "time": "2015-12-10 18:01:38"
         },
         {
             "name": "illuminate/support",

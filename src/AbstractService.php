@@ -3,7 +3,6 @@ namespace Sdk;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\Middleware;
 use Sdk\Middleware\CorrelationID;
 
@@ -11,12 +10,12 @@ use Sdk\Middleware\CorrelationID;
  * Class AbstractClient
  * @package Sdk
  */
-class AbstractClient
+class AbstractService
 {
     /**
      * @var GuzzleClient
      */
-    protected $client;
+    protected $client = null;
 
     /**
      * @var array
@@ -38,35 +37,23 @@ class AbstractClient
     ];
 
     /**
-     * I'd love to inject the client here, but we can't set/change the stack after it is instantiated.
-     * Requiring us to instantiate ourselves, after building our stack.
+     * AbstractClient constructor.
+     *
+     * @param HttpClient $client
      */
-    public function __construct()
+    public function __construct(HttpClient $client)
     {
-        $this->client = new GuzzleClient(['handler' => $this->buildStack()]);
+        $this->client = $client;
+        $this->client->setRequestMiddleware($this->requestMiddleware);
+        $this->client->setResponseMiddleware($this->requestMiddleware);
     }
 
     /**
-     * Sets up the stack, including attaching our middleware
+     * @return AbstractService
      */
-    protected function buildStack()
+    public static function create()
     {
-        $stack = new HandlerStack();
-
-        // I assume this is what we just want?
-        $stack->setHandler(new CurlHandler());
-
-        // Map our request middleware
-        foreach($this->requestMiddleware AS $middleware) {
-            $stack->push(Middleware::mapRequest($middleware));
-        }
-
-        // Map our response middleware
-        foreach($this->responseMiddleware AS $middleware) {
-            $stack->push(Middleware::mapResponse($middleware));
-        }
-
-        return $stack;
+        return new self(new HttpClient());
     }
 
     /**
@@ -99,6 +86,16 @@ class AbstractClient
          * 5. Unserialize the response
          */
 
+        $client = $this->getClient();
+
         return $unserializedResponse;
+    }
+
+    /**
+     * @return GuzzleClient
+     */
+    protected function getClient()
+    {
+        return $this->client;
     }
 }

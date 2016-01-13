@@ -1,12 +1,14 @@
 <?php
-namespace Sdk;
+namespace Sdk\Service;
 
-class MyFirstSdk extends AbstractClient
+use Sdk\AbstractService;
+
+class MyFirstSdk extends AbstractService
 {
     /**
      * @var string
      */
-    protected $baseURI = "https://myservice.vpc.rc";
+    protected $baseUrl = "https://myservice.vpc.rc";
 
     /**
      * @var array

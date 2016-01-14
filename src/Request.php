@@ -11,37 +11,46 @@ namespace RC\Sdk;
  */
 class Request
 {
+
+    // Initial service request
+
     /**
-     * @var
+     * @var HttpClient
      */
     public $client;
     /**
-     * @var
+     * @var string
      */
     public $baseUrl;
     /**
-     * @var
+     * @var array
      */
     public $config;
     /**
-     * @var
+     * @var array
      */
     public $arguments;
 
+
+    // Pieces of the HTTP request as they are being prepared
+
     /**
-     * @var null
+     * @var string|null
      */
     public $body = null;
 
     /**
-     * @var null
+     * @var array
      */
     public $headers = [];
 
     /**
-     * @var null
+     * @var string
      */
     public $url = null;
+
+
+    // Response from the HTTP request
 
     /**
      * @var
@@ -49,18 +58,19 @@ class Request
     public $response = null;
 
     /**
-     * @var null
+     * @var array|string
      */
     public $responseBody = null;
 
     /**
      * Request constructor.
      *
-     * @param $baseUrl
-     * @param $config
-     * @param $arguments
+     * @param HttpClient $client
+     * @param            $baseUrl
+     * @param            $config
+     * @param            $arguments
      */
-    public function __construct($client, $baseUrl, $config, $arguments)
+    public function __construct(HttpClient $client, $baseUrl, $config, $arguments)
     {
         $this->client = $client;
         $this->baseUrl = $baseUrl;

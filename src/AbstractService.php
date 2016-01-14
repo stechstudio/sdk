@@ -95,11 +95,11 @@ class AbstractService
      * @return array
      */
     public function __call($name, $arguments) {
-        if(!array_key_exists($name, $this->description)) {
+        if(!array_key_exists($name, $this->getDescription())) {
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
-        return $this->handle($this->prepareRequest($this->description[$name], $arguments[0]));
+        return $this->handle($this->prepareRequest($this->getDescription()[$name], $arguments[0]));
     }
 
     /**
@@ -137,5 +137,10 @@ class AbstractService
     protected function getClient()
     {
         return $this->client;
+    }
+
+    protected function getDescription()
+    {
+        return $this->description;
     }
 }

@@ -25,7 +25,14 @@ class SendRequest
 
         $response = $request->client->send($httpRequest);
 
-        var_dump($response); die();
+        // Try to decode it
+        $body = (string) $response->getBody();
+        if(is_array(json_decode($body, true))) {
+            $body = json_decode($body, true);
+        }
+
+        $request->response = $response;
+        $request->responseBody = $body;
 
         return $next($request);
     }

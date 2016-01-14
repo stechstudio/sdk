@@ -125,20 +125,10 @@ class AbstractService
         $this->pipeline->send($request)
             ->through($this->pipes)
             ->then(function($request) {
-                $this->result = json_decode($request->response); // maybe?
-
-                var_dump($this->result);
-                die();
+                $this->result = $request->responseBody;
             });
 
         return $this->result;
-        /*
-         * 1. Validate arguments against config
-         * 2. Build the body payload
-         * 3. Build the URI (which may have variable substitution)
-         * 4. Prepare and send the Guzzle request
-         * 5. Unserialize the response
-         */
     }
 
     /**

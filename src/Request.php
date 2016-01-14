@@ -49,6 +49,11 @@ class Request
     public $response = null;
 
     /**
+     * @var null
+     */
+    public $responseBody = null;
+
+    /**
      * Request constructor.
      *
      * @param $baseUrl

@@ -43,6 +43,12 @@ class BuildBody
         }));
     }
 
+    /**
+     * @param $bodyParams
+     * @param $arguments
+     *
+     * @return array
+     */
     protected function getBodyArguments($bodyParams, $arguments)
     {
         return array_intersect_key($arguments, array_flip($bodyParams));

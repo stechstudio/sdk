@@ -64,10 +64,8 @@ class HttpClient
             return $this->container->make($test);
         }
 
-        // If it is an object and it is already callable, just return it
-        if (is_object($test) && is_callable($test, true, $callable_name)){
-            return $test;
-        }
+        // Otherwise, just return it, it will throw an exception somewhere if it is bad.
+        return $test;
     }
 
     /**
@@ -86,6 +84,9 @@ class HttpClient
      */
     public function setResponseMiddleware($middleware = [])
     {
+        foreach ($middleware as $key => $value){
+            $middleware[$key] = $this->ensureCallable($value);
+        }
         $this->responseMiddleware = $middleware;
     }
 
@@ -94,7 +95,7 @@ class HttpClient
      */
     public function addRequestMiddleware($middleware)
     {
-        $this->requestMiddleware[] = $middleware;
+        $this->requestMiddleware[] = $this->ensureCallable($middleware);
     }
 
     /**
@@ -102,7 +103,7 @@ class HttpClient
      */
     public function addResponseMiddleware($middleware)
     {
-        $this->responseMiddleware[] = $middleware;
+        $this->responseMiddleware[] = $this->ensureCallable($middleware);
     }
 
     /**

@@ -128,10 +128,8 @@ class HttpClient
         if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
             return $this->container->make($test);
         }
-        // If it is an object and it is already callable, just return it
-        if (is_object($test) && is_callable($test, true, $callable_name)){
-            return $test;
-        }
+        // Otherwise just return it, an exception will get thrown somewhere if it is bad
+        return $test;
     }
     /**
      * @param $name

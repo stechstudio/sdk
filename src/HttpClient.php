@@ -1,11 +1,9 @@
 <?php
 namespace RC\Sdk;
-
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Illuminate\Contracts\Container\Container;
-
 /**
  * Class HttpClient
  * @package Sdk
@@ -16,31 +14,33 @@ class HttpClient
      * @var
      */
     protected $container;
-
     /**
      * @var null
      */
     protected $guzzle = null;
-
     /**
      * @var array
      */
     protected $requestMiddleware = [];
-
     /**
      * @var array
      */
     protected $responseMiddleware = [];
-
+    /**
+     * HttpClient constructor.
+     *
+     * @param Container $container
+     */
     public function __construct(Container $container)
     {
         $this->container = $container;
     }
-
+    /**
+     * @return GuzzleClient|null
+     */
     public function getGuzzle(){
         return $this->getClient();
     }
-
     /**
      * @return array
      */
@@ -48,7 +48,6 @@ class HttpClient
     {
         return $this->requestMiddleware;
     }
-
     /**
      * @return array
      */
@@ -56,56 +55,34 @@ class HttpClient
     {
         return $this->responseMiddleware;
     }
-
-    protected function ensureCallable($test){
-        // If it is a string, and the string says it is callable
-        // and the string is a valid class name, create the callable object and return it
-        if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
-            return $this->container->make($test);
-        }
-
-        // Otherwise, just return it, it will throw an exception somewhere if it is bad.
-        return $test;
-    }
-
     /**
      * @param array $middleware
      */
     public function setRequestMiddleware($middleware = [])
     {
-        foreach ($middleware as $key => $value){
-            $middleware[$key] = $this->ensureCallable($value);
-        }
         $this->requestMiddleware = $middleware;
     }
-
     /**
      * @param array $middleware
      */
     public function setResponseMiddleware($middleware = [])
     {
-        foreach ($middleware as $key => $value){
-            $middleware[$key] = $this->ensureCallable($value);
-        }
         $this->responseMiddleware = $middleware;
     }
-
     /**
      * @param $middleware
      */
     public function addRequestMiddleware($middleware)
     {
-        $this->requestMiddleware[] = $this->ensureCallable($middleware);
+        $this->requestMiddleware[] = $middleware;
     }
-
     /**
      * @param $middleware
      */
     public function addResponseMiddleware($middleware)
     {
-        $this->responseMiddleware[] = $this->ensureCallable($middleware);
+        $this->responseMiddleware[] = $middleware;
     }
-
     /**
      * @return GuzzleClient|null
      */
@@ -114,10 +91,8 @@ class HttpClient
         if($this->guzzle == null) {
             $this->guzzle = $this->buildClient();
         }
-
         return $this->guzzle;
     }
-
     /**
      * @return GuzzleClient
      */
@@ -125,7 +100,6 @@ class HttpClient
     {
         return new GuzzleClient(['handler' => $this->buildStack()]);
     }
-
     /**
      * @return HandlerStack
      */
@@ -133,20 +107,32 @@ class HttpClient
     {
         // The static `create` sets up the default stack for us
         $stack = HandlerStack::create();
-
         // Map our request middleware
         foreach($this->requestMiddleware AS $middleware) {
-            $stack->push(Middleware::mapRequest($middleware));
+            $stack->push(Middleware::mapRequest($this->getCallable($middleware)));
         }
-
         // Map our response middleware
         foreach($this->responseMiddleware AS $middleware) {
-            $stack->push(Middleware::mapResponse($middleware));
+            $stack->push(Middleware::mapResponse($this->getCallable($middleware)));
         }
-
         return $stack;
     }
-
+    /**
+     * @param $test
+     *
+     * @return mixed
+     */
+    protected function getCallable($test){
+        // If it is a string, and the string says it is callable
+        // and the string is a valid class name, create the callable object and return it
+        if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
+            return $this->container->make($test);
+        }
+        // If it is an object and it is already callable, just return it
+        if (is_object($test) && is_callable($test, true, $callable_name)){
+            return $test;
+        }
+    }
     /**
      * @param $name
      * @param $arguments

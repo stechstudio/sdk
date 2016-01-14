@@ -95,7 +95,7 @@ class AbstractService
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
-        return $this->handle($this->prepareRequest($this->description[$name], $arguments));
+        return $this->handle($this->prepareRequest($this->description[$name], $arguments[0]));
     }
 
     /**

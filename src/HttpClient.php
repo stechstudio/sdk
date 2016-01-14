@@ -4,6 +4,7 @@ namespace RC\Sdk;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Class HttpClient
@@ -12,18 +13,29 @@ use GuzzleHttp\Middleware;
 class HttpClient
 {
     /**
+     * @var
+     */
+    protected $container;
+
+    /**
      * @var null
      */
     protected $guzzle = null;
+
     /**
      * @var array
      */
     protected $requestMiddleware = [];
+
     /**
      * @var array
      */
     protected $responseMiddleware = [];
 
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
 
     public function getGuzzle(){
         return $this->getClient();
@@ -49,7 +61,7 @@ class HttpClient
         // If it is a string, and the string says it is callable
         // and the string is a valid class name, create the callable object and return it
         if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
-            return new $test;
+            return $this->container->make($test);
         }
 
         // If it is an object and it is already callable, just return it

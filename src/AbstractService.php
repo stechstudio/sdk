@@ -7,7 +7,8 @@ use GuzzleHttp\Middleware;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
-use RC\Sdk\Pipeline\ValidateParameters;
+use RC\Sdk\Pipeline\BuildBody;
+use RC\Sdk\Pipeline\ValidateArguments;
 
 /**
  * Class AbstractClient
@@ -51,8 +52,8 @@ class AbstractService
      * @var array
      */
     protected $pipes = [
-        ValidateParameters::class,
-        // BuildBody::class,
+        ValidateArguments::class,
+        BuildBody::class,
         // BuildUrl::class,
         // SendRequest::class
     ];

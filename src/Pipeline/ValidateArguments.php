@@ -10,7 +10,7 @@ use Symfony\Component\Translation\Translator;
  * Class ValidateParameters
  * @package RC\Sdk\Pipeline
  */
-class ValidateParameters
+class ValidateArguments
 {
     /**
      * @param         $request
@@ -22,7 +22,7 @@ class ValidateParameters
     public function handle($request, Closure $next)
     {
         $rules = $this->getRules($request->config['parameters']);
-        $validator = $this->getValidator($rules, $request->parameters);
+        $validator = $this->getValidator($rules, $request->arguments);
 
         if($validator->fails()) {
             throw new ValidationException($validator);
@@ -59,7 +59,7 @@ class ValidateParameters
     protected function getValidator($rules, $parameters)
     {
         if(function_exists('app')) {
-            return app('translator');
+            return app('translator')->make($parameters, $rules);
         }
         return new Validator(new Translator('en'), $parameters, $rules);
     }

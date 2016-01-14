@@ -5,6 +5,10 @@ namespace RC\Sdk;
  * This encapsulates a service request, basically a DTO. This is what gets sent through the pipeline.
  * @package RC\Sdk
  */
+/**
+ * Class Request
+ * @package RC\Sdk
+ */
 class Request
 {
     /**
@@ -22,7 +26,22 @@ class Request
     /**
      * @var
      */
-    public $parameters;
+    public $arguments;
+
+    /**
+     * @var null
+     */
+    public $body = null;
+
+    /**
+     * @var null
+     */
+    public $headers = null;
+
+    /**
+     * @var null
+     */
+    public $url = null;
 
     /**
      * @var
@@ -34,12 +53,12 @@ class Request
      *
      * @param $baseUrl
      * @param $config
-     * @param $parameters
+     * @param $arguments
      */
-    public function __construct($client, $baseUrl, $config, $parameters)
+    public function __construct($client, $baseUrl, $config, $arguments)
     {
         $this->baseUrl = $baseUrl;
         $this->config = $config;
-        $this->parameters = $parameters;
+        $this->arguments = $arguments;
     }
 }

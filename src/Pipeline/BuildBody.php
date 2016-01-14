@@ -23,8 +23,7 @@ class BuildBody
         $bodyParams = $this->getBodyParams($request->config['parameters']);
         $bodyArguments = $this->getBodyArguments($bodyParams, $request->arguments);
 
-        // Not sure if I need to json_encode this now or not
-        $request->body = $bodyArguments;
+        $request->body = json_encode($bodyArguments);
 
         return $next($request);
     }

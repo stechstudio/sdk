@@ -36,7 +36,7 @@ class Request
     /**
      * @var null
      */
-    public $headers = null;
+    public $headers = [];
 
     /**
      * @var null
@@ -57,6 +57,7 @@ class Request
      */
     public function __construct($client, $baseUrl, $config, $arguments)
     {
+        $this->client = $client;
         $this->baseUrl = $baseUrl;
         $this->config = $config;
         $this->arguments = $arguments;

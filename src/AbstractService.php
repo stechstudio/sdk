@@ -9,6 +9,7 @@ use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
 use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Pipeline\BuildUrl;
+use RC\Sdk\Pipeline\SendRequest;
 use RC\Sdk\Pipeline\ValidateArguments;
 
 /**
@@ -56,7 +57,7 @@ class AbstractService
         ValidateArguments::class,
         BuildBody::class,
         BuildUrl::class,
-        // SendRequest::class
+        SendRequest::class
     ];
 
     protected $result = null;
@@ -71,7 +72,7 @@ class AbstractService
     {
         $this->client = $client;
         $this->client->setRequestMiddleware($this->requestMiddleware);
-        $this->client->setResponseMiddleware($this->requestMiddleware);
+        $this->client->setResponseMiddleware($this->responseMiddleware);
 
         $this->pipeline = $pipeline;
     }

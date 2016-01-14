@@ -32,11 +32,19 @@ class HttpClient
      */
     protected $responseMiddleware = [];
 
+    /**
+     * HttpClient constructor.
+     *
+     * @param Container $container
+     */
     public function __construct(Container $container)
     {
         $this->container = $container;
     }
 
+    /**
+     * @return GuzzleClient|null
+     */
     public function getGuzzle(){
         return $this->getClient();
     }
@@ -57,27 +65,12 @@ class HttpClient
         return $this->responseMiddleware;
     }
 
-    protected function ensureCallable($test){
-        // If it is a string, and the string says it is callable
-        // and the string is a valid class name, create the callable object and return it
-        if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
-            return $this->container->make($test);
-        }
-
-        // If it is an object and it is already callable, just return it
-        if (is_object($test) && is_callable($test, true, $callable_name)){
-            return $test;
-        }
-    }
 
     /**
      * @param array $middleware
      */
     public function setRequestMiddleware($middleware = [])
     {
-        foreach ($middleware as $key => $value){
-            $middleware[$key] = $this->ensureCallable($value);
-        }
         $this->requestMiddleware = $middleware;
     }
 
@@ -135,15 +128,33 @@ class HttpClient
 
         // Map our request middleware
         foreach($this->requestMiddleware AS $middleware) {
-            $stack->push(Middleware::mapRequest($middleware));
+            $stack->push(Middleware::mapRequest($this->getCallable($middleware)));
         }
 
         // Map our response middleware
         foreach($this->responseMiddleware AS $middleware) {
-            $stack->push(Middleware::mapResponse($middleware));
+            $stack->push(Middleware::mapResponse($this->getCallable($middleware)));
         }
 
         return $stack;
+    }
+
+    /**
+     * @param $test
+     *
+     * @return mixed
+     */
+    protected function getCallable($test){
+        // If it is a string, and the string says it is callable
+        // and the string is a valid class name, create the callable object and return it
+        if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
+            return $this->container->make($test);
+        }
+
+        // If it is an object and it is already callable, just return it
+        if (is_object($test) && is_callable($test, true, $callable_name)){
+            return $test;
+        }
     }
 
     /**

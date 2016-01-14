@@ -8,7 +8,7 @@ class MyFirstSdk extends AbstractService
     /**
      * @var string
      */
-    protected $baseUrl = "https://myservice.vpc.rc";
+    protected $baseUrl = "http://requestb.in";
 
     /**
      * @var array
@@ -16,7 +16,7 @@ class MyFirstSdk extends AbstractService
     protected $description = [
         "doSomething" => [
             "httpMethod" => "POST",
-            "uri" => "/dosomething/{id}",
+            "uri" => "/oazwsdob",
             "parameters" => [
                 "domain" => [
                     "validate" => "required|string",

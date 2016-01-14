@@ -8,6 +8,7 @@ use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
 use RC\Sdk\Pipeline\BuildBody;
+use RC\Sdk\Pipeline\BuildUrl;
 use RC\Sdk\Pipeline\ValidateArguments;
 
 /**
@@ -54,7 +55,7 @@ class AbstractService
     protected $pipes = [
         ValidateArguments::class,
         BuildBody::class,
-        // BuildUrl::class,
+        BuildUrl::class,
         // SendRequest::class
     ];
 
@@ -80,7 +81,8 @@ class AbstractService
      */
     public static function create()
     {
-        return new static(new HttpClient(), new Pipeline(new Container()));
+        $container = new Container();
+        return new static(new HttpClient($container), new Pipeline($container));
     }
 
     /**

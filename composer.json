@@ -7,9 +7,7 @@
         "illuminate/pipeline": "^5.2"
     },
     "require-dev": {
-        "codeception/codeception": "*",
-        "codeception/specify": "*",
-        "codeception/verify": "*"
+      "phpunit/phpunit": "5.1.*"
     },
     "authors": [
         {

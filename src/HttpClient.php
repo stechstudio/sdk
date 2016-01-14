@@ -45,11 +45,27 @@ class HttpClient
         return $this->responseMiddleware;
     }
 
+    protected function ensureCallable($test){
+        // If it is a string, and the string says it is callable
+        // and the string is a valid class name, create the callable object and return it
+        if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
+            return new $test;
+        }
+
+        // If it is an object and it is already callable, just return it
+        if (is_object($test) && is_callable($test, true, $callable_name)){
+            return $test;
+        }
+    }
+
     /**
      * @param array $middleware
      */
     public function setRequestMiddleware($middleware = [])
     {
+        foreach ($middleware as $key => $value){
+            $middleware[$key] = $this->ensureCallable($value);
+        }
         $this->requestMiddleware = $middleware;
     }
 

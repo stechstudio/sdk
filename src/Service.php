@@ -7,11 +7,5 @@ namespace RC\Sdk;
  */
 class Service extends AbstractService
 {
-    /**
-     * @param $name
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
+
 }

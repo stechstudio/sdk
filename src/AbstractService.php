@@ -126,11 +126,27 @@ abstract class AbstractService
     }
 
     /**
+     * @param $name
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    /**
      * @return string
      */
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return HttpClient
+     */
+    protected function getClient()
+    {
+        return $this->client;
     }
 
     /**
@@ -158,7 +174,7 @@ abstract class AbstractService
      */
     protected function prepareRequest($config, $arguments)
     {
-        return new Request($this->getClient(), $this->getName(), $this->getKey(), $this->baseUrl, $config, $arguments);
+        return new Request($this->getClient(), $this->getName(), $this->getKey(), $this->getDescription()['baseUrl'], $config, $arguments);
     }
 
     /**
@@ -175,14 +191,6 @@ abstract class AbstractService
             ->then(function ($request) {
                 return $request->getResponseBody();
             });
-    }
-
-    /**
-     * @return HttpClient
-     */
-    protected function getClient()
-    {
-        return $this->client;
     }
 
     /**

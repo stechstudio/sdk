@@ -79,10 +79,9 @@ class BuildUriTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
-        $buildUrl = new BuildUri();
+
         $this->setExpectedException('InvalidArgumentException');
-        $buildUrl->handle($requestDTO, function($request){return $request;});
+        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
     }
 
 }

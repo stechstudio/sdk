@@ -47,6 +47,6 @@ class SendRequestTest extends \PHPUnit_Framework_TestCase
         $requestDTO->url = 'http://php.unit/test/oazwsdob';
         $sendRequests = new SendRequest();
         $request = $sendRequests->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals($testBody, $request->responseBody);
+        $this->assertEquals($testBody, $request->getResponseBody());
     }
 }

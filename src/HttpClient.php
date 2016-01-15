@@ -35,6 +35,18 @@ class HttpClient
     {
         $this->container = $container;
     }
+
+    /**
+     * @param $guzzle
+     */
+    public function setGuzzle(GuzzleClient $guzzle){
+        $this->setClient($guzzle);
+    }
+
+    public function setClient($client){
+        $this->guzzle = $client;
+    }
+
     /**
      * @return GuzzleClient|null
      */

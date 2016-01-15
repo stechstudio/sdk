@@ -2,6 +2,7 @@
 namespace RC\Sdk;
 
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Pipeline\AddCorrelationID;
@@ -39,6 +40,11 @@ abstract class AbstractService
     protected $baseUrl = null;
 
     /**
+     * @var array
+     */
+    protected $operations = null;
+
+    /**
      * @var Pipeline
      */
     protected $pipeline;
@@ -46,7 +52,7 @@ abstract class AbstractService
     /**
      * @var array
      */
-    protected $description = [];
+    protected $description = null;
 
     /**
      * @var array
@@ -137,11 +143,11 @@ abstract class AbstractService
      */
     public function __call($name, $arguments)
     {
-        if (!array_key_exists($name, $this->getDescription())) {
+        if (!array_key_exists($name, $this->getOperations())) {
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
-        return $this->handle($this->prepareRequest($this->getDescription()[$name], $arguments[0]));
+        return $this->handle($this->prepareRequest($this->getOperations()[$name], $arguments[0]));
     }
 
     /**
@@ -179,11 +185,42 @@ abstract class AbstractService
         return $this->client;
     }
 
+    protected function getOperations()
+    {
+        if($this->operations == null) {
+            $this->loadDescription();
+        }
+
+        return $this->operations;
+    }
+
     /**
      * @return array
      */
     protected function getDescription()
     {
+        if($this->description == null) {
+            $this->description = $this->loadDescription();
+        }
+
         return $this->description;
+    }
+
+    /**
+     * @return mixed
+     * @throws FileNotFoundException
+     */
+    protected function loadDescription()
+    {
+        $descriptionFile = __DIR__ . "/Service/" . $this->getName() . "/description.php";
+
+        if(!file_exists($descriptionFile)) {
+            throw new FileNotFoundException("Description file not found for service " . $this->getName());
+        }
+
+        $this->description = include($descriptionFile);
+
+        $this->baseUrl = $this->description['baseUrl'];
+        $this->operations = $this->description['operations'];
     }
 }

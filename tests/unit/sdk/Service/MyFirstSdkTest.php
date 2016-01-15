@@ -35,6 +35,8 @@ class MyFirstSdkTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(MyFirstSdk::class, get_class($sdk));
         $result = $sdk->doSomething(['domain' => 'myunitdomain.php', 'id' => 77, 'name' => 'phpunit']);
         $this->assertEquals('ok', $result, 'We should have gotten our test body back');
+        $result = $sdk->doSomethingElse(['domain' => 'myunitdomain.php', 'id' => 77, 'name' => 'phpunit', 'foo' => 'test', 'bar' => 'testing']);
+        $this->assertEquals('ok', $result, 'We should have gotten our test body back');
     }
 
     public function testCallWithoutDomain()

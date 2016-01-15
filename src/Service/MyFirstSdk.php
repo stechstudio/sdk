@@ -30,6 +30,26 @@ class MyFirstSdk extends AbstractService
                     "location" => "query"
                 ]
             ]
+        ],
+        "doSomethingElse" => [
+            "httpMethod" => "GET",
+            "uri" => "/oazwsdob",
+            "parameters" => [
+                "domain" => [
+                    "validate" => "required|string",
+                    "location" => "body"
+                ],
+                "id" => [
+                    "validate" => "required|numeric",
+                    "location" => "uri"
+                ],
+                "foo" => [
+                    "location" => "query"
+                ],
+                "bar" => [
+                    "location" => "query"
+                ]
+            ]
         ]
     ];
 

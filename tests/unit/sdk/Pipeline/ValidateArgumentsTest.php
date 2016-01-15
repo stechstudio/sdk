@@ -24,6 +24,9 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
                 "id" => [
                     "validate" => "required|numeric",
                     "location" => "uri"
+                ],
+                "noise" => [
+                    "location" => "n/a"
                 ]
             ]
         ];
@@ -33,5 +36,35 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
         $validateArg = new ValidateArguments();
         $request = $validateArg->handle($requestDTO, function($request){return $request;});
         $this->assertEquals(Request::class, get_class($request), 'We should get a valided request object back.');
+    }
+
+    public function testValidation()
+    {
+        $client = new HttpClient(new Container());
+        $baseUrl = 'http://php.unit/test';
+        $config = [
+            "httpMethod" => "POST",
+            "uri" => "/oazwsdob",
+            "parameters" => [
+                "domain" => [
+                    "validate" => "required|string",
+                    "location" => "body"
+                ],
+                "id" => [
+                    "validate" => "required|numeric",
+                    "location" => "uri"
+                ],
+                "noise" => [
+                    "location" => "n/a"
+                ]
+            ]
+        ];
+        $arguments = ["id"=> "a", "domain"=>"php.unit"];
+
+        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $validateArg = new ValidateArguments();
+        $this->setExpectedException('Illuminate\Validation\ValidationException');
+        $validateArg->handle($requestDTO, function($request){return $request;});
+
     }
 }

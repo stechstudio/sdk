@@ -2,8 +2,6 @@
 namespace RC\Sdk;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
@@ -17,10 +15,10 @@ use RC\Sdk\Pipeline\ValidateArguments;
  * Class AbstractClient
  * @package Sdk
  */
-class AbstractService
+abstract class AbstractService
 {
     /**
-     * @var GuzzleClient
+     * @var HttpClient
      */
     protected $client;
 
@@ -134,13 +132,16 @@ class AbstractService
     }
 
     /**
-     * @return GuzzleClient
+     * @return HttpClient
      */
     protected function getClient()
     {
         return $this->client;
     }
 
+    /**
+     * @return array
+     */
     protected function getDescription()
     {
         return $this->description;

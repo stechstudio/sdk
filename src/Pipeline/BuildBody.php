@@ -23,6 +23,7 @@ class BuildBody
         $bodyArguments = $request->getArguments("body");
 
         $request->setBody(json_encode($bodyArguments));
+        $request->setHeader("Content-Type","application/json");
 
         return $next($request);
     }

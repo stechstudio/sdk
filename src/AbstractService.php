@@ -17,7 +17,7 @@ use RC\Sdk\Pipeline\ValidateArguments;
 abstract class AbstractService
 {
     /**
-     * @var GuzzleClient
+     * @var HttpClient
      */
     protected $client;
 
@@ -130,7 +130,7 @@ abstract class AbstractService
     }
 
     /**
-     * @return GuzzleClient
+     * @return HttpClient
      */
     protected function getClient()
     {

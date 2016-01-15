@@ -3,10 +3,10 @@ namespace Sdk\Pipeline;
 
 use Illuminate\Container\Container;
 use RC\Sdk\HttpClient;
-use RC\Sdk\Pipeline\BuildUrl;
+use RC\Sdk\Pipeline\BuildUri;
 use RC\Sdk\Request;
 
-class BuildUrlTest extends \PHPUnit_Framework_TestCase
+class BuildUriTest extends \PHPUnit_Framework_TestCase
 {
     public function testInstantiation()
     {
@@ -28,10 +28,10 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, 'flartybart',$baseUrl, $config, $arguments);
-        $buildUrl = new BuildUrl();
+        $requestDTO = new Request($client, 'name', 'flartybart',$baseUrl, $config, $arguments);
+        $buildUrl = new BuildUri();
         $request = $buildUrl->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals('http://php.unit/test/oazwsdob', $request->url);
+        $this->assertEquals('http://php.unit/test/oazwsdob', (string)$request->getUri());
     }
 
     public function testFullUri()
@@ -54,10 +54,10 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, 'flartybart',$baseUrl, $config, $arguments);
-        $buildUrl = new BuildUrl();
+        $requestDTO = new Request($client, 'name', 'flartybart',$baseUrl, $config, $arguments);
+        $buildUrl = new BuildUri();
         $request = $buildUrl->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals('http://php.unit/test/oazwsdob', $request->url);
+        $this->assertEquals('http://php.unit/test/oazwsdob', (string)$request->getUri());
     }
 
     public function testMissingUri()
@@ -79,8 +79,8 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
-        $buildUrl = new BuildUrl();
+        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
+        $buildUrl = new BuildUri();
         $this->setExpectedException('InvalidArgumentException');
         $buildUrl->handle($requestDTO, function($request){return $request;});
     }

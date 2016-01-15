@@ -34,10 +34,10 @@ class CorrelationIDTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ['foz', 'baz', 'sheesh'];
 
-        $requestDTO = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
         $correlationID = new AddCorrelationID();
 
         $request = $correlationID->handle($requestDTO, function($request){return $request;});
-        $this->assertNotEmpty($request->headers['X-Correlation-ID']);
+        $this->assertNotEmpty($request->getHeader('X-Correlation-ID'));
     }
 }

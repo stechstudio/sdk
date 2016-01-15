@@ -43,7 +43,7 @@ class SendRequestTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ['foz', 'baz', 'sheesh'];
 
-        $requestDTO = new Request($httpClient, 'flartybart', $baseUrl, $config, $arguments);
+        $requestDTO = new Request($httpClient, 'name', 'flartybart', $baseUrl, $config, $arguments);
         $requestDTO->url = 'http://php.unit/test/oazwsdob';
         $sendRequests = new SendRequest();
         $request = $sendRequests->handle($requestDTO, function($request){return $request;});

@@ -5,14 +5,6 @@ namespace RC\Sdk;
  * This encapsulates a service request, basically a DTO. This is what gets sent through the pipeline.
  * @package RC\Sdk
  */
-/**
- * Class Request
- * @package RC\Sdk
- */
-/**
- * Class Request
- * @package RC\Sdk
- */
 class Request
 {
 
@@ -22,18 +14,27 @@ class Request
      * @var HttpClient
      */
     public $client;
+
     /**
      * @var
      */
     public $signingKey;
+
     /**
      * @var string
      */
     public $baseUrl;
+
     /**
      * @var array
      */
     public $config;
+
+    /**
+     * @var array
+     */
+    public $parameters = [];
+
     /**
      * @var array
      */
@@ -41,6 +42,11 @@ class Request
 
 
     // Pieces of the HTTP request as they are being prepared
+
+    /**
+     * $var string
+     */
+    public $method;
 
     /**
      * @var string|null
@@ -91,6 +97,15 @@ class Request
         $this->baseUrl = $baseUrl;
         $this->config = $config;
         $this->arguments = $arguments;
+
+        if(is_array($config['parameters'])) {
+            $this->parameters = $config['parameters'];
+        }
+
+        if(!isset($config['httpMethod']) || !in_array(strtoupper($config['httpMethod']), ["GET","POST","PUT","PATCH","DELETE"])) {
+            throw new \InvalidArgumentException("No httpMethod defined");
+        }
+        $this->method = strtoupper($config['httpMethod']);
     }
 
     /**
@@ -100,5 +115,26 @@ class Request
     public function setHeader($name, $value)
     {
         $this->headers[$name] = $value;
+    }
+
+    /**
+     * @param null $location
+     *
+     * @return array
+     */
+    public function getArguments($location = null)
+    {
+        if($location == null) {
+            return $this->arguments;
+        }
+
+        // Ok we're looking for arguments with a specific location. First gram the parameters from
+        // config that are assigned to this location.
+        $parameters = array_keys(array_filter($this->parameters, function($details) use($location) {
+            return $details['location'] == $location;
+        }));
+
+        // Now return arguments that have the same key
+        return array_intersect_key($this->arguments, array_flip($parameters));
     }
 }

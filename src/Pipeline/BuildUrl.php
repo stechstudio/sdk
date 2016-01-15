@@ -25,14 +25,12 @@ class BuildUrl
             throw new \InvalidArgumentException("Missing 'uri'");
         }
 
-        $uriParams = $this->getUriParams($request->config['parameters']);
-        $uriArguments = $this->getUriArguments($uriParams, $request->arguments);
+        $uriArguments = $request->getArguments('uri');
         $uriString = $this->getUriString($request->baseUrl, $request->config['uri']);
 
         $url = $this->prepareUri($uriString, $uriArguments);
 
-        $queryParams = $this->getQueryParams($request->config['parameters']);
-        $queryArguments = $this->getQueryArguments($queryParams, $request->arguments);
+        $queryArguments = $request->getArguments('query');
 
         if(count($queryArguments)) {
             $url .= "?" . http_build_query($queryArguments);
@@ -58,56 +56,6 @@ class BuildUrl
 
         // Otherwise append our uri to the existing baseUrl
         return $baseUrl . $uri;
-    }
-
-    /**
-     * Return a simple array of parameter names that should be located in our uri
-     *
-     * @param $parameters
-     *
-     * @return array
-     */
-    protected function getUriParams($parameters)
-    {
-        return array_keys(array_filter($parameters, function($details) {
-            return $details['location'] == 'uri';
-        }));
-    }
-
-    /**
-     * Return a simple array of parameter names that should be located in our query
-     *
-     * @param $parameters
-     *
-     * @return array
-     */
-    protected function getQueryParams($parameters)
-    {
-        return array_keys(array_filter($parameters, function($details) {
-            return $details['location'] == 'query';
-        }));
-    }
-
-    /**
-     * @param $uriParams
-     * @param $arguments
-     *
-     * @return array
-     */
-    protected function getUriArguments($uriParams, $arguments)
-    {
-        return array_intersect_key($arguments, array_flip($uriParams));
-    }
-
-    /**
-     * @param $queryParams
-     * @param $arguments
-     *
-     * @return array
-     */
-    protected function getQueryArguments($queryParams, $arguments)
-    {
-        return array_intersect_key($arguments, array_flip($queryParams));
     }
 
     /**

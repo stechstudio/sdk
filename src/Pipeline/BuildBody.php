@@ -20,37 +20,10 @@ class BuildBody
      */
     public function handle($request, Closure $next)
     {
-        $bodyParams = $this->getBodyParams($request->config['parameters']);
-        $bodyArguments = $this->getBodyArguments($bodyParams, $request->arguments);
+        $bodyArguments = $request->getArguments("body");
 
         $request->body = json_encode($bodyArguments);
 
         return $next($request);
     }
-
-    /**
-     * Return a simple array of parameter names that should be located in our body
-     *
-     * @param $parameters
-     *
-     * @return array
-     */
-    protected function getBodyParams($parameters)
-    {
-        return array_keys(array_filter($parameters, function($details) {
-            return $details['location'] == 'body';
-        }));
-    }
-
-    /**
-     * @param $bodyParams
-     * @param $arguments
-     *
-     * @return array
-     */
-    protected function getBodyArguments($bodyParams, $arguments)
-    {
-        return array_intersect_key($arguments, array_flip($bodyParams));
-    }
-
 }

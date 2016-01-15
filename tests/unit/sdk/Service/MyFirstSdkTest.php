@@ -1,5 +1,9 @@
 <?php namespace RC\Sdk\Service;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use PHPUnit_Framework_TestCase;
@@ -26,11 +30,25 @@ class MyFirstSdkTest extends PHPUnit_Framework_TestCase
 
     public function testCall()
     {
-        $testBody = ["test" => "results"];
         $container = new Container();
-        $client = new HttpClient($container);
         $pipeline = new Pipeline($container);
-        $sdk = new MyFirstSdk($client, $pipeline);
+
+        $testBody = "ok";
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $testBody),
+            new Response(200, ['X-Foo' => 'Bar'], $testBody)
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handler]);
+
+
+        $httpClient = new HttpClient(new Container());
+        $httpClient->setGuzzle($client);
+
+
+        $sdk = new MyFirstSdk($httpClient, $pipeline);
         $sdk->setKey('flartybart');
         $this->assertEquals(MyFirstSdk::class, get_class($sdk));
         $result = $sdk->doSomething(['domain' => 'myunitdomain.php', 'id' => 77, 'name' => 'phpunit']);

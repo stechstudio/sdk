@@ -14,7 +14,7 @@ use RC\Sdk\Pipeline\ValidateArguments;
  * Class AbstractClient
  * @package Sdk
  */
-class AbstractService
+abstract class AbstractService
 {
     /**
      * @var GuzzleClient

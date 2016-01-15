@@ -84,8 +84,7 @@ abstract class AbstractService
      */
     public static function create($key = null)
     {
-        $container = new Container();
-        $instance = new static(new HttpClient($container), new Pipeline($container));
+        $instance = new static(new HttpClient(), new Pipeline(container()));
 
         if ($key != null) {
             $instance->setKey($key);

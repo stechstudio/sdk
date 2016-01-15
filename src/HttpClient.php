@@ -11,30 +11,19 @@ use Illuminate\Contracts\Container\Container;
 class HttpClient
 {
     /**
-     * @var
-     */
-    protected $container;
-    /**
      * @var null
      */
     protected $guzzle = null;
+
     /**
      * @var array
      */
     protected $requestMiddleware = [];
+
     /**
      * @var array
      */
     protected $responseMiddleware = [];
-    /**
-     * HttpClient constructor.
-     *
-     * @param Container $container
-     */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
 
     /**
      * @param $guzzle
@@ -138,7 +127,7 @@ class HttpClient
         // If it is a string, and the string says it is callable
         // and the string is a valid class name, create the callable object and return it
         if (is_string($test) && is_callable($test, true, $callable_name) && class_exists($test)){
-            return $this->container->make($test);
+            return app($test);
         }
         // Otherwise just return it, an exception will get thrown somewhere if it is bad
         return $test;

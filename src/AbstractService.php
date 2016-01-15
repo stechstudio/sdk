@@ -7,6 +7,7 @@ use GuzzleHttp\Middleware;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
+use RC\Sdk\Middleware\RequestSignature;
 use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Pipeline\BuildUrl;
 use RC\Sdk\Pipeline\SendRequest;
@@ -42,7 +43,8 @@ class AbstractService
      * @var array
      */
     protected $requestMiddleware = [
-        CorrelationID::class
+        CorrelationID::class,
+        RequestSignature::class
     ];
 
     /**

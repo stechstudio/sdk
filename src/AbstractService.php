@@ -2,8 +2,6 @@
 namespace RC\Sdk;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Middleware\CorrelationID;
@@ -139,6 +137,9 @@ class AbstractService
         return $this->client;
     }
 
+    /**
+     * @return array
+     */
     protected function getDescription()
     {
         return $this->description;

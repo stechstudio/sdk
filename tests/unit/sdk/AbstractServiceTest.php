@@ -23,7 +23,7 @@ class AbstractServiceTest extends PHPUnit_Framework_TestCase
     public function testCreation()
     {
         $abstractServiceStub = $this->getMockForAbstractClass(AbstractService::class, [], 'MockedAbstractService', false);
-        $createdAbstractServiceStub = $abstractServiceStub::create();
+        $createdAbstractServiceStub = $abstractServiceStub::create('fartymakblarty');
         $this->assertEquals('MockedAbstractService', get_class($createdAbstractServiceStub));
         $createdAbstractServiceStub2 = $abstractServiceStub->create();
         $this->assertEquals('MockedAbstractService', get_class($createdAbstractServiceStub2));
@@ -37,6 +37,16 @@ class AbstractServiceTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('RC\Sdk\AbstractServiceTestDouble', get_class($testDouble));
         $result = $testDouble->test1(['domain' => 'myunitdomain.php', 'id' => 77, 'name' => 'phpunit']);
         $this->assertEquals($testBody, $result, 'We should have gotten our test body back');
+    }
+
+    public function testGetSetKey(){
+        $key = 'fartymakblarty';
+        $testBody = ["test" => "results"];
+        $testDouble = $this->getTestDouble($testBody );
+        $testDouble->setKey(null);
+        $this->assertEquals('RC\Sdk\AbstractServiceTestDouble', get_class($testDouble));
+        $this->setExpectedException('RC\Sdk\Exceptions\KeyNotFoundException');
+        $testDouble->test1(['domain' => 'myunitdomain.php', 'id' => 77, 'name' => 'phpunit']);
     }
 
     public function testBadCall(){

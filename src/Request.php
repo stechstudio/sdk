@@ -1,6 +1,10 @@
 <?php
 namespace RC\Sdk;
 
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7;
+
 /**
  * This encapsulates a service request, basically a DTO. This is what gets sent through the pipeline.
  * @package RC\Sdk
@@ -14,6 +18,11 @@ class Request
      * @var HttpClient
      */
     public $client;
+
+    /**
+     * @var
+     */
+    public $serviceName;
 
     /**
      * @var
@@ -41,32 +50,12 @@ class Request
     public $arguments;
 
 
-    // Pieces of the HTTP request as they are being prepared
+    // Guzzle HTTP request as it is being prepared
 
     /**
-     * $var string
+     * @var GuzzleRequest
      */
-    public $method;
-
-    /**
-     * @var string|null
-     */
-    public $body = null;
-
-    /**
-     * @var array
-     */
-    public $headers = [];
-
-    /**
-     * @var string
-     */
-    public $url = null;
-
-    /**
-     * @var string
-     */
-    public $signature = null;
+    public $request;
 
 
     // Response from the HTTP request
@@ -85,27 +74,38 @@ class Request
      * Request constructor.
      *
      * @param HttpClient $client
+     * @param            $serviceName
      * @param            $signingKey
      * @param            $baseUrl
      * @param            $config
      * @param            $arguments
      */
-    public function __construct(HttpClient $client, $signingKey, $baseUrl, $config, $arguments)
+    public function __construct(HttpClient $client, $serviceName, $signingKey, $baseUrl, $config, $arguments)
     {
         $this->client = $client;
         $this->signingKey = $signingKey;
         $this->baseUrl = $baseUrl;
         $this->config = $config;
         $this->arguments = $arguments;
+        $this->serviceName = $serviceName;
 
-        if(is_array($config['parameters'])) {
+        if (is_array($config['parameters'])) {
             $this->parameters = $config['parameters'];
         }
 
-        if(!isset($config['httpMethod']) || !in_array(strtoupper($config['httpMethod']), ["GET","POST","PUT","PATCH","DELETE"])) {
+        if (!isset($config['httpMethod']) || !in_array(strtoupper($config['httpMethod']), ["GET", "POST", "PUT", "PATCH", "DELETE"])) {
             throw new \InvalidArgumentException("No httpMethod defined");
         }
-        $this->method = strtoupper($config['httpMethod']);
+
+        $this->request = new GuzzleRequest($config['httpMethod'], $this->baseUrl);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getServiceName()
+    {
+        return $this->serviceName;
     }
 
     /**
@@ -114,7 +114,23 @@ class Request
      */
     public function setHeader($name, $value)
     {
-        $this->headers[$name] = $value;
+        $this->request = $this->request->withHeader($name, $value);
+    }
+
+    /**
+     * @param $contents
+     */
+    public function setBody($contents)
+    {
+        $this->request = $this->request->withBody(Psr7\stream_for($contents));
+    }
+
+    /**
+     * @param $uri
+     */
+    public function setUri($uri)
+    {
+        $this->request = $this->request->withUri(new Uri($uri));
     }
 
     /**
@@ -124,17 +140,79 @@ class Request
      */
     public function getArguments($location = null)
     {
-        if($location == null) {
+        if ($location == null) {
             return $this->arguments;
         }
 
-        // Ok we're looking for arguments with a specific location. First gram the parameters from
-        // config that are assigned to this location.
-        $parameters = array_keys(array_filter($this->parameters, function($details) use($location) {
+        // Return arguments that have the same key as the parameters for this location
+        return array_intersect_key($this->arguments, array_flip($this->getParametersByLocation($location)));
+    }
+
+    /**
+     * @param $location
+     *
+     * @return array
+     */
+    public function getParametersByLocation($location)
+    {
+        return array_keys(array_filter($this->parameters, function ($details) use ($location) {
             return $details['location'] == $location;
         }));
+    }
 
-        // Now return arguments that have the same key
-        return array_intersect_key($this->arguments, array_flip($parameters));
+    /**
+     * The validation rules are currently in a sub-array for each parameter, need to flatten
+     * this down to a simple $parameter -> $validationArray key/value pair.
+     *
+     * @return array
+     */
+    public function getValidationRules()
+    {
+        return array_map(function ($details) {
+            if (isset($details['validate'])) {
+                return $details['validate'];
+            }
+
+            return '';
+        }, $this->parameters);
+    }
+
+    /**
+     * Send our request, return the response
+     *
+     * @return mixed
+     */
+    public function send()
+    {
+        return $this->client->send($this->request);
+    }
+
+    /**
+     * @return null
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * @return array|string
+     */
+    public function getResponseBody()
+    {
+        return $this->responseBody;
+    }
+
+    /**
+     * Anything we don't provide, pass through to the Guzzle Request object
+     *
+     * @param $name
+     * @param $arguments
+     *
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        return call_user_func_array([$this->request, $name], $arguments);
     }
 }

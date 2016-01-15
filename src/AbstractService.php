@@ -6,8 +6,9 @@ use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Pipeline\AddCorrelationID;
 use RC\Sdk\Pipeline\BuildBody;
-use RC\Sdk\Pipeline\BuildUrl;
-use RC\Sdk\Pipeline\CreateSignature;
+use RC\Sdk\Pipeline\BuildUri;
+use RC\Sdk\Pipeline\AddSignature;
+use RC\Sdk\Pipeline\HandleExceptions;
 use RC\Sdk\Pipeline\SendRequest;
 use RC\Sdk\Pipeline\ValidateArguments;
 use ReflectionClass;
@@ -53,10 +54,11 @@ abstract class AbstractService
     protected $pipes = [
         ValidateArguments::class,
         BuildBody::class,
-        BuildUrl::class,
-        CreateSignature::class,
+        BuildUri::class,
+        AddSignature::class,
         AddCorrelationID::class,
-        SendRequest::class
+        SendRequest::class,
+        HandleExceptions::class
     ];
 
     /**
@@ -111,11 +113,19 @@ abstract class AbstractService
         }
 
         // See if we have one as an environment variable
-        if (getenv(strtoupper($this->name . "_KEY")) !== false) {
-            return getenv(strtoupper($this->name . "_KEY"));
+        if (getenv(strtoupper($this->getName() . "_KEY")) !== false) {
+            return getenv(strtoupper($this->getName() . "_KEY"));
         }
 
         throw new KeyNotFoundException();
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
@@ -143,7 +153,7 @@ abstract class AbstractService
      */
     protected function prepareRequest($config, $arguments)
     {
-        return new Request($this->getClient(), $this->getKey(), $this->baseUrl, $config, $arguments);
+        return new Request($this->getClient(), $this->getName(), $this->getKey(), $this->baseUrl, $config, $arguments);
     }
 
     /**

@@ -16,7 +16,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $config = [ 'foo' => 'bar'];
         $arguments = ['foz', 'baz', 'sheesh'];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client,  'flartybart', $baseUrl, $config, $arguments);
         $this->assertObjectHasAttribute('client', $requestDTO, ' Should have a client attribute');
         $this->assertObjectHasAttribute('baseUrl', $requestDTO, 'Should have a baseURL attribute');
         $this->assertObjectHasAttribute('config', $requestDTO, 'Should have a config attribute');

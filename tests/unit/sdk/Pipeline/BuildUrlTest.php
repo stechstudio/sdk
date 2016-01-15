@@ -28,7 +28,7 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'flartybart',$baseUrl, $config, $arguments);
         $buildUrl = new BuildUrl();
         $request = $buildUrl->handle($requestDTO, function($request){return $request;});
         $this->assertEquals('http://php.unit/test/oazwsdob', $request->url);
@@ -54,7 +54,7 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'flartybart',$baseUrl, $config, $arguments);
         $buildUrl = new BuildUrl();
         $request = $buildUrl->handle($requestDTO, function($request){return $request;});
         $this->assertEquals('http://php.unit/test/oazwsdob', $request->url);
@@ -79,7 +79,7 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
         $buildUrl = new BuildUrl();
         $this->setExpectedException('InvalidArgumentException');
         $buildUrl->handle($requestDTO, function($request){return $request;});

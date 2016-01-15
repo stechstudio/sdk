@@ -28,7 +28,7 @@ class BuildBodyTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ['foz', 'baz', 'sheesh'];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
         $buildBody = new BuildBody();
 
         $request = $buildBody->handle($requestDTO, function($request){return $request;});

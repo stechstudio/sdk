@@ -33,6 +33,7 @@ class AbstractServiceTest extends PHPUnit_Framework_TestCase
     {
         $testBody = ["test" => "results"];
         $testDouble = $this->getTestDouble($testBody );
+        $testDouble->setKey('fartymakblarty');
         $this->assertEquals('RC\Sdk\AbstractServiceTestDouble', get_class($testDouble));
         $result = $testDouble->test1(['domain' => 'myunitdomain.php', 'id' => 77, 'name' => 'phpunit']);
         $this->assertEquals($testBody, $result, 'We should have gotten our test body back');

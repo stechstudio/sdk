@@ -32,7 +32,7 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=>1, "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
         $validateArg = new ValidateArguments();
         $request = $validateArg->handle($requestDTO, function($request){return $request;});
         $this->assertEquals(Request::class, get_class($request), 'We should get a valided request object back.');
@@ -61,7 +61,7 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ["id"=> "a", "domain"=>"php.unit"];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
         $validateArg = new ValidateArguments();
         $this->setExpectedException('Illuminate\Validation\ValidationException');
         $validateArg->handle($requestDTO, function($request){return $request;});

@@ -1,7 +1,6 @@
 <?php
 use Illuminate\Container\Container;
 use RC\Sdk\HttpClient;
-use RC\Sdk\Middleware\CorrelationID;
 
 /**
  * Created by PhpStorm.
@@ -27,7 +26,7 @@ class HttpClientTest extends PHPUnit_Framework_TestCase
 
     public function testAddingRequestMiddleware(){
         $this->httpClient = new HttpClient(new Container());
-        $this->httpClient->addRequestMiddleware(CorrelationID::class);
+        $this->httpClient->addRequestMiddleware(TestMiddleware::class);
         $requestMiddlewareStack = $this->httpClient->getRequestMiddleware();
         $this->assertEquals(1, count($requestMiddlewareStack), 'Should only be one item on the stack');
         $this->assertEquals(GuzzleHttp\Client::class, get_class($this->httpClient->getGuzzle()), 'We should get a valid guzzle client');
@@ -35,7 +34,7 @@ class HttpClientTest extends PHPUnit_Framework_TestCase
 
     public function testSettingRequestMiddleware(){
         $this->httpClient = new HttpClient(new Container());
-        $this->httpClient->setRequestMiddleware([CorrelationID::class]);
+        $this->httpClient->setRequestMiddleware([TestMiddleware::class]);
         $requestMiddlewareStack = $this->httpClient->getRequestMiddleware();
         $this->assertEquals(1, count($requestMiddlewareStack), 'Should only be one item on the stack');
         $this->assertEquals(GuzzleHttp\Client::class, get_class($this->httpClient->getGuzzle()), 'We should get a valid guzzle client');
@@ -43,7 +42,7 @@ class HttpClientTest extends PHPUnit_Framework_TestCase
 
     public function testAddingResponseMiddleware(){
         $this->httpClient = new HttpClient(new Container());
-        $this->httpClient->addResponseMiddleware(new CorrelationID());
+        $this->httpClient->addResponseMiddleware(new TestMiddleware());
         $responseMiddlewareStack = $this->httpClient->getResponseMiddleware();
         $this->assertEquals(1, count($responseMiddlewareStack), 'Should only be one item on the stack');
         $this->assertEquals(GuzzleHttp\Client::class, get_class($this->httpClient->getGuzzle()), 'We should get a valid guzzle client');
@@ -51,7 +50,7 @@ class HttpClientTest extends PHPUnit_Framework_TestCase
 
     public function testSettingResponseMiddleware(){
         $this->httpClient = new HttpClient(new Container());
-        $this->httpClient->setResponseMiddleware([CorrelationID::class]);
+        $this->httpClient->setResponseMiddleware([TestMiddleware::class]);
         $responseMiddlewareStack = $this->httpClient->getResponseMiddleware();
         $this->assertEquals(1, count($responseMiddlewareStack), 'Should only be one item on the stack');
         $this->assertEquals(GuzzleHttp\Client::class, get_class($this->httpClient->getGuzzle()), 'We should get a valid guzzle client');
@@ -61,5 +60,11 @@ class HttpClientTest extends PHPUnit_Framework_TestCase
         $this->httpClient = new HttpClient(new Container());
         $result = $this->httpClient->getConfig(null);
         $this->assertEquals('GuzzleHttp\HandlerStack', get_class($result['handler']), 'This should be a guzzle handler stack');
+    }
+}
+
+class TestMiddleware {
+    public function __invoke(callable $handler) {
+        return $handler;
     }
 }

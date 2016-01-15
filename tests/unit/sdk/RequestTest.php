@@ -13,7 +13,23 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $client = new \RC\Sdk\HttpClient(new \Illuminate\Container\Container());
         $baseUrl = 'http://php.unit/test';
-        $config = [ 'foo' => 'bar'];
+        $config = [
+                "httpMethod" => "POST",
+                "uri" => "/oazwsdob",
+                "parameters" => [
+                    "domain" => [
+                        "validate" => "required|string",
+                        "location" => "body"
+                    ],
+                    "id" => [
+                        "validate" => "required|numeric",
+                        "location" => "uri"
+                    ],
+                    "foo" => [
+                        "location" => "query"
+                    ]
+                ]
+            ];
         $arguments = ['foz', 'baz', 'sheesh'];
 
         $requestDTO = new Request($client,  'flartybart', $baseUrl, $config, $arguments);
@@ -27,4 +43,56 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('response', $requestDTO, 'Should have a response attribute');
         $this->assertObjectHasAttribute('responseBody', $requestDTO, 'Should have a responseBody attribute');
     }
+
+    public function testNoHttpMethod()
+    {
+        $client = new \RC\Sdk\HttpClient(new \Illuminate\Container\Container());
+        $baseUrl = 'http://php.unit/test';
+        $config = [
+            "uri" => "/oazwsdob",
+            "parameters" => [
+                "domain" => [
+                    "validate" => "required|string",
+                    "location" => "body"
+                ],
+                "id" => [
+                    "validate" => "required|numeric",
+                    "location" => "uri"
+                ],
+                "foo" => [
+                    "location" => "query"
+                ]
+            ]
+        ];
+        $arguments = ['foz', 'baz', 'sheesh'];
+        $this->setExpectedException('InvalidArgumentException');
+        new Request($client, 'flartybart', $baseUrl, $config, $arguments);
+    }
+
+    public function testNoLocation()
+    {
+        $client = new \RC\Sdk\HttpClient(new \Illuminate\Container\Container());
+        $baseUrl = 'http://php.unit/test';
+        $config = [
+            "httpMethod" => "POST",
+            "uri" => "/oazwsdob",
+            "parameters" => [
+                "domain" => [
+                    "validate" => "required|string",
+                    "location" => "body"
+                ],
+                "id" => [
+                    "validate" => "required|numeric",
+                    "location" => "uri"
+                ],
+                "foo" => [
+                    "validate" => "required|string"
+                ]
+            ]
+        ];
+        $arguments = ['domain' => 'php.unit', 'id'=>1, 'foo'=>'bar'];
+        $req = new Request($client, 'flartybart', $baseUrl, $config, $arguments);
+        $this->assertEquals($req->arguments, $req->getArguments(null));
+    }
+
 }

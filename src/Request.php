@@ -9,6 +9,10 @@ namespace RC\Sdk;
  * Class Request
  * @package RC\Sdk
  */
+/**
+ * Class Request
+ * @package RC\Sdk
+ */
 class Request
 {
 
@@ -87,5 +91,14 @@ class Request
         $this->baseUrl = $baseUrl;
         $this->config = $config;
         $this->arguments = $arguments;
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     */
+    public function setHeader($name, $value)
+    {
+        $this->headers[$name] = $value;
     }
 }

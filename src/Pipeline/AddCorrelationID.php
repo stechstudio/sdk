@@ -1,23 +1,26 @@
 <?php
-namespace RC\Sdk\Middleware;
+namespace RC\Sdk\Pipeline;
 
-use Psr\Http\Message\RequestInterface;
+use Closure;
 use Ramsey\Uuid\Uuid;
 
 /**
- * Class CorrelationID
- * @package Sdk\Middleware
+ * Class AddCorrelationID
+ * @package RC\Sdk\Pipeline
  */
-class CorrelationID
+class AddCorrelationID
 {
     /**
-     * @param RequestInterface $request
+     * @param         $request
+     * @param Closure $next
      *
-     * @return \Psr\Http\Message\MessageInterface
+     * @return mixed
      */
-    public function __invoke(RequestInterface $request)
+    public function handle($request, Closure $next)
     {
-        return $request->withHeader('X-Correlation-ID', $this->getCorrelationID());
+        $request->setHeader('X-Correlation-ID', $this->getCorrelationID());
+
+        return $next($request);
     }
 
     /**

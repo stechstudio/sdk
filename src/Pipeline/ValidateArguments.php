@@ -21,7 +21,7 @@ class ValidateArguments
      */
     public function handle($request, Closure $next)
     {
-        $rules = $this->getRules($request->config['parameters']);
+        $rules = $request->getValidationRules($request->config['parameters']);
         $validator = $this->getValidator($rules, $request->arguments);
 
         if($validator->fails()) {
@@ -29,23 +29,6 @@ class ValidateArguments
         }
 
         return $next($request);
-    }
-
-    /**
-     * The validation rules are currently in a sub-array for each parameter, need to flatten
-     * this down to a simple $parameter -> $validationArray key/value pair.
-     * @param $parameters
-     *
-     * @return array
-     */
-    protected function getRules($parameters)
-    {
-        return array_map(function($details) {
-            if(isset($details['validate'])) {
-                return $details['validate'];
-            }
-            return '';
-        }, $parameters);
     }
 
     /**

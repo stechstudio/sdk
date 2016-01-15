@@ -22,7 +22,7 @@ class BuildBody
     {
         $bodyArguments = $request->getArguments("body");
 
-        $request->body = json_encode($bodyArguments);
+        $request->setBody(json_encode($bodyArguments));
 
         return $next($request);
     }

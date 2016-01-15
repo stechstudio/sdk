@@ -8,10 +8,10 @@ use Illuminate\Validation\Validator;
 use Symfony\Component\Translation\Translator;
 
 /**
- * Class BuildUrl
+ * Class BuildUri
  * @package RC\Sdk\Pipeline
  */
-class BuildUrl
+class BuildUri
 {
     /**
      * @param         $request
@@ -28,34 +28,34 @@ class BuildUrl
         $uriArguments = $request->getArguments('uri');
         $uriString = $this->getUriString($request->baseUrl, $request->config['uri']);
 
-        $url = $this->prepareUri($uriString, $uriArguments);
+        $uri = $this->prepareUri($uriString, $uriArguments);
 
         $queryArguments = $request->getArguments('query');
 
         if(count($queryArguments)) {
-            $url .= "?" . http_build_query($queryArguments);
+            $uri .= "?" . http_build_query($queryArguments);
         }
 
-        $request->url = new Uri($url);
+        $request->setUri($uri);
 
         return $next($request);
     }
 
     /**
-     * @param $baseUrl
+     * @param $baseUri
      * @param $uri
      *
      * @return string
      */
-    protected function getUriString($baseUrl, $uri)
+    protected function getUriString($baseUri, $uri)
     {
         if(strpos($uri, "http") === 0) {
             // The config uri is a full url, just use it
             return $uri;
         }
 
-        // Otherwise append our uri to the existing baseUrl
-        return $baseUrl . $uri;
+        // Otherwise append our uri to the existing baseUri
+        return $baseUri . $uri;
     }
 
     /**

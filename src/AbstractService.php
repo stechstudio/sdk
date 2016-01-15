@@ -185,6 +185,10 @@ abstract class AbstractService
         return $this->client;
     }
 
+    /**
+     * @return array
+     * @throws FileNotFoundException
+     */
     protected function getOperations()
     {
         if($this->operations == null) {

@@ -59,7 +59,9 @@ class ValidateArguments
     protected function getValidator($rules, $parameters)
     {
         if(function_exists('app')) {
+            // @codeCoverageIgnoreStart
             return app('translator')->make($parameters, $rules);
+            // @codeCoverageIgnoreEnd
         }
         return new Validator(new Translator('en'), $parameters, $rules);
     }

@@ -25,6 +25,9 @@ class MyFirstSdk extends AbstractService
                 "id" => [
                     "validate" => "required|numeric",
                     "location" => "uri"
+                ],
+                "foo" => [
+                    "location" => "query"
                 ]
             ]
         ]

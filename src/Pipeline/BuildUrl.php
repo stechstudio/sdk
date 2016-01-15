@@ -26,8 +26,16 @@ class BuildUrl
 
         $uriParams = $this->getUriParams($request->config['parameters']);
         $uriArguments = $this->getUriArguments($uriParams, $request->arguments);
-        $urlString = $this->getUrlString($request->baseUrl, $request->config['uri']);
-        $url = $this->prepareUrl($urlString, $uriArguments);
+        $uriString = $this->getUriString($request->baseUrl, $request->config['uri']);
+
+        $url = $this->prepareUri($uriString, $uriArguments);
+
+        $queryParams = $this->getQueryParams($request->config['parameters']);
+        $queryArguments = $this->getQueryArguments($queryParams, $request->arguments);
+
+        if(count($queryArguments)) {
+            $url .= "?" . http_build_query($queryArguments);
+        }
 
         $request->url = $url;
 
@@ -40,7 +48,7 @@ class BuildUrl
      *
      * @return string
      */
-    protected function getUrlString($baseUrl, $uri)
+    protected function getUriString($baseUrl, $uri)
     {
         if(strpos($uri, "http") === 0) {
             // The config uri is a full url, just use it
@@ -66,6 +74,20 @@ class BuildUrl
     }
 
     /**
+     * Return a simple array of parameter names that should be located in our query
+     *
+     * @param $parameters
+     *
+     * @return array
+     */
+    protected function getQueryParams($parameters)
+    {
+        return array_keys(array_filter($parameters, function($details) {
+            return $details['location'] == 'query';
+        }));
+    }
+
+    /**
      * @param $uriParams
      * @param $arguments
      *
@@ -77,12 +99,23 @@ class BuildUrl
     }
 
     /**
+     * @param $queryParams
+     * @param $arguments
+     *
+     * @return array
+     */
+    protected function getQueryArguments($queryParams, $arguments)
+    {
+        return array_intersect_key($arguments, array_flip($queryParams));
+    }
+
+    /**
      * @param $string
      * @param $arguments
      *
      * @return mixed
      */
-    protected function prepareUrl($string, $arguments)
+    protected function prepareUri($string, $arguments)
     {
         $preparedArguments = [];
         foreach($arguments AS $key => $value) {

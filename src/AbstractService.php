@@ -168,7 +168,7 @@ abstract class AbstractService
         return $this->pipeline->send($request)
             ->through($this->pipes)
             ->then(function ($request) {
-                return $request->responseBody;
+                return $request->getResponseBody();
             });
     }
 

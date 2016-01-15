@@ -43,7 +43,7 @@ class AddSignature
             $payload = $request->getBody();
         }
 
-        $request->setHeader('X-Signature', $this->signer->getSignature($request->signingKey, $this->signer->prepareSignatureData($method, $path, $payload)));
+        $request->setHeader('X-Signature', $this->signer->getSignature($request->getSigningKey(), $this->signer->prepareSignatureData($method, $path, $payload)));
 
         return $next($request);
     }

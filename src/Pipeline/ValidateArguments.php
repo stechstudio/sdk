@@ -21,8 +21,8 @@ class ValidateArguments
      */
     public function handle($request, Closure $next)
     {
-        $rules = $request->getValidationRules($request->config['parameters']);
-        $validator = $this->getValidator($rules, $request->arguments);
+        $rules = $request->getValidationRules($request->getParameters());
+        $validator = $this->getValidator($rules, $request->getArguments());
 
         if($validator->fails()) {
             throw new ValidationException($validator);

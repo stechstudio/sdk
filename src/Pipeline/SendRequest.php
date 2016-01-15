@@ -29,8 +29,7 @@ class SendRequest
             $body = json_decode($body, true);
         }
 
-        $request->response = $response;
-        $request->responseBody = $body;
+        $request->saveResponse($response, $body);
 
         return $next($request);
     }

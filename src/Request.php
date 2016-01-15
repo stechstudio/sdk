@@ -17,37 +17,37 @@ class Request
     /**
      * @var HttpClient
      */
-    public $client;
+    protected $client;
 
     /**
      * @var
      */
-    public $serviceName;
+    protected $serviceName;
 
     /**
      * @var
      */
-    public $signingKey;
+    protected $signingKey;
 
     /**
      * @var string
      */
-    public $baseUrl;
+    protected $baseUrl;
 
     /**
      * @var array
      */
-    public $config;
+    protected $config;
 
     /**
      * @var array
      */
-    public $parameters = [];
+    protected $parameters = [];
 
     /**
      * @var array
      */
-    public $arguments;
+    protected $arguments;
 
 
     // Guzzle HTTP request as it is being prepared
@@ -55,7 +55,7 @@ class Request
     /**
      * @var GuzzleRequest
      */
-    public $request;
+    protected $request;
 
 
     // Response from the HTTP request
@@ -63,12 +63,12 @@ class Request
     /**
      * @var
      */
-    public $response = null;
+    protected $response = null;
 
     /**
      * @var array|string
      */
-    public $responseBody = null;
+    protected $responseBody = null;
 
     /**
      * Request constructor.
@@ -93,8 +93,12 @@ class Request
             $this->parameters = $config['parameters'];
         }
 
+        if(!isset($config['uri'])) {
+            throw new \InvalidArgumentException("No URI provided");
+        }
+
         if (!isset($config['httpMethod']) || !in_array(strtoupper($config['httpMethod']), ["GET", "POST", "PUT", "PATCH", "DELETE"])) {
-            throw new \InvalidArgumentException("No httpMethod defined");
+            throw new \InvalidArgumentException("No HTTP method defined");
         }
 
         $this->request = new GuzzleRequest($config['httpMethod'], $this->baseUrl);
@@ -106,6 +110,38 @@ class Request
     public function getServiceName()
     {
         return $this->serviceName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSigningKey()
+    {
+        return $this->signingKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfigUri()
+    {
+        return $this->config['uri'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
     }
 
     /**
@@ -185,6 +221,16 @@ class Request
     public function send()
     {
         return $this->client->send($this->request);
+    }
+
+    /**
+     * @param $response
+     * @param $body
+     */
+    public function saveResponse($response, $body)
+    {
+        $this->response = $response;
+        $this->responseBody = $body;
     }
 
     /**

@@ -21,12 +21,8 @@ class BuildUri
      */
     public function handle($request, Closure $next)
     {
-        if(!isset($request->config['uri'])) {
-            throw new \InvalidArgumentException("Missing 'uri'");
-        }
-
         $uriArguments = $request->getArguments('uri');
-        $uriString = $this->getUriString($request->baseUrl, $request->config['uri']);
+        $uriString = $this->getUriString($request->getBaseUrl(), $request->getConfigUri());
 
         $uri = $this->prepareUri($uriString, $uriArguments);
 

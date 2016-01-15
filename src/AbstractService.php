@@ -4,12 +4,15 @@ namespace RC\Sdk;
 use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Container\Container;
 use Illuminate\Pipeline\Pipeline;
+use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Middleware\CorrelationID;
 use RC\Sdk\Middleware\RequestSignature;
 use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Pipeline\BuildUrl;
+use RC\Sdk\Pipeline\CreateSignature;
 use RC\Sdk\Pipeline\SendRequest;
 use RC\Sdk\Pipeline\ValidateArguments;
+use ReflectionClass;
 
 /**
  * Class AbstractClient
@@ -17,6 +20,15 @@ use RC\Sdk\Pipeline\ValidateArguments;
  */
 abstract class AbstractService
 {
+    /**
+     * @var string
+     */
+    protected $name = null;
+    /**
+     * @var string|null
+     */
+    protected $key = null;
+
     /**
      * @var HttpClient
      */
@@ -41,8 +53,7 @@ abstract class AbstractService
      * @var array
      */
     protected $requestMiddleware = [
-        CorrelationID::class,
-        RequestSignature::class
+        CorrelationID::class
     ];
 
     /**
@@ -57,9 +68,13 @@ abstract class AbstractService
         ValidateArguments::class,
         BuildBody::class,
         BuildUrl::class,
+        CreateSignature::class,
         SendRequest::class
     ];
 
+    /**
+     * @var null
+     */
     protected $result = null;
 
     /**
@@ -75,15 +90,53 @@ abstract class AbstractService
         $this->client->setResponseMiddleware($this->responseMiddleware);
 
         $this->pipeline = $pipeline;
+
+        if($this->name == null) {
+            $this->name = (new ReflectionClass($this))->getShortName();
+        }
     }
 
     /**
+     * @param null $key
+     *
      * @return AbstractService
      */
-    public static function create()
+    public static function create($key = null)
     {
         $container = new Container();
-        return new static(new HttpClient($container), new Pipeline($container));
+        $instance = new static(new HttpClient($container), new Pipeline($container));
+
+        if($key != null) {
+            $instance->setKey($key);
+        }
+
+        return $instance;
+    }
+
+    /**
+     * @param $key
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+    }
+
+    /**
+     * @return null|string
+     * @throws KeyNotFoundException
+     */
+    protected function getKey()
+    {
+        if($this->key != null) {
+            return $this->key;
+        }
+
+        // See if we have one as an environment variable
+        if(getenv(strtoupper($this->name . "_KEY")) !== false) {
+            return getenv(strtoupper($this->name . "_KEY"));
+        }
+
+        throw new KeyNotFoundException();
     }
 
     /**
@@ -110,7 +163,7 @@ abstract class AbstractService
      */
     protected function prepareRequest($config, $arguments)
     {
-        return new Request($this->getClient(), $this->baseUrl, $config, $arguments);
+        return new Request($this->getClient(), $this->getKey(), $this->baseUrl, $config, $arguments);
     }
 
     /**

@@ -19,6 +19,10 @@ class Request
      */
     public $client;
     /**
+     * @var
+     */
+    public $signingKey;
+    /**
      * @var string
      */
     public $baseUrl;
@@ -49,6 +53,11 @@ class Request
      */
     public $url = null;
 
+    /**
+     * @var string
+     */
+    public $signature = null;
+
 
     // Response from the HTTP request
 
@@ -66,13 +75,15 @@ class Request
      * Request constructor.
      *
      * @param HttpClient $client
+     * @param            $signingKey
      * @param            $baseUrl
      * @param            $config
      * @param            $arguments
      */
-    public function __construct(HttpClient $client, $baseUrl, $config, $arguments)
+    public function __construct(HttpClient $client, $signingKey, $baseUrl, $config, $arguments)
     {
         $this->client = $client;
+        $this->signingKey = $signingKey;
         $this->baseUrl = $baseUrl;
         $this->config = $config;
         $this->arguments = $arguments;

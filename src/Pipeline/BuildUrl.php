@@ -2,6 +2,7 @@
 namespace RC\Sdk\Pipeline;
 
 use Closure;
+use GuzzleHttp\Psr7\Uri;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 use Symfony\Component\Translation\Translator;
@@ -37,7 +38,7 @@ class BuildUrl
             $url .= "?" . http_build_query($queryArguments);
         }
 
-        $request->url = $url;
+        $request->url = new Uri($url);
 
         return $next($request);
     }

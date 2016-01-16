@@ -16,6 +16,16 @@ return [
                 ]
             ],
         ],
+        'test' => [
+            'httpMethod' => 'POST',
+            'uri' => 'http://requestb.in/1bacfb31',
+            'parameters' => [
+                'domain' => [
+                    'validate' => 'required|string',
+                    'default' => 'www.foo.com',
+                ]
+            ]
+        ],
         'getAuthorizeUrl' => [
             'httpMethod' => 'GET',
             'uri' => '/authorization-url',

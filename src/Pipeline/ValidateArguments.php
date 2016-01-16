@@ -22,6 +22,7 @@ class ValidateArguments
      */
     public function handle(Request $request, Closure $next)
     {
+        dd("here");
         $rules = $request->getValidationRules($request->getParameters());
         $validator = $this->getValidator($rules, $request->getArguments());
 

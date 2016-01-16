@@ -30,24 +30,17 @@ class Request
     protected $signingKey;
 
     /**
-     * @var string
+     * @var Description
      */
-    protected $baseUrl;
-
+    protected $description;
+    /**
+     * @var Operation
+     */
+    protected $operation;
     /**
      * @var array
      */
-    protected $config;
-
-    /**
-     * @var array
-     */
-    protected $parameters = [];
-
-    /**
-     * @var array
-     */
-    protected $arguments;
+    protected $data;
 
 
     // Guzzle HTTP request as it is being prepared
@@ -70,38 +63,25 @@ class Request
      */
     protected $responseBody = null;
 
+
     /**
-     * Request constructor.
-     *
-     * @param HttpClient $client
-     * @param            $serviceName
-     * @param            $signingKey
-     * @param            $baseUrl
-     * @param            $config
-     * @param            $arguments
+     * @param HttpClient  $client
+     * @param             $serviceName
+     * @param             $signingKey
+     * @param Description $description
+     * @param Operation   $operation
+     * @param             $data
      */
-    public function __construct(HttpClient $client, $serviceName, $signingKey, $baseUrl, $config, $arguments)
+    public function __construct(HttpClient $client, $serviceName, $signingKey, Description $description, Operation $operation, $data)
     {
         $this->client = $client;
-        $this->signingKey = $signingKey;
-        $this->baseUrl = $baseUrl;
-        $this->config = $config;
-        $this->arguments = $arguments;
         $this->serviceName = $serviceName;
+        $this->signingKey = $signingKey;
+        $this->description = $description;
+        $this->operation = $operation;
+        $this->data = $data;
 
-        if (is_array($config['parameters'])) {
-            $this->parameters = $config['parameters'];
-        }
-
-        if(!isset($config['uri'])) {
-            throw new \InvalidArgumentException("No URI provided");
-        }
-
-        if (!isset($config['httpMethod']) || !in_array(strtoupper($config['httpMethod']), ["GET", "POST", "PUT", "PATCH", "DELETE"])) {
-            throw new \InvalidArgumentException("No HTTP method defined");
-        }
-
-        $this->request = new GuzzleRequest($config['httpMethod'], $this->baseUrl);
+        $this->request = new GuzzleRequest($operation->getHttpMethod(), $description->getBaseUrl());
     }
 
     /**
@@ -123,17 +103,17 @@ class Request
     /**
      * @return string
      */
-    public function getBaseUrl()
+    public function getDescription()
     {
-        return $this->baseUrl;
+        return $this->description;
     }
 
     /**
      * @return mixed
      */
-    public function getConfigUri()
+    public function getOperation()
     {
-        return $this->config['uri'];
+        return $this->operation;
     }
 
     /**
@@ -141,7 +121,7 @@ class Request
      */
     public function getParameters()
     {
-        return $this->parameters;
+        return $this->getOperation()->getParameters();
     }
 
     /**

@@ -2,10 +2,7 @@
 namespace RC\Sdk\Pipeline;
 
 use Closure;
-use GuzzleHttp\Psr7\Request;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Validator;
-use Symfony\Component\Translation\Translator;
+use RC\Sdk\Request;
 
 /**
  * Class SendRequest
@@ -14,12 +11,12 @@ use Symfony\Component\Translation\Translator;
 class SendRequest
 {
     /**
-     * @param         $request
+     * @param Request $request
      * @param Closure $next
      *
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $response = $request->send();
 

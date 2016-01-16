@@ -2,11 +2,8 @@
 namespace RC\Sdk\Pipeline;
 
 use Closure;
-use GuzzleHttp\Psr7\Request;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Validator;
+use RC\Sdk\Request;
 use RC\Sdk\Signer;
-use Symfony\Component\Translation\Translator;
 
 /**
  * Class AddSignature
@@ -27,12 +24,12 @@ class AddSignature
     }
 
     /**
-     * @param         $request
+     * @param Request $request
      * @param Closure $next
      *
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $method = strtoupper($request->getMethod());
         $path = $request->getUri()->getPath();

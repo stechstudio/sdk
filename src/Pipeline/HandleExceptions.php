@@ -2,11 +2,8 @@
 namespace RC\Sdk\Pipeline;
 
 use Closure;
-use GuzzleHttp\Psr7\Request;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Validator;
+use RC\Sdk\Request;
 use RC\Sdk\Exceptions\ApiResponseException;
-use Symfony\Component\Translation\Translator;
 
 /**
  * The goal here is to look for errors from the remote service, and see if we have a matching
@@ -18,13 +15,13 @@ use Symfony\Component\Translation\Translator;
 class HandleExceptions
 {
     /**
-     * @param         $request
+     * @param Request $request
      * @param Closure $next
      *
      * @return mixed
      * @throws ApiResponseException
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $response = $request->getResponseBody();
 

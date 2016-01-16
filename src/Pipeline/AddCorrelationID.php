@@ -3,6 +3,7 @@ namespace RC\Sdk\Pipeline;
 
 use Closure;
 use Ramsey\Uuid\Uuid;
+use RC\Sdk\Request;
 
 /**
  * Class AddCorrelationID
@@ -10,13 +11,14 @@ use Ramsey\Uuid\Uuid;
  */
 class AddCorrelationID
 {
+
     /**
-     * @param         $request
+     * @param Request $request
      * @param Closure $next
      *
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $request->setHeader('X-Correlation-ID', $this->getCorrelationID());
 

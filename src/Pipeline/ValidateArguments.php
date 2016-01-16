@@ -5,6 +5,7 @@ use Closure;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 use Symfony\Component\Translation\Translator;
+use RC\Sdk\Request;
 
 /**
  * Class ValidateParameters
@@ -13,13 +14,13 @@ use Symfony\Component\Translation\Translator;
 class ValidateArguments
 {
     /**
-     * @param         $request
+     * @param Request $request
      * @param Closure $next
      *
      * @return mixed
      * @throws ValidationException
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $rules = $request->getValidationRules($request->getParameters());
         $validator = $this->getValidator($rules, $request->getArguments());

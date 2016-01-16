@@ -21,8 +21,8 @@ class ValidateArguments
      */
     public function handle($request, Closure $next)
     {
-        $rules = $this->getRules($request->config['parameters']);
-        $validator = $this->getValidator($rules, $request->arguments);
+        $rules = $request->getValidationRules($request->getParameters());
+        $validator = $this->getValidator($rules, $request->getArguments());
 
         if($validator->fails()) {
             throw new ValidationException($validator);
@@ -32,25 +32,6 @@ class ValidateArguments
     }
 
     /**
-     * The validation rules are currently in a sub-array for each parameter, need to flatten
-     * this down to a simple $parameter -> $validationArray key/value pair.
-     * @param $parameters
-     *
-     * @return array
-     */
-    protected function getRules($parameters)
-    {
-        return array_map(function($details) {
-            if(isset($details['validate'])) {
-                return $details['validate'];
-            }
-            return '';
-        }, $parameters);
-    }
-
-    /**
-     * If we are running inside Laravel, fetch the Validator from IoC. Otherwise build one manually.
-     *
      * @param $rules
      * @param $parameters
      *
@@ -58,9 +39,6 @@ class ValidateArguments
      */
     protected function getValidator($rules, $parameters)
     {
-        if(function_exists('app')) {
-            return app('translator')->make($parameters, $rules);
-        }
         return new Validator(new Translator('en'), $parameters, $rules);
     }
 }

@@ -1,12 +1,18 @@
 <?php
-namespace Sdk\Pipeline;
+/**
+ * Created by PhpStorm.
+ * User: Bubba
+ * Date: 1/14/2016
+ * Time: 12:21 PM
+ */
 
+namespace Sdk\Pipeline;
+use RC\Sdk\Request;
 use Illuminate\Container\Container;
 use RC\Sdk\HttpClient;
-use RC\Sdk\Pipeline\BuildUrl;
-use RC\Sdk\Request;
+use RC\Sdk\Pipeline\AddCorrelationID;
 
-class BuildUrlTest extends \PHPUnit_Framework_TestCase
+class CorrelationIDTest extends \PHPUnit_Framework_TestCase
 {
     public function testInstantiation()
     {
@@ -28,9 +34,10 @@ class BuildUrlTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ['foz', 'baz', 'sheesh'];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
-        $buildUrl = new BuildUrl();
-        $request = $buildUrl->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals('http://php.unit/test/oazwsdob', $request->url);
+        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
+        $correlationID = new AddCorrelationID();
+
+        $request = $correlationID->handle($requestDTO, function($request){return $request;});
+        $this->assertNotEmpty($request->getHeader('X-Correlation-ID'));
     }
 }

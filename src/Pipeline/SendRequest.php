@@ -21,9 +21,7 @@ class SendRequest
      */
     public function handle($request, Closure $next)
     {
-        $httpRequest = new Request($request->config['httpMethod'], $request->url, $request->headers, $request->body);
-
-        $response = $request->client->send($httpRequest);
+        $response = $request->send();
 
         // Try to decode it
         $body = (string) $response->getBody();
@@ -31,8 +29,7 @@ class SendRequest
             $body = json_decode($body, true);
         }
 
-        $request->response = $response;
-        $request->responseBody = $body;
+        $request->saveResponse($response, $body);
 
         return $next($request);
     }

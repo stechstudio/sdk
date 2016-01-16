@@ -24,6 +24,8 @@ class SendRequestTest extends \PHPUnit_Framework_TestCase
         $client = new Client(['handler' => $handler]);
 
 
+        $httpClient = new HttpClient(new Container());
+        $httpClient->setGuzzle($client);
         $baseUrl = 'http://php.unit/test';
         $config = [
             "httpMethod" => "POST",
@@ -41,10 +43,10 @@ class SendRequestTest extends \PHPUnit_Framework_TestCase
         ];
         $arguments = ['foz', 'baz', 'sheesh'];
 
-        $requestDTO = new Request($client, $baseUrl, $config, $arguments);
+        $requestDTO = new Request($httpClient, 'name', 'flartybart', $baseUrl, $config, $arguments);
         $requestDTO->url = 'http://php.unit/test/oazwsdob';
         $sendRequests = new SendRequest();
         $request = $sendRequests->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals($testBody, $request->responseBody);
+        $this->assertEquals($testBody, $request->getResponseBody());
     }
 }

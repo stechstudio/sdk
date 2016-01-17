@@ -43,7 +43,8 @@ class Parameter
         $configDefaults = [
             'validate' => '',
             'location' => null,
-            'default' => null
+            'default' => null,
+            'sentAs' => null
         ];
 
         $this->config = array_merge($configDefaults, $config);
@@ -64,7 +65,9 @@ class Parameter
      */
     public function getName()
     {
-        return $this->name;
+        return ($this->config['sentAs'] == null)
+            ? $this->name
+            : $this->config['sentAs'];
     }
 
     /**

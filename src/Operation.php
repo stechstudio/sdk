@@ -89,25 +89,35 @@ class Operation
     }
 
     /**
-     * Return the full data, including defaults
+     * Return the full data, including defaults. Note we have to getName() here because the parameter may have an alternate key (`sentAs`)
      */
     public function getData()
     {
-        return array_map(function ($parameter) {
-            return $parameter->getValue();
-        }, $this->getParameters());
+        $return = [];
+
+        foreach($this->getParameters() AS $parameter) {
+            $return[$parameter->getName()] = $parameter->getValue();
+        }
+
+        return $return;
     }
 
     /**
+     * Note we have to getName() here because the parameter may have an alternate key (`sentAs`)
+     *
      * @param $location
      *
      * @return array
      */
     public function getDataByLocation($location)
     {
-        return array_map(function ($parameter) {
-            return $parameter->getValue();
-        }, $this->getParametersByLocation($location));
+        $return = [];
+
+        foreach($this->getParametersByLocation($location) AS $parameter) {
+            $return[$parameter->getName()] = $parameter->getValue();
+        }
+
+        return $return;
     }
 
     /**

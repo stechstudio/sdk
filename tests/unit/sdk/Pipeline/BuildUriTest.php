@@ -29,7 +29,9 @@ class BuildUriTest extends \TestCase
         $request->shouldReceive('setUri')->with("http://www.foo.local/uri?baz=qux");
 
         $buildUri = new BuildUri();
-        $buildUri->handle($request, function() { return "result"; });
+        $result = $buildUri->handle($request, function() { return "result"; });
+
+        $this->assertEquals($result, "result");
     }
 
     /**
@@ -52,7 +54,9 @@ class BuildUriTest extends \TestCase
         $request->shouldReceive('setUri')->with("http://www.foo.local/uri/5?baz=qux");
 
         $buildUri = new BuildUri();
-        $buildUri->handle($request, function() { return "result"; });
+        $result = $buildUri->handle($request, function() { return "result"; });
+
+        $this->assertEquals($result, "result");
     }
 
     /**
@@ -75,7 +79,9 @@ class BuildUriTest extends \TestCase
         $request->shouldReceive('setUri')->with("http://www.bar.local/uri?baz=qux");
 
         $buildUri = new BuildUri();
-        $buildUri->handle($request, function() { return "result"; });
+        $result = $buildUri->handle($request, function() { return "result"; });
+
+        $this->assertEquals($result, "result");
     }
 
 }

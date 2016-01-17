@@ -24,7 +24,9 @@ class BuildBodyTest extends \TestCase
         $request->shouldReceive("setHeader")->withArgs(["Content-Type","application/json"]);
 
         $buildBody = new BuildBody();
-        $buildBody->handle($request, function() { return "result"; });
+        $result = $buildBody->handle($request, function() { return "result"; });
+
+        $this->assertEquals($result, "result");
     }
 
     /**
@@ -43,7 +45,8 @@ class BuildBodyTest extends \TestCase
         $request->shouldNotReceive("setHeader");
 
         $buildBody = new BuildBody();
+        $result = $buildBody->handle($request, function() { return "result"; });
 
-        $buildBody->handle($request, function() { return "result"; });
+        $this->assertEquals($result, "result");
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace RC\Sdk;
 
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Exceptions\KeyNotFoundException;
@@ -63,7 +64,7 @@ abstract class AbstractService
         AddSignature::class,
         AddCorrelationID::class,
         SendRequest::class,
-        HandleExceptions::class
+        //HandleExceptions::class
     ];
 
     /**
@@ -162,7 +163,9 @@ abstract class AbstractService
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
-        return $this->handle($this->prepareRequest($name, $arguments[0]));
+        $data = (isset($arguments[0])) ? $arguments[0] : [];
+
+        return $this->handle($this->prepareRequest($name, $data));
     }
 
     /**
@@ -185,11 +188,15 @@ abstract class AbstractService
      */
     private function handle($request)
     {
-        return $this->pipeline->send($request)
-            ->through($this->pipes)
-            ->then(function ($request) {
-                return $request->getResponseBody();
-            });
+        try {
+            return $this->pipeline->send($request)
+                ->through($this->pipes)
+                ->then(function ($request) {
+                    return $request->getResponseBody();
+                });
+        } catch(ClientException $e) {
+            (new ErrorHandler())->handle($this->getName(), $e);
+        }
     }
 
     /**

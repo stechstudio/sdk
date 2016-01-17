@@ -81,7 +81,7 @@ class Request
         $this->operation = $operation;
         $this->data = $data;
 
-        $this->request = new GuzzleRequest($operation->getHttpMethod(), $description->getBaseUrl());
+        $this->request = new GuzzleRequest($operation->getHttpMethod(), '');
     }
 
     /**
@@ -147,50 +147,6 @@ class Request
     public function setUri($uri)
     {
         $this->request = $this->request->withUri(new Uri($uri));
-    }
-
-    /**
-     * @param null $location
-     *
-     * @return array
-     */
-    public function getArguments($location = null)
-    {
-        if ($location == null) {
-            return $this->arguments;
-        }
-
-        // Return arguments that have the same key as the parameters for this location
-        return array_intersect_key($this->arguments, array_flip($this->getParametersByLocation($location)));
-    }
-
-    /**
-     * @param $location
-     *
-     * @return array
-     */
-    public function getParametersByLocation($location)
-    {
-        return array_keys(array_filter($this->parameters, function ($details) use ($location) {
-            return $details['location'] == $location;
-        }));
-    }
-
-    /**
-     * The validation rules are currently in a sub-array for each parameter, need to flatten
-     * this down to a simple $parameter -> $validationArray key/value pair.
-     *
-     * @return array
-     */
-    public function getValidationRules()
-    {
-        return array_map(function ($details) {
-            if (isset($details['validate'])) {
-                return $details['validate'];
-            }
-
-            return '';
-        }, $this->parameters);
     }
 
     /**

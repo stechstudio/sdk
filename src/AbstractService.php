@@ -12,8 +12,6 @@ use RC\Sdk\Pipeline\HandleExceptions;
 use RC\Sdk\Pipeline\SendRequest;
 use RC\Sdk\Pipeline\ValidateArguments;
 use ReflectionClass;
-use RC\Sdk\Operation;
-use RC\Sdk\Description;
 
 /**
  * Class AbstractClient
@@ -195,12 +193,24 @@ abstract class AbstractService
     }
 
     /**
+     * @param $description
+     */
+    public function setDescription($description)
+    {
+        if($description instanceof Description) {
+            $this->description = $description;
+        } else {
+            $this->description = new Description($description);
+        }
+    }
+
+    /**
      * @return array
      */
-    protected function getDescription()
+    public function getDescription()
     {
         if($this->description == null) {
-            $this->description = $this->loadDescription();
+            $this->description = $this->loadDescriptionFromFile();
         }
 
         return $this->description;
@@ -210,7 +220,7 @@ abstract class AbstractService
      * @return mixed
      * @throws FileNotFoundException
      */
-    protected function loadDescription()
+    protected function loadDescriptionFromFile()
     {
         $descriptionFile = __DIR__ . "/Service/" . $this->getName() . "/description.php";
 

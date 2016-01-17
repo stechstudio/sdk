@@ -9,7 +9,7 @@ return [
                 "domain" => [
                     "validate" => "required|string",
                     "location" => "json",
-                    "default" => $_ENV['PLANROOM_HOST']
+                    "default" => getenv('PLANROOM_HOST')
                 ],
                 "path" => [
                     "validate" => "required|string",
@@ -24,7 +24,7 @@ return [
                 'domain' => [
                     'validate' => 'required',
                     'location' => 'query',
-                    'default' => $_ENV['PLANROOM_HOST']
+                    'default' => getenv('PLANROOM_HOST')
                 ],
                 'redirectUri' => [
                     'validate' => 'required',

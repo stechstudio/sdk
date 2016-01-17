@@ -7,7 +7,7 @@ use RC\Sdk\Description;
 use RC\Sdk\Request;
 use Mockery as m;
 
-class BuildUriTest extends \TestCase
+class BuildUriTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Build a uri that includes the baseUrl, and a query key/value pair
@@ -26,7 +26,7 @@ class BuildUriTest extends \TestCase
         $request->shouldReceive("getOperation")->andReturn($operation);
         $request->shouldReceive("getDescription")->andReturn($description);
 
-        $request->shouldReceive('setUri')->with("http://www.foo.local/uri?baz=qux");
+        $request->shouldReceive('setUri')->with("http://www.foo.local/uri?baz=qux")->once();
 
         $buildUri = new BuildUri();
         $result = $buildUri->handle($request, function() { return "result"; });
@@ -51,7 +51,7 @@ class BuildUriTest extends \TestCase
         $request->shouldReceive("getOperation")->andReturn($operation);
         $request->shouldReceive("getDescription")->andReturn($description);
 
-        $request->shouldReceive('setUri')->with("http://www.foo.local/uri/5?baz=qux");
+        $request->shouldReceive('setUri')->with("http://www.foo.local/uri/5?baz=qux")->once();
 
         $buildUri = new BuildUri();
         $result = $buildUri->handle($request, function() { return "result"; });
@@ -76,7 +76,7 @@ class BuildUriTest extends \TestCase
         $request->shouldReceive("getOperation")->andReturn($operation);
         $request->shouldReceive("getDescription")->andReturn($description);
 
-        $request->shouldReceive('setUri')->with("http://www.bar.local/uri?baz=qux");
+        $request->shouldReceive('setUri')->with("http://www.bar.local/uri?baz=qux")->once();
 
         $buildUri = new BuildUri();
         $result = $buildUri->handle($request, function() { return "result"; });

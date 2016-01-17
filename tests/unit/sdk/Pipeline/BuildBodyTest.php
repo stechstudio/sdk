@@ -6,7 +6,7 @@ use RC\Sdk\Request;
 use Mockery as m;
 use RC\Sdk\Operation;
 
-class BuildBodyTest extends \TestCase
+class BuildBodyTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * When one or more JSON parameters are provided, we expect to only have a json body and the header set
@@ -20,8 +20,8 @@ class BuildBodyTest extends \TestCase
         $request = m::mock(Request::class);
         $request->shouldReceive("getOperation")->andReturn($operation);
 
-        $request->shouldReceive("setBody")->with('{"foo":"bar"}');
-        $request->shouldReceive("setHeader")->withArgs(["Content-Type","application/json"]);
+        $request->shouldReceive("setBody")->with('{"foo":"bar"}')->once();
+        $request->shouldReceive("setHeader")->withArgs(["Content-Type","application/json"])->once();
 
         $buildBody = new BuildBody();
         $result = $buildBody->handle($request, function() { return "result"; });
@@ -41,7 +41,7 @@ class BuildBodyTest extends \TestCase
         $request = m::mock(Request::class);
         $request->shouldReceive("getOperation")->andReturn($operation);
 
-        $request->shouldReceive("setBody")->with('qux');
+        $request->shouldReceive("setBody")->with('qux')->once();
         $request->shouldNotReceive("setHeader");
 
         $buildBody = new BuildBody();

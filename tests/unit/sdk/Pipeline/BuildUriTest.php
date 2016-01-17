@@ -1,87 +1,81 @@
 <?php
 namespace Sdk\Pipeline;
 
-use Illuminate\Container\Container;
-use RC\Sdk\HttpClient;
 use RC\Sdk\Pipeline\BuildUri;
+use RC\Sdk\Operation;
+use RC\Sdk\Description;
 use RC\Sdk\Request;
+use Mockery as m;
 
-class BuildUriTest extends \PHPUnit_Framework_TestCase
+class BuildUriTest extends \TestCase
 {
-    public function testInstantiation()
+    /**
+     * Build a uri that includes the baseUrl, and a query key/value pair
+     */
+    public function testPartialUri()
     {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "uri" => "/oazwsdob",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ]
-            ]
-        ];
-        $arguments = ["id"=>1, "domain"=>"php.unit"];
+        $description = m::mock(Description::class);
+        $description->shouldReceive('getBaseUrl')->andReturn("http://www.foo.local");
 
-        $requestDTO = new Request($client, 'name', 'flartybart',$baseUrl, $config, $arguments);
-        $buildUrl = new BuildUri();
-        $request = $buildUrl->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals('http://php.unit/test/oazwsdob', (string)$request->getUri());
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getDataByLocation")->with("uri")->andReturn(["foo" => "bar"]);
+        $operation->shouldReceive("getDataByLocation")->with("query")->andReturn(["baz" => "qux"]);
+        $operation->shouldReceive('getUri')->andReturn('/uri');
+
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
+        $request->shouldReceive("getDescription")->andReturn($description);
+
+        $request->shouldReceive('setUri')->with("http://www.foo.local/uri?baz=qux");
+
+        $buildUri = new BuildUri();
+        $buildUri->handle($request, function() { return "result"; });
     }
 
+    /**
+     * Include a variable in the uri
+     */
+    public function testPartialUriWithVariable()
+    {
+        $description = m::mock(Description::class);
+        $description->shouldReceive('getBaseUrl')->andReturn("http://www.foo.local");
+
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getDataByLocation")->with("uri")->andReturn(["id" => 5]);
+        $operation->shouldReceive("getDataByLocation")->with("query")->andReturn(["baz" => "qux"]);
+        $operation->shouldReceive('getUri')->andReturn('/uri/{id}');
+
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
+        $request->shouldReceive("getDescription")->andReturn($description);
+
+        $request->shouldReceive('setUri')->with("http://www.foo.local/uri/5?baz=qux");
+
+        $buildUri = new BuildUri();
+        $buildUri->handle($request, function() { return "result"; });
+    }
+
+    /**
+     * Build a uri that is provided entirely from the operation, and does not include the baseUrl
+     */
     public function testFullUri()
     {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "uri" => "http://php.unit/test/oazwsdob",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ]
-            ]
-        ];
-        $arguments = ["id"=>1, "domain"=>"php.unit"];
+        $description = m::mock(Description::class);
+        $description->shouldReceive('getBaseUrl')->andReturn("http://www.foo.local");
 
-        $requestDTO = new Request($client, 'name', 'flartybart',$baseUrl, $config, $arguments);
-        $buildUrl = new BuildUri();
-        $request = $buildUrl->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals('http://php.unit/test/oazwsdob', (string)$request->getUri());
-    }
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getDataByLocation")->with("uri")->andReturn(["id" => 5]);
+        $operation->shouldReceive("getDataByLocation")->with("query")->andReturn(["baz" => "qux"]);
+        $operation->shouldReceive('getUri')->andReturn('http://www.bar.local/uri');
 
-    public function testMissingUri()
-    {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ]
-            ]
-        ];
-        $arguments = ["id"=>1, "domain"=>"php.unit"];
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
+        $request->shouldReceive("getDescription")->andReturn($description);
 
+        $request->shouldReceive('setUri')->with("http://www.bar.local/uri?baz=qux");
 
-        $this->setExpectedException('InvalidArgumentException');
-        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
+        $buildUri = new BuildUri();
+        $buildUri->handle($request, function() { return "result"; });
     }
 
 }

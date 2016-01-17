@@ -1,37 +1,49 @@
 <?php
 namespace Sdk\Pipeline;
 
-use Illuminate\Container\Container;
-use RC\Sdk\HttpClient;
 use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Request;
+use Mockery as m;
+use RC\Sdk\Operation;
 
-class BuildBodyTest extends \PHPUnit_Framework_TestCase
+class BuildBodyTest extends \TestCase
 {
-    public function testInstantiation()
+    /**
+     * When one or more JSON parameters are provided, we expect to only have a json body and the header set
+     */
+    public function testJsonBody()
     {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "uri" => "/oazwsdob",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ]
-            ]
-        ];
-        $arguments = ['foz', 'baz', 'sheesh'];
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getDataByLocation")->with("json")->andReturn(["foo" => "bar"]);
+        $operation->shouldReceive("getDataByLocation")->with("body")->andReturn(["baz" => "qux"]);
 
-        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
+
+        $request->shouldReceive("setBody")->with('{"foo":"bar"}');
+        $request->shouldReceive("setHeader")->withArgs(["Content-Type","application/json"]);
+
+        $buildBody = new BuildBody();
+        $buildBody->handle($request, function() { return "result"; });
+    }
+
+    /**
+     * With no JSON parameters, the raw body param value will be our only body
+     */
+    public function testRawBody()
+    {
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getDataByLocation")->with("json")->andReturn([]);
+        $operation->shouldReceive("getDataByLocation")->with("body")->andReturn(["baz" => "qux"]);
+
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
+
+        $request->shouldReceive("setBody")->with('qux');
+        $request->shouldNotReceive("setHeader");
+
         $buildBody = new BuildBody();
 
-        $request = $buildBody->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals('[]', $request->getBody());
+        $buildBody->handle($request, function() { return "result"; });
     }
 }

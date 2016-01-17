@@ -1,70 +1,46 @@
 <?php
 namespace Sdk\Pipeline;
 
-use Illuminate\Container\Container;
-use RC\Sdk\HttpClient;
-use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Pipeline\ValidateArguments;
 use RC\Sdk\Request;
+use Mockery as m;
+use Illuminate\Validation\ValidationException;
 
 class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
 {
-    public function testInstantiation()
+    /**
+     * Passing validation
+     */
+    public function testValid()
     {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "uri" => "/oazwsdob",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ],
-                "noise" => [
-                    "location" => "n/a"
-                ]
-            ]
-        ];
-        $arguments = ["id"=>1, "domain"=>"php.unit"];
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getValidationRules")->andReturn(["foo" => "required|string"]);
+        $operation->shouldReceive("getData")->andReturn(["foo" => "bar"]);
 
-        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
-        $validateArg = new ValidateArguments();
-        $request = $validateArg->handle($requestDTO, function($request){return $request;});
-        $this->assertEquals(Request::class, get_class($request), 'We should get a valided request object back.');
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
+
+        $validateArguments = new ValidateArguments();
+        $result = $validateArguments->handle($request, function() { return "result"; });
+
+        $this->assertEquals($result, "result");
     }
 
-    public function testValidation()
+    /**
+     * Failing validation
+     */
+    public function testInvalid()
     {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "uri" => "/oazwsdob",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ],
-                "noise" => [
-                    "location" => "n/a"
-                ]
-            ]
-        ];
-        $arguments = ["id"=> "a", "domain"=>"php.unit"];
+        $operation = m::mock(Operation::class);
+        $operation->shouldReceive("getValidationRules")->andReturn(["foo" => "required|numeric"]);
+        $operation->shouldReceive("getData")->andReturn(["foo" => "bar"]);
 
-        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
-        $validateArg = new ValidateArguments();
-        $this->setExpectedException('Illuminate\Validation\ValidationException');
-        $validateArg->handle($requestDTO, function($request){return $request;});
+        $request = m::mock(Request::class);
+        $request->shouldReceive("getOperation")->andReturn($operation);
 
+        $this->setExpectedException(ValidationException::class);
+
+        $validateArguments = new ValidateArguments();
+        $validateArguments->handle($request, function() { return "result"; });
     }
 }

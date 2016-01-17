@@ -62,6 +62,9 @@ class Description
             : null;
     }
 
+    /**
+     * @return mixed
+     */
     public function getBaseUrl()
     {
         return $this->config['baseUrl'];

@@ -21,20 +21,27 @@ class Parameter
     protected $name;
 
     /**
+     * @var
+     */
+    protected $value;
+
+    /**
      * @var array
      */
     protected $config = [];
 
     /**
      * @param $name
+     * @param $value
      * @param $config
      */
-    public function __construct($name, $config)
+    public function __construct($name, $value, $config)
     {
         $this->name = $name;
+        $this->value = $value;
 
         $configDefaults = [
-            'validate' => null,
+            'validate' => '',
             'location' => null,
             'default' => null
         ];
@@ -42,5 +49,45 @@ class Parameter
         $this->config = array_merge($configDefaults, $config);
     }
 
+    /**
+     * @return mixed
+     */
+    public function getValue()
+    {
+        return ($this->value == null)
+            ? $this->config['default']
+            : $this->value;
+    }
 
+    /**
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getValidate()
+    {
+        return $this->config['validate'];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefault()
+    {
+        return $this->config['default'];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocation()
+    {
+        return $this->config['location'];
+    }
 }

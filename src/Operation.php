@@ -1,13 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: josephszobody
- * Date: 1/16/16
- * Time: 3:09 PM
- */
-
 namespace RC\Sdk;
-
 
 /**
  * Class Operation
@@ -45,9 +37,9 @@ class Operation
     protected $additionalParameters = null;
 
     /**
-     * @param       $name
-     * @param       $config
-     * @param array $data
+     * @param string $name
+     * @param array  $config
+     * @param array  $data
      */
     public function __construct($name, $config, $data = [])
     {
@@ -57,10 +49,6 @@ class Operation
         $configDefaults = [
             'httpMethod' => '',
             'uri' => '',
-            'notes' => '',
-            'summary' => '',
-            'documentationUrl' => null,
-            'deprecated' => false,
             'parameters' => [],
             'additionalParameters' => null,
         ];
@@ -68,6 +56,58 @@ class Operation
         $this->config = array_merge($configDefaults, $config);
 
         $this->resolveParameters();
+    }
+
+    /**
+     * @return array
+     */
+    public function getValidationRules()
+    {
+        return array_map(function ($parameter) {
+            return $parameter->getValidate();
+        }, $this->getParameters());
+    }
+
+    /**
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @param $location
+     *
+     * @return array
+     */
+    public function getParametersByLocation($location)
+    {
+        return array_filter($this->parameters, function ($parameter) use ($location) {
+            return $parameter->getLocation() == $location;
+        });
+    }
+
+    /**
+     * Return the full data, including defaults
+     */
+    public function getData()
+    {
+        return array_map(function ($parameter) {
+            return $parameter->getValue();
+        }, $this->getParameters());
+    }
+
+    /**
+     * @param $location
+     *
+     * @return array
+     */
+    public function getDataByLocation($location)
+    {
+        return array_map(function ($parameter) {
+            return $parameter->getValue();
+        }, $this->getParametersByLocation($location));
     }
 
     /**
@@ -81,29 +121,39 @@ class Operation
                 throw new \InvalidArgumentException('Parameters must be arrays');
             }
 
-            $this->parameters[$name] = new Parameter($name, $config);
+            $value = (isset($this->data[$name]))
+                ? $this->data[$name]
+                : null;
+
+            $this->parameters[$name] = new Parameter($name, $value, $config);
         }
 
         if ($this->config['additionalParameters'] && is_array($this->config['additionalParameters'])) {
-            $this->additionalParameters = new Parameter('*', $this->config['additionalParameters']);
+            $this->additionalParameters = new Parameter('*', null, $this->config['additionalParameters']);
         }
     }
 
     /**
-     * Cuz I'm too lazy to write getters??
-     *
-     * @param $name
-     * @param $arguments
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
      * @return mixed
      */
-    public function __call($name, $arguments)
+    public function getHttpMethod()
     {
-        if(strpos($name, "get") === 0) {
-            // This is a getter
-            $parameterName = strtolower($name[3]) . substr($name, 4);
-            return array_key_exists($parameterName, $this->config)
-                ? $this->config[$parameterName]
-                : null;
-        }
+        return $this->config['httpMethod'];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUri()
+    {
+        return $this->config['uri'];
     }
 }

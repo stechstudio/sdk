@@ -8,23 +8,13 @@ return [
             'parameters' => [
                 "domain" => [
                     "validate" => "required|string",
-                    "location" => "body"
+                    "location" => "json"
                 ],
                 "path" => [
                     "validate" => "required|string",
-                    "location" => "body"
+                    "location" => "json"
                 ]
             ],
-        ],
-        'test' => [
-            'httpMethod' => 'POST',
-            'uri' => 'http://requestb.in/1bacfb31',
-            'parameters' => [
-                'domain' => [
-                    'validate' => 'required|string',
-                    'default' => 'www.foo.com',
-                ]
-            ]
         ],
         'getAuthorizeUrl' => [
             'httpMethod' => 'GET',
@@ -46,15 +36,15 @@ return [
             'parameters' => [
                 'redirectUri' => [
                     'validate' => 'required',
-                    'location' => 'body',
+                    'location' => 'json',
                 ],
                 'csrfToken' => [
                     'validate' => 'required',
-                    'location' => 'body',
+                    'location' => 'json',
                 ],
                 'queryParams' => [
                     'validate' => 'required',
-                    'location' => 'body',
+                    'location' => 'json',
                 ],
             ],
         ],

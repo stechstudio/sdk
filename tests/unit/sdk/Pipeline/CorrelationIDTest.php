@@ -7,37 +7,39 @@
  */
 
 namespace Sdk\Pipeline;
-use RC\Sdk\Request;
-use Illuminate\Container\Container;
-use RC\Sdk\HttpClient;
 use RC\Sdk\Pipeline\AddCorrelationID;
+use RC\Sdk\Request;
+use Mockery as m;
 
 class CorrelationIDTest extends \PHPUnit_Framework_TestCase
 {
-    public function testInstantiation()
+    /**
+     * Just make sure the header is set, we don't care what the value is
+     */
+    public function testGeneratedCorrelationID()
     {
-        $client = new HttpClient(new Container());
-        $baseUrl = 'http://php.unit/test';
-        $config = [
-            "httpMethod" => "POST",
-            "uri" => "/oazwsdob",
-            "parameters" => [
-                "domain" => [
-                    "validate" => "required|string",
-                    "location" => "body"
-                ],
-                "id" => [
-                    "validate" => "required|numeric",
-                    "location" => "uri"
-                ]
-            ]
-        ];
-        $arguments = ['foz', 'baz', 'sheesh'];
+        $request = m::mock(Request::class);
+        $request->shouldReceive('setHeader')->once();
 
-        $requestDTO = new Request($client, 'name', 'flartybart', $baseUrl, $config, $arguments);
         $correlationID = new AddCorrelationID();
+        $result = $correlationID->handle($request, function() { return "result"; });
 
-        $request = $correlationID->handle($requestDTO, function($request){return $request;});
-        $this->assertNotEmpty($request->getHeader('X-Correlation-ID'));
+        $this->assertEquals($result, "result");
+    }
+
+    /**
+     * This time our header should match the environment variable
+     */
+    public function testSpecificCorrelationID()
+    {
+        putenv('CORRELATION_ID=1234567');
+
+        $request = m::mock(Request::class);
+        $request->shouldReceive('setHeader')->with("X-Correlation-ID", "1234567")->once();
+
+        $correlationID = new AddCorrelationID();
+        $result = $correlationID->handle($request, function() { return "result"; });
+
+        $this->assertEquals($result, "result");
     }
 }

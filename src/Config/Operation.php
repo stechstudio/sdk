@@ -59,9 +59,9 @@ class Operation
      */
     public function getValidationRules()
     {
-        return array_map(function ($parameter) {
+        return array_filter(array_map(function ($parameter) {
             return $parameter->getValidate();
-        }, $this->getParameters());
+        }, $this->getParameters()));
     }
 
     /**
@@ -95,7 +95,9 @@ class Operation
             $return[$parameter->getName()] = $parameter->getValue();
         }
 
-        return $return;
+        return array_filter($return, function($value) {
+            return !is_null($value);
+        });
     }
 
     /**
@@ -134,7 +136,7 @@ class Operation
             $this->parameters[$name] = new Parameter($name, $value, $config);
         }
 
-        if ($this->config['additionalParameters'] && is_array($this->config['additionalParameters'])) {
+        if (isset($this->config['additionalParameters']) && is_array($this->config['additionalParameters'])) {
             $this->additionalParameters = new Parameter('*', null, $this->config['additionalParameters']);
         }
     }

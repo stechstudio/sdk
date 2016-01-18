@@ -33,7 +33,7 @@ class Parameter
         $this->value = $value;
 
         $configDefaults = [
-            'validate' => '',
+            'validate' => null,
             'location' => null,
             'default' => null,
             'sentAs' => null

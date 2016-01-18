@@ -1,13 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: josephszobody
- * Date: 1/16/16
- * Time: 3:06 PM
- */
-
-namespace RC\Sdk;
-
+namespace RC\Sdk\Config;
 
 /**
  * Class Parameter

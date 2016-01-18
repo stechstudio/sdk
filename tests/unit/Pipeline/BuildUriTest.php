@@ -2,8 +2,8 @@
 namespace Sdk\Pipeline;
 
 use RC\Sdk\Pipeline\BuildUri;
-use RC\Sdk\Operation;
-use RC\Sdk\Description;
+use RC\Sdk\Config\Operation;
+use RC\Sdk\Config\Description;
 use RC\Sdk\Request;
 use Mockery as m;
 

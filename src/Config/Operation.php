@@ -1,10 +1,6 @@
 <?php
-namespace RC\Sdk;
+namespace RC\Sdk\Config;
 
-/**
- * Class Operation
- * @package RC\Sdk
- */
 /**
  * Class Operation
  * @package RC\Sdk

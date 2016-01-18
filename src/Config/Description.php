@@ -1,18 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: josephszobody
- * Date: 1/16/16
- * Time: 3:14 PM
- */
+namespace RC\Sdk\Config;
 
-namespace RC\Sdk;
-
-
-/**
- * Class Description
- * @package RC\Sdk
- */
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 /**

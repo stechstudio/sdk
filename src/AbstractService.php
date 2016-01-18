@@ -4,6 +4,8 @@ namespace RC\Sdk;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Pipeline\Pipeline;
+use RC\Sdk\Config\Description;
+use RC\Sdk\Config\Operation;
 use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Pipeline\AddCorrelationID;
 use RC\Sdk\Pipeline\BuildBody;

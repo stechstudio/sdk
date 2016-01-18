@@ -4,6 +4,8 @@ namespace RC\Sdk;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7;
+use RC\Sdk\Config\Description;
+use RC\Sdk\Config\Operation;
 
 /**
  * This encapsulates a service request, basically a DTO. This is what gets sent through the pipeline.

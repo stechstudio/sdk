@@ -18,15 +18,15 @@ class BuildUri
      */
     public function handle(Request $request, Closure $next)
     {
-        $uriArguments = $request->getArguments('uri');
-        $uriString = $this->getUriString($request->getBaseUrl(), $request->getConfigUri());
+        $uriData = $request->getOperation()->getDataByLocation("uri");
+        $uriString = $this->getUriString($request->getDescription()->getBaseUrl(), $request->getOperation()->getUri());
 
-        $uri = $this->prepareUri($uriString, $uriArguments);
+        $uri = $this->prepareUri($uriString, $uriData);
 
-        $queryArguments = $request->getArguments('query');
+        $queryData = $request->getOperation()->getDataByLocation("query");
 
-        if(count($queryArguments)) {
-            $uri .= "?" . http_build_query($queryArguments);
+        if(count($queryData)) {
+            $uri .= "?" . http_build_query($queryData);
         }
 
         $request->setUri($uri);

@@ -31,7 +31,7 @@ class AddSignature
      */
     public function handle(Request $request, Closure $next)
     {
-        $method = strtoupper($request->getMethod());
+        $method = strtoupper($request->getOperation()->getHttpMethod());
         $path = $request->getUri()->getPath();
 
         if($method == "GET") {

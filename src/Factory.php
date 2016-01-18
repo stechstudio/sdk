@@ -5,10 +5,16 @@ namespace RC\Sdk;
  * Class Factory
  * @package RC\Sdk
  */
+/**
+ * Class Factory
+ * @package RC\Sdk
+ */
 class Factory
 {
     /**
-     * @param      $name
+     * Need a built-in service? Use this, just specify the name (e.g. "Curator")
+     *
+     * @param string $name
      * @param null $key
      *
      * @return mixed
@@ -26,6 +32,25 @@ class Factory
     }
 
     /**
+     * Have your own description array? Use this method.
+     *
+     * @param array $description
+     * @param null $key
+     *
+     * @return AbstractService
+     */
+    public static function createWithDescription($description, $key = null)
+    {
+        $service = Service::create($key);
+        $service->setDescription($description);
+
+        return $service;
+    }
+
+    /**
+     * Loads a service by first looking for a dedicated service class, and
+     * falls back to our generic service class.
+     *
      * @param $name
      *
      * @return mixed

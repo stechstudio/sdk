@@ -8,11 +8,12 @@ return [
             'parameters' => [
                 "domain" => [
                     "validate" => "required|string",
-                    "location" => "body"
+                    "location" => "json",
+                    "default" => getenv('PLANROOM_HOST')
                 ],
                 "path" => [
                     "validate" => "required|string",
-                    "location" => "body"
+                    "location" => "json"
                 ]
             ],
         ],
@@ -22,7 +23,8 @@ return [
             'parameters' => [
                 'domain' => [
                     'validate' => 'required',
-                    'location' => 'query'
+                    'location' => 'query',
+                    'default' => getenv('PLANROOM_HOST')
                 ],
                 'redirectUri' => [
                     'validate' => 'required',
@@ -36,15 +38,15 @@ return [
             'parameters' => [
                 'redirectUri' => [
                     'validate' => 'required',
-                    'location' => 'body',
+                    'location' => 'json',
                 ],
                 'csrfToken' => [
                     'validate' => 'required',
-                    'location' => 'body',
+                    'location' => 'json',
                 ],
                 'queryParams' => [
                     'validate' => 'required',
-                    'location' => 'body',
+                    'location' => 'json',
                 ],
             ],
         ],

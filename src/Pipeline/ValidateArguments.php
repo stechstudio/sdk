@@ -22,8 +22,8 @@ class ValidateArguments
      */
     public function handle(Request $request, Closure $next)
     {
-        $rules = $request->getValidationRules($request->getParameters());
-        $validator = $this->getValidator($rules, $request->getArguments());
+        $rules = $request->getOperation()->getValidationRules();
+        $validator = $this->getValidator($rules, $request->getOperation()->getData());
 
         if($validator->fails()) {
             throw new ValidationException($validator);
@@ -34,12 +34,12 @@ class ValidateArguments
 
     /**
      * @param $rules
-     * @param $parameters
+     * @param $data
      *
      * @return Validator
      */
-    protected function getValidator($rules, $parameters)
+    protected function getValidator($rules, $data)
     {
-        return new Validator(new Translator('en'), $parameters, $rules);
+        return new Validator(new Translator('en'), $data, $rules);
     }
 }

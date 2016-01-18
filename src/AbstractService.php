@@ -1,9 +1,11 @@
 <?php
 namespace RC\Sdk;
 
-use Illuminate\Container\Container;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Pipeline\Pipeline;
+use RC\Sdk\Config\Description;
+use RC\Sdk\Config\Operation;
 use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Pipeline\AddCorrelationID;
 use RC\Sdk\Pipeline\BuildBody;
@@ -40,9 +42,9 @@ abstract class AbstractService
     protected $baseUrl = null;
 
     /**
-     * @var array
+     * @var Operation
      */
-    protected $operations = null;
+    protected $operation;
 
     /**
      * @var Pipeline
@@ -50,9 +52,9 @@ abstract class AbstractService
     protected $pipeline;
 
     /**
-     * @var array
+     * @var Description
      */
-    protected $description = null;
+    protected $description;
 
     /**
      * @var array
@@ -64,7 +66,7 @@ abstract class AbstractService
         AddSignature::class,
         AddCorrelationID::class,
         SendRequest::class,
-        HandleExceptions::class
+        //HandleExceptions::class
     ];
 
     /**
@@ -159,22 +161,24 @@ abstract class AbstractService
      */
     public function __call($name, $arguments)
     {
-        if (!array_key_exists($name, $this->getOperations())) {
+        if (!$this->getDescription()->getOperation($name)) {
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
-        return $this->handle($this->prepareRequest($this->getOperations()[$name], $arguments[0]));
+        $data = (isset($arguments[0])) ? $arguments[0] : [];
+
+        return $this->handle($this->prepareRequest($name, $data));
     }
 
     /**
-     * @param $config
-     * @param $arguments
+     * @param $name
+     * @param $data
      *
      * @return Request
      */
-    protected function prepareRequest($config, $arguments)
+    protected function prepareRequest($name, $data)
     {
-        return new Request($this->getClient(), $this->getName(), $this->getKey(), $this->getDescription()['baseUrl'], $config, $arguments);
+        return new Request($this->getClient(), $this->getName(), $this->getKey(), $this->getDescription(), $this->getDescription()->getOperation($name, $data), $data);
     }
 
     /**
@@ -186,33 +190,36 @@ abstract class AbstractService
      */
     private function handle($request)
     {
-        return $this->pipeline->send($request)
-            ->through($this->pipes)
-            ->then(function ($request) {
-                return $request->getResponseBody();
-            });
-    }
-
-    /**
-     * @return array
-     * @throws FileNotFoundException
-     */
-    protected function getOperations()
-    {
-        if($this->operations == null) {
-            $this->loadDescription();
+        try {
+            return $this->pipeline->send($request)
+                ->through($this->pipes)
+                ->then(function ($request) {
+                    return $request->getResponseBody();
+                });
+        } catch(ClientException $e) {
+            (new ErrorHandler())->handle($this->getName(), $e);
         }
+    }
 
-        return $this->operations;
+    /**
+     * @param $description
+     */
+    public function setDescription($description)
+    {
+        if($description instanceof Description) {
+            $this->description = $description;
+        } else {
+            $this->description = new Description($description);
+        }
     }
 
     /**
      * @return array
      */
-    protected function getDescription()
+    public function getDescription()
     {
         if($this->description == null) {
-            $this->description = $this->loadDescription();
+            $this->description = $this->loadDescriptionFromFile();
         }
 
         return $this->description;
@@ -222,17 +229,10 @@ abstract class AbstractService
      * @return mixed
      * @throws FileNotFoundException
      */
-    protected function loadDescription()
+    protected function loadDescriptionFromFile()
     {
         $descriptionFile = __DIR__ . "/Service/" . $this->getName() . "/description.php";
 
-        if(!file_exists($descriptionFile)) {
-            throw new FileNotFoundException("Description file not found for service " . $this->getName());
-        }
-
-        $this->description = include($descriptionFile);
-
-        $this->baseUrl = $this->description['baseUrl'];
-        $this->operations = $this->description['operations'];
+        return Description::loadFromFile($descriptionFile);
     }
 }

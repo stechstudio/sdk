@@ -12,6 +12,7 @@ use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Pipeline\BuildUri;
 use RC\Sdk\Pipeline\AddSignature;
 use RC\Sdk\Pipeline\HandleExceptions;
+use RC\Sdk\Pipeline\PipeInterface;
 use RC\Sdk\Pipeline\SendRequest;
 use RC\Sdk\Pipeline\ValidateArguments;
 use ReflectionClass;
@@ -65,8 +66,6 @@ abstract class AbstractService
         BuildUri::class,
         AddSignature::class,
         AddCorrelationID::class,
-        //SendRequest::class,
-        //HandleExceptions::class
     ];
 
     /**
@@ -149,6 +148,14 @@ abstract class AbstractService
     protected function getClient()
     {
         return $this->client;
+    }
+
+    /**
+     * @param PipeInterface $pipe
+     */
+    public function addPipe(PipeInterface $pipe)
+    {
+        $this->pipes[] = $pipe;
     }
 
     /**

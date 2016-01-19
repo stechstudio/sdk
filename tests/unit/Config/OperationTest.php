@@ -63,6 +63,29 @@ class OperationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($o->getValidationRules()['baz'], 'required|string');
     }
 
+    public function testAdditionalParameters()
+    {
+        $o = new Operation("foo", [
+            'httpMethod' => 'POST',
+            'uri' => '/bar',
+            'parameters' => [
+                'baz' => [
+                    'location' => 'json',
+                    'validate' => 'required|string'
+                ],
+                'quz' => [
+                    'location' => 'body'
+                ],
+            ],
+            'additionalParameters' => [
+                'location' => 'json'
+            ],
+        ], []);
+
+        $this->assertTrue($o->allowAdditionalParametersAt("json"));
+        $this->assertFalse($o->allowAdditionalParametersAt("query"));
+    }
+
     public function testData()
     {
         $o = new Operation("foo", [
@@ -89,11 +112,52 @@ class OperationTest extends PHPUnit_Framework_TestCase
         ], [
             'baz' => 'hello',
             'corge' => 'string',
+            'extra' => 'should be excluded'
         ]);
 
         $this->assertEquals(count($o->getData()), 3);
+        $this->assertFalse(array_key_exists('extra', $o->getData()));
+
         $this->assertEquals(count($o->getDataByLocation('json')), 2);
         $this->assertEquals(count($o->getDataByLocation('uri')), 1);
+    }
+
+    public function testDataWithAdditionalParameters()
+    {
+        $o = new Operation("foo", [
+            'httpMethod' => 'POST',
+            'uri' => '/bar',
+            'parameters' => [
+                'baz' => [
+                    'location' => 'json',
+                    'validate' => 'required|string'
+                ],
+                'quz' => [
+                    'location' => 'body'
+                ],
+                'corge' => [
+                    'location' => 'json',
+                    'validate' => 'numeric'
+                ],
+                'grault' => [
+                    'location' => 'uri',
+                    'default' => 'grault-default-value'
+                ]
+            ],
+            'additionalParameters' => [
+                'location' => 'json'
+            ],
+        ], [
+            'baz' => 'hello',
+            'corge' => 'string',
+            'extra' => 'should be included'
+        ]);
+
+        $this->assertEquals(count($o->getData()), 4);
+        $this->assertTrue(array_key_exists('extra', $o->getData()));
+
+        $this->assertEquals(count($o->getDataByLocation('json')), 3); // Includes the extra data
+        $this->assertEquals(count($o->getDataByLocation('uri')), 1); // Does NOT include extra data
     }
 
     public function testInvalidParameter()

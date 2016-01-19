@@ -5,6 +5,10 @@ namespace RC\Sdk\Config;
  * Class Operation
  * @package RC\Sdk
  */
+/**
+ * Class Operation
+ * @package RC\Sdk\Config
+ */
 class Operation
 {
     /**
@@ -85,19 +89,33 @@ class Operation
     }
 
     /**
+     * @param $location
+     *
+     * @return bool
+     */
+    public function allowAdditionalParametersAt($location) {
+        return $this->additionalParameters instanceof Parameter
+            && $this->additionalParameters->getLocation() == $location;
+    }
+
+    /**
      * Return the full data, including defaults. Note we have to getName() here because the parameter may have an alternate key (`sentAs`)
      */
     public function getData()
     {
         $return = [];
 
+        // First get the data that belongs with out mapped parameters
         foreach($this->getParameters() AS $parameter) {
             $return[$parameter->getName()] = $parameter->getValue();
         }
 
-        return array_filter($return, function($value) {
-            return !is_null($value);
-        });
+        // Do we allow additional parameters? If so, add the rest of the data
+        if($this->additionalParameters != null) {
+            $return = $return + array_diff_key($this->data, $this->getParameters());
+        }
+
+        return array_filter($return, 'is_not_null');
     }
 
     /**
@@ -111,8 +129,14 @@ class Operation
     {
         $return = [];
 
+        // First get the data that matches parameters at this location
         foreach($this->getParametersByLocation($location) AS $parameter) {
             $return[$parameter->getName()] = $parameter->getValue();
+        }
+
+        // Now add the additional data only if we allow at this location
+        if($this->additionalParameters != null && $this->additionalParameters->getLocation() == $location) {
+            $return = $return + array_diff_key($this->data, $this->getParameters());
         }
 
         return $return;

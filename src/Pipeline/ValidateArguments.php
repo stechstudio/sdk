@@ -11,7 +11,7 @@ use RC\Sdk\Request;
  * Class ValidateParameters
  * @package RC\Sdk\Pipeline
  */
-class ValidateArguments
+class ValidateArguments implements PipeInterface
 {
     /**
      * @param Request $request

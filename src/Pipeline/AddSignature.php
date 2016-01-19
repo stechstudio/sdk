@@ -9,7 +9,7 @@ use RC\Sdk\Signer;
  * Class AddSignature
  * @package RC\Sdk\Pipeline
  */
-class AddSignature
+class AddSignature implements PipeInterface
 {
     protected $signer;
 

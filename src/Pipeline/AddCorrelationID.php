@@ -9,7 +9,7 @@ use RC\Sdk\Request;
  * Class AddCorrelationID
  * @package RC\Sdk\Pipeline
  */
-class AddCorrelationID
+class AddCorrelationID implements PipeInterface
 {
 
     /**

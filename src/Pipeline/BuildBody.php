@@ -8,7 +8,7 @@ use RC\Sdk\Request;
  * Class BuildBody
  * @package RC\Sdk\Pipeline
  */
-class BuildBody
+class BuildBody implements PipeInterface
 {
     /**
      * @param Request $request

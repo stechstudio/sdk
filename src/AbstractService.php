@@ -65,7 +65,7 @@ abstract class AbstractService
         BuildUri::class,
         AddSignature::class,
         AddCorrelationID::class,
-        SendRequest::class,
+        //SendRequest::class,
         //HandleExceptions::class
     ];
 
@@ -194,7 +194,20 @@ abstract class AbstractService
             return $this->pipeline->send($request)
                 ->through($this->pipes)
                 ->then(function ($request) {
-                    return $request->getResponseBody();
+                    try {
+                        $response = $request->send();
+
+                        // Try to decode it
+                        $body = (string) $response->getBody();
+                        if(is_array(json_decode($body, true))) {
+                            $body = json_decode($body, true);
+                        }
+
+                        return $body;
+
+                    } catch(ClientException $e) {
+                        (new ErrorHandler())->handle($this->getName(), $e);
+                    }
                 });
         } catch(ClientException $e) {
             (new ErrorHandler())->handle($this->getName(), $e);

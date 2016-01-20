@@ -5,7 +5,6 @@ use GuzzleHttp\Exception\ClientException;
 use STS\Sdk\Exceptions\ApiResponseException;
 use STS\Sdk\Factory;
 use PHPUnit_Framework_TestCase;
-use STS\Sdk\Service\Coupler\Exceptions\IntegrationException;
 
 class ResponsesTest extends PHPUnit_Framework_TestCase
 {

@@ -81,16 +81,16 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     /**
      * Should get our custom IntegrationException
      */
-    public function testRemoteErrorWithMatchingException()
-    {
-        // For this one I'm going to pretend to be the Coupler service to use a Coupler exception
-        $sdk = Factory::createWithDescription($this->description, 'key');
-        $sdk->setName('Coupler');
-
-        $this->setExpectedException(IntegrationException::class);
-
-        $sdk->remoteErrorWithMatchingException();
-    }
+//    public function testRemoteErrorWithMatchingException()
+//    {
+//        // For this one I'm going to pretend to be the Coupler service to use a Coupler exception
+//        $sdk = Factory::createWithDescription($this->description, 'key');
+//        $sdk->setName('Coupler');
+//
+//        $this->setExpectedException(IntegrationException::class);
+//
+//        $sdk->remoteErrorWithMatchingException();
+//    }
 
     /**
      * Should see our base ApiResponseException since we don't have a match

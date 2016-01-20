@@ -1,5 +1,5 @@
 <?php
-namespace RC\Sdk\Config;
+namespace RC\Sdk\Service;
 
 /**
  * Class Operation

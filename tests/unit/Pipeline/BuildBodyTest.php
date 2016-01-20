@@ -4,7 +4,7 @@ namespace Sdk\Pipeline;
 use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Request;
 use Mockery as m;
-use RC\Sdk\Config\Operation;
+use RC\Sdk\Service\Operation;
 
 class BuildBodyTest extends \PHPUnit_Framework_TestCase
 {

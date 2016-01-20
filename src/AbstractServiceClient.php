@@ -1,11 +1,12 @@
 <?php
 namespace RC\Sdk;
 
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Pipeline\Pipeline;
-use RC\Sdk\Config\Description;
-use RC\Sdk\Config\Operation;
+use RC\Sdk\Service\Description;
+use RC\Sdk\Service\Operation;
 use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Pipeline\AddCorrelationID;
 use RC\Sdk\Pipeline\BuildBody;
@@ -21,7 +22,7 @@ use ReflectionClass;
  * Class AbstractClient
  * @package Sdk
  */
-abstract class AbstractService
+abstract class AbstractServiceClient
 {
     /**
      * @var string
@@ -71,10 +72,10 @@ abstract class AbstractService
     /**
      * AbstractClient constructor.
      *
-     * @param HttpClient $client
+     * @param ClientInterface $client
      * @param Pipeline   $pipeline
      */
-    public function __construct(HttpClient $client, Pipeline $pipeline)
+    public function __construct(ClientInterface $client, Pipeline $pipeline)
     {
         $this->client = $client;
         $this->pipeline = $pipeline;
@@ -87,11 +88,15 @@ abstract class AbstractService
     /**
      * @param null $key
      *
-     * @return AbstractService
+     * @return AbstractServiceClient
      */
     public static function create($key = null)
     {
-        $instance = new static(new HttpClient(), new Pipeline(container()));
+        if(!container()->bound('GuzzleHttp\ClientInterface')) {
+            container()->bind('GuzzleHttp\ClientInterface', 'GuzzleHttp\Client');
+        }
+
+        $instance = container()->make(static::class);
 
         if ($key != null) {
             $instance->setKey($key);
@@ -197,28 +202,24 @@ abstract class AbstractService
      */
     private function handle($request)
     {
-        try {
-            return $this->pipeline->send($request)
-                ->through($this->pipes)
-                ->then(function ($request) {
-                    try {
-                        $response = $request->send();
+        return $this->pipeline->send($request)
+            ->through($this->pipes)
+            ->then(function ($request) {
+                try {
+                    $response = $request->send();
 
-                        // Try to decode it
-                        $body = (string) $response->getBody();
-                        if(is_array(json_decode($body, true))) {
-                            $body = json_decode($body, true);
-                        }
-
-                        return $body;
-
-                    } catch(ClientException $e) {
-                        (new ErrorHandler())->handle($this->getName(), $e);
+                    // Try to decode it
+                    $body = (string) $response->getBody();
+                    if(is_array(json_decode($body, true))) {
+                        $body = json_decode($body, true);
                     }
-                });
-        } catch(ClientException $e) {
-            (new ErrorHandler())->handle($this->getName(), $e);
-        }
+
+                    return $body;
+
+                } catch(ClientException $e) {
+                    (new ErrorHandler())->handle($e, $this->getDescription()->getErrorHandlers());
+                }
+            });
     }
 
     /**
@@ -239,20 +240,9 @@ abstract class AbstractService
     public function getDescription()
     {
         if($this->description == null) {
-            $this->description = $this->loadDescriptionFromFile();
+            throw new \InvalidArgumentException("Description config hasn't been provided");
         }
 
         return $this->description;
-    }
-
-    /**
-     * @return mixed
-     * @throws FileNotFoundException
-     */
-    protected function loadDescriptionFromFile()
-    {
-        $descriptionFile = __DIR__ . "/Service/" . $this->getName() . "/description.php";
-
-        return Description::loadFromFile($descriptionFile);
     }
 }

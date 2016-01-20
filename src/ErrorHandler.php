@@ -10,6 +10,7 @@ namespace RC\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use RC\Sdk\Exceptions\ApiResponseException;
 
 /**
  * Class ErrorHandler
@@ -18,65 +19,36 @@ use Psr\Http\Message\ResponseInterface;
 class ErrorHandler
 {
     /**
-     * At moment I'm only interested in ClientExceptions. I think. We'll see.
-     *
-     * @param                 $serviceName
      * @param ClientException $e
-     */
-    public function handle($serviceName, ClientException $e) {
-        $this->parseResponseAndHandle($serviceName, $e->getResponse());
-
-        // Apparently we didn't know what to do with it, just rethrow
-        throw $e;
-    }
-
-    /**
-     * @param                   $serviceName
-     * @param ResponseInterface $response
+     * @param array           $serviceExceptionClasses
      *
      * @return bool
+     * @throws ApiResponseException
      */
-    protected function parseResponseAndHandle($serviceName, ResponseInterface $response) {
-        $body = json_decode($response->getBody(), true);
+    public function handle(ClientException $e, $serviceExceptionClasses = []) {
+        $body = json_decode($e->getResponse()->getBody(), true);
 
+        // Make sure we have the data we need
         if (!is_array($body) || !isset($body['error']) || !is_array($body['error']) || !isset($body['error']['type'])) {
-            return false;
+            // Huh, ok. Just rethrow the original exception then.
+            throw $e;
         }
-
-        // We're going to search for a matching exception class. First in a service-specific location, then
-        // the default SDK location
 
         $type = $body['error']['type'];
         $message = $body['error']['message'];
         $code = $body['error']['code'];
 
-        $serviceNamespace = 'RC\Sdk\Service\\' . $serviceName . '\Exceptions\\';
-        $defaultNamespace = 'RC\Sdk\Exceptions\\';
-
-        $this->throwIfFound($serviceNamespace . $type, $message, $code);
-        $this->throwIfFound($defaultNamespace . $type, $message, $code);
-
-        // No match? Hmm, it's possible that the remote error is something like "ValidationError" and yet the exception
-        // class would be "ValidationErrorException"
-
-        $this->throwIfFound($serviceNamespace . $type . "Exception", $message, $code);
-        $this->throwIfFound($defaultNamespace . $type . "Exception", $message, $code);
-
-        // Still no match? Ok we'll throw our default ApiResponseException, while still allowing for a service-specific one first
-
-        $this->throwIfFound($serviceNamespace . 'ApiResponseException', $message, $code);
-        $this->throwIfFound($defaultNamespace . 'ApiResponseException', $message, $code);
-    }
-
-    /**
-     * @param $exception
-     * @param $message
-     * @param $code
-     */
-    protected function throwIfFound($exception, $message, $code)
-    {
-        if (class_exists($exception, true)) {
-            throw new $exception($message, $code);
+        // See if our service has a custom error handlers defined for this type
+        if(array_key_exists($type, $serviceExceptionClasses)) {
+            throw new $serviceExceptionClasses[$type]($message, $code);
         }
+
+        // See if our service has a default we should use
+        if(array_key_exists('default', $serviceExceptionClasses)) {
+            throw new $serviceExceptionClasses['default']($message, $code);
+        }
+
+        // Aight then, we'll use our own default
+        throw new ApiResponseException($message, $code);
     }
 }

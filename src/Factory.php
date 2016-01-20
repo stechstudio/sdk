@@ -5,10 +5,6 @@ namespace RC\Sdk;
  * Class Factory
  * @package RC\Sdk
  */
-/**
- * Class Factory
- * @package RC\Sdk
- */
 class Factory
 {
     /**
@@ -37,11 +33,11 @@ class Factory
      * @param array $description
      * @param null $key
      *
-     * @return AbstractService
+     * @return AbstractServiceClient
      */
     public static function createWithDescription($description, $key = null)
     {
-        $service = Service::create($key);
+        $service = ServiceClient::create($key);
         $service->setDescription($description);
 
         return $service;
@@ -59,7 +55,7 @@ class Factory
     {
         $serviceClass = 'RC\Sdk\\' . $name . '\Service';
         if (!class_exists($serviceClass, true)) {
-            $serviceClass = Service::class;
+            $serviceClass = ServiceClient::class;
         }
 
         return $serviceClass::create();

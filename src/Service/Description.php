@@ -1,5 +1,5 @@
 <?php
-namespace RC\Sdk\Config;
+namespace RC\Sdk\Service;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
@@ -56,6 +56,16 @@ class Description
     public function getBaseUrl()
     {
         return $this->config['baseUrl'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getErrorHandlers()
+    {
+        return isset($this->config['errorHandlers']) && is_array($this->config['errorHandlers'])
+            ? $this->config['errorHandlers']
+            : [];
     }
 
     /**

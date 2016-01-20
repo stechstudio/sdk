@@ -1,11 +1,12 @@
 <?php
 namespace RC\Sdk;
 
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7;
-use RC\Sdk\Config\Description;
-use RC\Sdk\Config\Operation;
+use RC\Sdk\Service\Description;
+use RC\Sdk\Service\Operation;
 
 /**
  * This encapsulates a service request, basically a DTO. This is what gets sent through the pipeline.
@@ -17,7 +18,7 @@ class Request
     // Initial service request
 
     /**
-     * @var HttpClient
+     * @var ClientInterface
      */
     protected $client;
 
@@ -67,14 +68,14 @@ class Request
 
 
     /**
-     * @param HttpClient  $client
+     * @param ClientInterface  $client
      * @param             $serviceName
      * @param             $signingKey
      * @param Description $description
      * @param Operation   $operation
      * @param             $data
      */
-    public function __construct(HttpClient $client, $serviceName, $signingKey, Description $description, Operation $operation, $data)
+    public function __construct(ClientInterface $client, $serviceName, $signingKey, Description $description, Operation $operation, $data)
     {
         $this->client = $client;
         $this->serviceName = $serviceName;

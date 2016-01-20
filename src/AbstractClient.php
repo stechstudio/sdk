@@ -3,50 +3,31 @@ namespace RC\Sdk;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Pipeline\Pipeline;
 use RC\Sdk\Service\Description;
-use RC\Sdk\Service\Operation;
 use RC\Sdk\Exceptions\KeyNotFoundException;
 use RC\Sdk\Pipeline\AddCorrelationID;
 use RC\Sdk\Pipeline\BuildBody;
 use RC\Sdk\Pipeline\BuildUri;
 use RC\Sdk\Pipeline\AddSignature;
-use RC\Sdk\Pipeline\HandleExceptions;
 use RC\Sdk\Pipeline\PipeInterface;
-use RC\Sdk\Pipeline\SendRequest;
 use RC\Sdk\Pipeline\ValidateArguments;
-use ReflectionClass;
 
 /**
  * Class AbstractClient
  * @package Sdk
  */
-abstract class AbstractServiceClient
+abstract class AbstractClient
 {
     /**
      * @var string
      */
     protected $name = null;
-    /**
-     * @var string|null
-     */
-    protected $key = null;
 
     /**
-     * @var HttpClient
+     * @var ClientInterface
      */
     protected $client;
-
-    /**
-     * @var string|null
-     */
-    protected $baseUrl = null;
-
-    /**
-     * @var Operation
-     */
-    protected $operation;
 
     /**
      * @var Pipeline
@@ -65,70 +46,21 @@ abstract class AbstractServiceClient
         ValidateArguments::class,
         BuildBody::class,
         BuildUri::class,
-        AddSignature::class,
-        AddCorrelationID::class,
     ];
 
     /**
-     * AbstractClient constructor.
-     *
-     * @param ClientInterface $client
-     * @param Pipeline   $pipeline
+     * @return AbstractClient
      */
-    public function __construct(ClientInterface $client, Pipeline $pipeline)
-    {
-        $this->client = $client;
-        $this->pipeline = $pipeline;
-
-        if ($this->name == null) {
-            $this->name = (new ReflectionClass($this))->getShortName();
-        }
-    }
-
-    /**
-     * @param null $key
-     *
-     * @return AbstractServiceClient
-     */
-    public static function create($key = null)
+    public static function create()
     {
         if(!container()->bound('GuzzleHttp\ClientInterface')) {
             container()->bind('GuzzleHttp\ClientInterface', 'GuzzleHttp\Client');
         }
 
-        $instance = container()->make(static::class);
-
-        if ($key != null) {
-            $instance->setKey($key);
-        }
+        $instance = new static();
+        $instance->setClient(container()->make('GuzzleHttp\ClientInterface'));
 
         return $instance;
-    }
-
-    /**
-     * @param $key
-     */
-    public function setKey($key)
-    {
-        $this->key = $key;
-    }
-
-    /**
-     * @return null|string
-     * @throws KeyNotFoundException
-     */
-    protected function getKey()
-    {
-        if ($this->key != null) {
-            return $this->key;
-        }
-
-        // See if we have one as an environment variable
-        if (getenv(strtoupper($this->getName() . "_KEY")) !== false) {
-            return getenv(strtoupper($this->getName() . "_KEY"));
-        }
-
-        throw new KeyNotFoundException();
     }
 
     /**
@@ -148,11 +80,27 @@ abstract class AbstractServiceClient
     }
 
     /**
-     * @return HttpClient
+     * @param ClientInterface $client
      */
-    protected function getClient()
+    public function setClient(ClientInterface $client)
+    {
+        $this->client = $client;
+    }
+
+    /**
+     * @return ClientInterface
+     */
+    public function getClient()
     {
         return $this->client;
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getPipeline()
+    {
+        return container()->make(Pipeline::class);
     }
 
     /**
@@ -190,7 +138,7 @@ abstract class AbstractServiceClient
      */
     protected function prepareRequest($name, $data)
     {
-        return new Request($this->getClient(), $this->getName(), $this->getKey(), $this->getDescription(), $this->getDescription()->getOperation($name, $data), $data);
+        return new Request($this->getClient(), $this->getName(), $this->getDescription(), $this->getDescription()->getOperation($name, $data), $data);
     }
 
     /**
@@ -202,7 +150,7 @@ abstract class AbstractServiceClient
      */
     private function handle($request)
     {
-        return $this->pipeline->send($request)
+        return $this->getPipeline()->send($request)
             ->through($this->pipes)
             ->then(function ($request) {
                 try {

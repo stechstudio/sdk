@@ -37,7 +37,7 @@ class Factory
      */
     public static function createWithDescription($description, $key = null)
     {
-        $service = ServiceClient::create($key);
+        $service = Client::create($key);
         $service->setDescription($description);
 
         return $service;
@@ -55,7 +55,7 @@ class Factory
     {
         $serviceClass = 'RC\Sdk\\' . $name . '\Service';
         if (!class_exists($serviceClass, true)) {
-            $serviceClass = ServiceClient::class;
+            $serviceClass = Client::class;
         }
 
         return $serviceClass::create();

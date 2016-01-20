@@ -28,11 +28,6 @@ class Request
     protected $serviceName;
 
     /**
-     * @var
-     */
-    protected $signingKey;
-
-    /**
      * @var Description
      */
     protected $description;
@@ -70,16 +65,14 @@ class Request
     /**
      * @param ClientInterface  $client
      * @param             $serviceName
-     * @param             $signingKey
      * @param Description $description
      * @param Operation   $operation
      * @param             $data
      */
-    public function __construct(ClientInterface $client, $serviceName, $signingKey, Description $description, Operation $operation, $data)
+    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data)
     {
         $this->client = $client;
         $this->serviceName = $serviceName;
-        $this->signingKey = $signingKey;
         $this->description = $description;
         $this->operation = $operation;
         $this->data = $data;
@@ -93,14 +86,6 @@ class Request
     public function getServiceName()
     {
         return $this->serviceName;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSigningKey()
-    {
-        return $this->signingKey;
     }
 
     /**
@@ -163,29 +148,11 @@ class Request
     }
 
     /**
-     * @param $response
-     * @param $body
-     */
-    public function saveResponse($response, $body)
-    {
-        $this->response = $response;
-        $this->responseBody = $body;
-    }
-
-    /**
      * @return null
      */
     public function getResponse()
     {
         return $this->response;
-    }
-
-    /**
-     * @return array|string
-     */
-    public function getResponseBody()
-    {
-        return $this->responseBody;
     }
 
     /**

@@ -89,7 +89,7 @@ class Request
     }
 
     /**
-     * @return string
+     * @return Description
      */
     public function getDescription()
     {
@@ -97,7 +97,7 @@ class Request
     }
 
     /**
-     * @return mixed
+     * @return Operation
      */
     public function getOperation()
     {

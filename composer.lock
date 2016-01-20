@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f0302c14c2deb82d425d7637cd34e69f",
-    "content-hash": "b88f35fb740a915085799e8aacb8832b",
+    "hash": "b15aa7384bacb43566d179ce38ed2cce",
+    "content-hash": "ee4db6c8d5ee7c9844796c8b07e8d42c",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -481,6 +481,53 @@
             "time": "2016-01-07 13:50:56"
         },
         {
+            "name": "league/pipeline",
+            "version": "0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/pipeline.git",
+                "reference": "c6968e4adaf8ada7cfbfb3ca64a695e695a021e3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/pipeline/zipball/c6968e4adaf8ada7cfbfb3ca64a695e695a021e3",
+                "reference": "c6968e4adaf8ada7cfbfb3ca64a695e695a021e3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "henrikbjorn/phpspec-code-coverage": "^1.0",
+                "phpspec/phpspec": "^2.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "League\\Pipeline\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Frank de Jonge",
+                    "email": "info@frenky.net"
+                }
+            ],
+            "description": "A plug and play pipeline implementation.",
+            "keywords": [
+                "composition",
+                "design pattern",
+                "pattern",
+                "pipeline",
+                "sequential"
+            ],
+            "time": "2015-12-06 21:51:05"
+        },
+        {
             "name": "psr/http-message",
             "version": "1.0",
             "source": {
@@ -773,6 +820,52 @@
             "description": "Symfony Translation Component",
             "homepage": "https://symfony.com",
             "time": "2015-12-05 17:45:07"
+        },
+        {
+            "name": "vlucas/valitron",
+            "version": "v1.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vlucas/valitron.git",
+                "reference": "d2b63c611980bb804d17468bf0b3c8d4e28afbf5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vlucas/valitron/zipball/d2b63c611980bb804d17468bf0b3c8d4e28afbf5",
+                "reference": "d2b63c611980bb804d17468bf0b3c8d4e28afbf5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Valitron": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD"
+            ],
+            "authors": [
+                {
+                    "name": "Vance Lucas",
+                    "email": "vance@vancelucas.com",
+                    "homepage": "http://www.vancelucas.com"
+                }
+            ],
+            "description": "Simple, elegant, stand-alone validation library with NO dependencies",
+            "homepage": "http://github.com/vlucas/valitron",
+            "keywords": [
+                "valid",
+                "validation",
+                "validator"
+            ],
+            "time": "2015-12-15 20:10:29"
         }
     ],
     "packages-dev": [

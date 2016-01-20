@@ -1,10 +1,10 @@
 <?php
 namespace Sdk\Pipeline;
 
-use RC\Sdk\Pipeline\BuildUri;
-use RC\Sdk\Service\Operation;
-use RC\Sdk\Service\Description;
-use RC\Sdk\Request;
+use STS\Sdk\Pipeline\BuildUri;
+use STS\Sdk\Service\Operation;
+use STS\Sdk\Service\Description;
+use STS\Sdk\Request;
 use Mockery as m;
 
 class BuildUriTest extends \PHPUnit_Framework_TestCase

@@ -6,11 +6,11 @@
  * Time: 3:48 PM
  */
 
-namespace RC\Sdk;
+namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
-use RC\Sdk\Exceptions\ApiResponseException;
+use STS\Sdk\Exceptions\ApiResponseException;
 
 /**
  * Class ErrorHandler

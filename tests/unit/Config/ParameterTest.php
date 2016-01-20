@@ -1,5 +1,5 @@
 <?php
-namespace RC\Sdk\Service;
+namespace STS\Sdk\Service;
 
 use PHPUnit_Framework_TestCase;
 

@@ -1,5 +1,5 @@
 <?php
-namespace RC\Sdk;
+namespace STS\Sdk;
 
 /**
  * Class Client

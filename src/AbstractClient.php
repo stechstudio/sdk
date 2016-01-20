@@ -1,17 +1,17 @@
 <?php
-namespace RC\Sdk;
+namespace STS\Sdk;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
-use RC\Sdk\Service\Description;
-use RC\Sdk\Exceptions\KeyNotFoundException;
-use RC\Sdk\Pipeline\AddCorrelationID;
-use RC\Sdk\Pipeline\BuildBody;
-use RC\Sdk\Pipeline\BuildUri;
-use RC\Sdk\Pipeline\AddSignature;
-use RC\Sdk\Pipeline\PipeInterface;
-use RC\Sdk\Pipeline\ValidateArguments;
+use STS\Sdk\Service\Description;
+use STS\Sdk\Exceptions\KeyNotFoundException;
+use STS\Sdk\Pipeline\AddCorrelationID;
+use STS\Sdk\Pipeline\BuildBody;
+use STS\Sdk\Pipeline\BuildUri;
+use STS\Sdk\Pipeline\AddSignature;
+use STS\Sdk\Pipeline\PipeInterface;
+use STS\Sdk\Pipeline\ValidateArguments;
 
 /**
  * Class AbstractClient

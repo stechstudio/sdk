@@ -1,5 +1,5 @@
 <?php
-namespace RC\Sdk\Exceptions;
+namespace STS\Sdk\Exceptions;
 
 use Exception;
 

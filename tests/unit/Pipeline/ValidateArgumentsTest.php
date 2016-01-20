@@ -1,8 +1,8 @@
 <?php
 namespace Sdk\Pipeline;
 
-use RC\Sdk\Pipeline\ValidateArguments;
-use RC\Sdk\Request;
+use STS\Sdk\Pipeline\ValidateArguments;
+use STS\Sdk\Request;
 use Mockery as m;
 use Illuminate\Validation\ValidationException;
 

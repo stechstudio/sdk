@@ -1,7 +1,7 @@
 <?php
-namespace RC\Sdk\Pipeline;
+namespace STS\Sdk\Pipeline;
 
-use RC\Sdk\Request;
+use STS\Sdk\Request;
 use Closure;
 
 interface PipeInterface

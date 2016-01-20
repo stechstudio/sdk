@@ -1,11 +1,11 @@
 <?php
-namespace RC\Sdk;
+namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
-use RC\Sdk\Exceptions\ApiResponseException;
-use RC\Sdk\Factory;
+use STS\Sdk\Exceptions\ApiResponseException;
+use STS\Sdk\Factory;
 use PHPUnit_Framework_TestCase;
-use RC\Sdk\Service\Coupler\Exceptions\IntegrationException;
+use STS\Sdk\Service\Coupler\Exceptions\IntegrationException;
 
 class ResponsesTest extends PHPUnit_Framework_TestCase
 {

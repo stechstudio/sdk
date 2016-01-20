@@ -18,7 +18,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "RC\\Sdk\\": "src/"
+            "STS\\Sdk\\": "src/"
         },
         "files" : [
             "src/helpers.php"

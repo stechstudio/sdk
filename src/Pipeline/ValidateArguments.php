@@ -1,11 +1,11 @@
 <?php
-namespace RC\Sdk\Pipeline;
+namespace STS\Sdk\Pipeline;
 
 use Closure;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 use Symfony\Component\Translation\Translator;
-use RC\Sdk\Request;
+use STS\Sdk\Request;
 
 /**
  * Class ValidateParameters

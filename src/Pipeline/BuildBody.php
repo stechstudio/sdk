@@ -1,8 +1,8 @@
 <?php
-namespace RC\Sdk\Pipeline;
+namespace STS\Sdk\Pipeline;
 
 use Closure;
-use RC\Sdk\Request;
+use STS\Sdk\Request;
 
 /**
  * Class BuildBody

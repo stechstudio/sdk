@@ -1,10 +1,10 @@
 <?php
 namespace Sdk\Pipeline;
 
-use RC\Sdk\Pipeline\BuildBody;
-use RC\Sdk\Request;
+use STS\Sdk\Pipeline\BuildBody;
+use STS\Sdk\Request;
 use Mockery as m;
-use RC\Sdk\Service\Operation;
+use STS\Sdk\Service\Operation;
 
 class BuildBodyTest extends \PHPUnit_Framework_TestCase
 {

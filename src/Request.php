@@ -1,12 +1,12 @@
 <?php
-namespace RC\Sdk;
+namespace STS\Sdk;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7;
-use RC\Sdk\Service\Description;
-use RC\Sdk\Service\Operation;
+use STS\Sdk\Service\Description;
+use STS\Sdk\Service\Operation;
 
 /**
  * This encapsulates a service request, basically a DTO. This is what gets sent through the pipeline.

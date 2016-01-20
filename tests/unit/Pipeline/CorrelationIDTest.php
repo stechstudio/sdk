@@ -7,8 +7,8 @@
  */
 
 namespace Sdk\Pipeline;
-use RC\Sdk\Pipeline\AddCorrelationID;
-use RC\Sdk\Request;
+use STS\Sdk\Pipeline\AddCorrelationID;
+use STS\Sdk\Request;
 use Mockery as m;
 
 class CorrelationIDTest extends \PHPUnit_Framework_TestCase

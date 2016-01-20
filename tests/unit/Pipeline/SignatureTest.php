@@ -8,10 +8,10 @@
 
 namespace Sdk\Pipeline;
 use GuzzleHttp\Psr7\Uri;
-use RC\Sdk\Pipeline\AddSignature;
-use RC\Sdk\Request;
+use STS\Sdk\Pipeline\AddSignature;
+use STS\Sdk\Request;
 use Mockery as m;
-use RC\Sdk\Signer;
+use STS\Sdk\Signer;
 
 class SignatureTest extends \PHPUnit_Framework_TestCase
 {

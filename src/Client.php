@@ -46,16 +46,21 @@ class Client
     ];
 
     /**
+     * @param null $description
+     */
+    public function __construct($description = null)
+    {
+        if(is_array($description) || $description instanceof Description) {
+            $this->setDescription($description);
+        }
+    }
+
+    /**
      * @return Client
      */
     public static function create()
     {
-        if(!container()->bound('GuzzleHttp\ClientInterface')) {
-            container()->bind('GuzzleHttp\ClientInterface', 'GuzzleHttp\Client');
-        }
-
         $instance = new static();
-        $instance->setClient(container()->make('GuzzleHttp\ClientInterface'));
 
         return $instance;
     }
@@ -89,6 +94,9 @@ class Client
      */
     public function getClient()
     {
+        if($this->client == null) {
+            $this->client = new \GuzzleHttp\Client();
+        }
         return $this->client;
     }
 
@@ -162,7 +170,7 @@ class Client
                     return $body;
 
                 } catch(ClientException $e) {
-                    (new ErrorHandler())->handle($e, $this->getDescription()->getErrorHandlers());
+                    (new ErrorHandler())->handleClientError($e, $this->getDescription()->getErrorHandlers());
                 }
             });
     }

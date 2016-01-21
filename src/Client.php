@@ -7,7 +7,6 @@ use Illuminate\Pipeline\Pipeline;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Pipeline\BuildUri;
-use STS\Sdk\Pipeline\PipeInterface;
 use STS\Sdk\Pipeline\ValidateArguments;
 
 /**
@@ -153,7 +152,7 @@ class Client
      *
      * @return array
      */
-    private function handle($request)
+    protected function handle($request)
     {
         return $this->getPipeline()->send($request)
             ->through($this->pipes)

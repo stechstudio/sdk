@@ -109,9 +109,9 @@ class Client
     }
 
     /**
-     * @param PipeInterface $pipe
+     * @param string $pipe
      */
-    public function addPipe(PipeInterface $pipe)
+    public function addPipe($pipe)
     {
         $this->pipes[] = $pipe;
     }

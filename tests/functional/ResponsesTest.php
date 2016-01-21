@@ -48,8 +48,9 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
      */
     public function testBasicResponse()
     {
-        $sdk = Factory::createWithDescription($this->description, 'key');
-        $result = $sdk->getOk();
+        $client = new Client($this->description);
+
+        $result = $client->getOk();
 
         $this->assertEquals("ok", $result);
     }
@@ -59,8 +60,9 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
      */
     public function testBasicResponseWithUriVariable()
     {
-        $sdk = Factory::createWithDescription($this->description, 'key');
-        $result = $sdk->getOkWithVariable(['var' => 'f738e274-ba99-4405-accd-5bfb0358f27b']);
+        $client = new Client($this->description);
+
+        $result = $client->getOkWithVariable(['var' => 'f738e274-ba99-4405-accd-5bfb0358f27b']);
 
         $this->assertEquals("ok", $result);
     }
@@ -70,8 +72,9 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
      */
     public function testJsonResponse()
     {
-        $sdk = Factory::createWithDescription($this->description, 'key');
-        $result = $sdk->getJsonOk();
+        $client = new Client($this->description);
+
+        $result = $client->getJsonOk();
 
         $this->assertTrue(is_array($result));
         $this->assertEquals($result['success'], true);
@@ -96,11 +99,11 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
      */
     public function testRemoteErrorWithoutMatchingException()
     {
-        $sdk = Factory::createWithDescription($this->description, 'key');
+        $client = new Client($this->description);
 
         $this->setExpectedException(ApiResponseException::class);
 
-        $sdk->remoteErrorWithoutMatchingException();
+        $client->remoteErrorWithoutMatchingException();
     }
 
     /**
@@ -108,10 +111,10 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
      */
     public function testRemoteErrorWithNoBody()
     {
-        $sdk = Factory::createWithDescription($this->description, 'key');
+        $client = new Client($this->description);
 
         $this->setExpectedException(ClientException::class);
 
-        $sdk->remoteErrorWithNoBody();
+        $client->remoteErrorWithNoBody();
     }
 }

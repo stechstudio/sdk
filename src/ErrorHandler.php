@@ -25,7 +25,7 @@ class ErrorHandler
      * @return bool
      * @throws ApiResponseException
      */
-    public function handle(ClientException $e, $serviceExceptionClasses = []) {
+    public function handleClientError(ClientException $e, $serviceExceptionClasses = []) {
         $body = json_decode($e->getResponse()->getBody(), true);
 
         // Make sure we have the data we need

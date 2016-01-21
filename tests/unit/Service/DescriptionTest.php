@@ -61,6 +61,24 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
         $this->assertNull($d->getOperation('bar'));
     }
 
+    public function testGetErrorHandlers()
+    {
+        $d = new Description([
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => []
+        ]);
+        $this->assertEquals($d->getErrorHandlers(), []);
+
+        $d = new Description([
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => [],
+            'errorHandlers' => [
+                'NotFound' => '/path/to/NotFoundException'
+            ]
+        ]);
+        $this->assertEquals(array_key_exists('NotFound', $d->getErrorHandlers()));
+    }
+
     public function testStaticLoader()
     {
         $contents = "<?php return [ 'baseUrl' => 'http://www.foo.local','operations' => [] ];";

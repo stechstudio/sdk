@@ -55,16 +55,6 @@ class Client
     }
 
     /**
-     * @return Client
-     */
-    public static function create()
-    {
-        $instance = new static();
-
-        return $instance;
-    }
-
-    /**
      * @param $name
      */
     public function setName($name)

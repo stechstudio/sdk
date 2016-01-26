@@ -76,7 +76,7 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
                 'NotFound' => '/path/to/NotFoundException'
             ]
         ]);
-        $this->assertEquals(array_key_exists('NotFound', $d->getErrorHandlers()));
+        $this->assertTrue(array_key_exists('NotFound', $d->getErrorHandlers()));
     }
 
     public function testStaticLoader()

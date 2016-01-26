@@ -105,14 +105,6 @@ class Request
     }
 
     /**
-     * @return array
-     */
-    public function getParameters()
-    {
-        return $this->getOperation()->getParameters();
-    }
-
-    /**
      * @param $name
      * @param $value
      */
@@ -145,14 +137,6 @@ class Request
     public function send()
     {
         return $this->client->send($this->request);
-    }
-
-    /**
-     * @return null
-     */
-    public function getResponse()
-    {
-        return $this->response;
     }
 
     /**

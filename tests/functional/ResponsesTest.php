@@ -3,7 +3,6 @@ namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
 use STS\Sdk\Exceptions\ApiResponseException;
-use STS\Sdk\Factory;
 use PHPUnit_Framework_TestCase;
 
 class ResponsesTest extends PHPUnit_Framework_TestCase
@@ -40,6 +39,9 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
                 'httpMethod' => 'GET',
                 'uri' => '/0704da9e-bdab-40e8-8ac2-7a76bae5f7fa'
             ]
+        ],
+        'errorHandlers' => [
+            'Integration' => FooException::class
         ]
     ];
 
@@ -83,16 +85,14 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     /**
      * Should get our custom IntegrationException
      */
-//    public function testRemoteErrorWithMatchingException()
-//    {
-//        // For this one I'm going to pretend to be the Coupler service to use a Coupler exception
-//        $sdk = Factory::createWithDescription($this->description, 'key');
-//        $sdk->setName('Coupler');
-//
-//        $this->setExpectedException(IntegrationException::class);
-//
-//        $sdk->remoteErrorWithMatchingException();
-//    }
+    public function testRemoteErrorWithMatchingException()
+    {
+        $client = new Client($this->description);
+
+        $this->setExpectedException(FooException::class);
+
+        $client->remoteErrorWithMatchingException();
+    }
 
     /**
      * Should see our base ApiResponseException since we don't have a match
@@ -117,4 +117,8 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
 
         $client->remoteErrorWithNoBody();
     }
+}
+
+class FooException extends \Exception {
+    protected $message = "bar";
 }

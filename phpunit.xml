@@ -13,6 +13,9 @@
         <testsuite name="SDK Unit Test Suite">
             <directory>./tests/unit</directory>
         </testsuite>
+        <testsuite name="SDK Functional Test Suite">
+            <directory>./tests/functional</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">

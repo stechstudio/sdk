@@ -31,6 +31,10 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
                 'httpMethod' => 'GET',
                 'uri' => '/150a57e4-430d-4ddd-ab26-77111edff8dc'
             ],
+            'remoteErrorWithDefaultException' => [
+                'httpMethod' => 'GET',
+                'uri' => '/e59a596a-5965-4e00-a1f8-f50474ddd9d3'
+            ],
             'remoteErrorWithoutMatchingException' => [
                 'httpMethod' => 'GET',
                 'uri' => '/c3d5a116-5f92-4056-8cf1-8f74fd243beb'
@@ -41,7 +45,8 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
             ]
         ],
         'errorHandlers' => [
-            'Integration' => FooException::class
+            'Integration' => CustomException::class,
+            'default' => DefaultException::class
         ]
     ];
 
@@ -83,15 +88,27 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Should get our custom IntegrationException
-     */
+ * Should get our custom IntegrationException
+ */
     public function testRemoteErrorWithMatchingException()
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(FooException::class);
+        $this->setExpectedException(CustomException::class);
 
         $client->remoteErrorWithMatchingException();
+    }
+
+    /**
+     * Should get our custom IntegrationException
+     */
+    public function testRemoteErrorWitDefaultException()
+    {
+        $client = new Client($this->description);
+
+        $this->setExpectedException(DefaultException::class);
+
+        $client->remoteErrorWithDefaultException();
     }
 
     /**
@@ -99,7 +116,10 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
      */
     public function testRemoteErrorWithoutMatchingException()
     {
-        $client = new Client($this->description);
+        $description = $this->description;
+        unset($description['errorHandlers']);
+
+        $client = new Client($description);
 
         $this->setExpectedException(ApiResponseException::class);
 
@@ -119,6 +139,9 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     }
 }
 
-class FooException extends \Exception {
+class CustomException extends \Exception {
+    protected $message = "bar";
+}
+class DefaultException extends \Exception {
     protected $message = "bar";
 }

@@ -1,7 +1,6 @@
 <?php
-namespace Sdk;
+namespace STS\Sdk;
 
-use STS\Sdk\Client;
 use STS\Sdk\Service\Description;
 use InvalidArgumentException;
 use GuzzleHttp\Client AS GuzzleClient;

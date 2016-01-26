@@ -1,7 +1,6 @@
 <?php
-namespace Sdk\Pipeline;
+namespace STS\Sdk\Pipeline;
 
-use STS\Sdk\Pipeline\BuildUri;
 use STS\Sdk\Service\Operation;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Request;

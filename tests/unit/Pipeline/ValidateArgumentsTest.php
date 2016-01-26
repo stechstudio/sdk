@@ -1,7 +1,6 @@
 <?php
-namespace Sdk\Pipeline;
+namespace STS\Sdk\Pipeline;
 
-use STS\Sdk\Pipeline\ValidateArguments;
 use STS\Sdk\Request;
 use Mockery as m;
 use Illuminate\Validation\ValidationException;

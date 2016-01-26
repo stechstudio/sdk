@@ -1,7 +1,6 @@
 <?php
-namespace Sdk\Pipeline;
+namespace STS\Sdk\Pipeline;
 
-use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Request;
 use Mockery as m;
 use STS\Sdk\Service\Operation;

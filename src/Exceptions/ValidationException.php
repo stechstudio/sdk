@@ -22,10 +22,7 @@ class ValidationException extends IlluminateValidationException
     public function __construct($validator)
     {
         $this->validator = $validator;
-
-        // Get a list of invalid keys
-        $keys = array_keys($validator->invalid());
-        $this->message = 'The following parameters are missing or invalid: ' . implode(',', $keys);
+        $this->message = 'The following parameters are missing or invalid: ' . implode(', ', $validator->errors()->keys());
     }
 
     /**

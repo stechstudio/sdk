@@ -32,13 +32,13 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
     public function testInvalid()
     {
         $operation = m::mock(Operation::class);
-        $operation->shouldReceive("getValidationRules")->andReturn(["foo" => "required|numeric"]);
-        $operation->shouldReceive("getData")->andReturn(["foo" => "bar"]);
+        $operation->shouldReceive("getValidationRules")->andReturn(["foo" => "required|numeric", "bar" => "required"]);
+        $operation->shouldReceive("getData")->andReturn(["foo" => "abc"]);
 
         $request = m::mock(Request::class);
         $request->shouldReceive("getOperation")->andReturn($operation);
 
-        $this->setExpectedException(ValidationException::class, "The following parameters are missing or invalid: foo");
+        $this->setExpectedException(ValidationException::class, "foo, bar");
 
         $validateArguments = new ValidateArguments();
         $validateArguments->handle($request, function () {

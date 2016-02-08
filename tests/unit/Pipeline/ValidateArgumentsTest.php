@@ -1,6 +1,7 @@
 <?php
-namespace STS\Sdk\Pipeline;
+namespace Sdk\Pipeline;
 
+use STS\Sdk\Pipeline\ValidateArguments;
 use STS\Sdk\Request;
 use Mockery as m;
 use Illuminate\Validation\ValidationException;
@@ -37,9 +38,11 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
         $request = m::mock(Request::class);
         $request->shouldReceive("getOperation")->andReturn($operation);
 
-        $this->setExpectedException(ValidationException::class);
+        $this->setExpectedException(ValidationException::class, "The following parameters are missing or invalid: foo");
 
         $validateArguments = new ValidateArguments();
-        $validateArguments->handle($request, function() { return "result"; });
+        $validateArguments->handle($request, function () {
+            return "result";
+        });
     }
 }

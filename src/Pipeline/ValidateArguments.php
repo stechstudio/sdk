@@ -2,7 +2,7 @@
 namespace STS\Sdk\Pipeline;
 
 use Closure;
-use Illuminate\Validation\ValidationException;
+use STS\Sdk\Exceptions\ValidationException;
 use Illuminate\Validation\Validator;
 use Symfony\Component\Translation\Translator;
 use STS\Sdk\Request;

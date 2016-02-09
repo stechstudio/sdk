@@ -170,6 +170,30 @@ class OperationTest extends PHPUnit_Framework_TestCase
             ]
         ], []);
     }
+
+    public function testValidationRulesWithSentAs()
+    {
+        $o = new Operation("foo", [
+            'httpMethod' => 'POST',
+            'uri' => '/bar',
+            'parameters' => [
+                'foo' => [
+                    'location' => 'json',
+                    'sentAs' => 'bar',
+                    'validate' => 'required'
+                ],
+                'abc' => [
+                    'location' => 'json'
+                ]
+            ],
+            'additionalParameters' => [],
+        ], ['foo' => 123, 'abc' => 456]);
+        
+        // Note we want to ensure that the 'foo' key is now listed as 'bar' so the
+        // validation rules keys match the modified data keys
+        $this->assertTrue(array_key_exists('bar', $o->getValidationRules()));
+        $this->assertTrue(array_key_exists('bar', $o->getData()));
+    }
 }
 
 

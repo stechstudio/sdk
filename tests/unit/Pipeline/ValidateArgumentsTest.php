@@ -1,6 +1,7 @@
 <?php
-namespace STS\Sdk\Pipeline;
+namespace Sdk\Pipeline;
 
+use STS\Sdk\Pipeline\ValidateArguments;
 use STS\Sdk\Request;
 use Mockery as m;
 use Illuminate\Validation\ValidationException;
@@ -31,15 +32,17 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
     public function testInvalid()
     {
         $operation = m::mock(Operation::class);
-        $operation->shouldReceive("getValidationRules")->andReturn(["foo" => "required|numeric"]);
-        $operation->shouldReceive("getData")->andReturn(["foo" => "bar"]);
+        $operation->shouldReceive("getValidationRules")->andReturn(["foo" => "required|numeric", "bar" => "required"]);
+        $operation->shouldReceive("getData")->andReturn(["foo" => "abc"]);
 
         $request = m::mock(Request::class);
         $request->shouldReceive("getOperation")->andReturn($operation);
 
-        $this->setExpectedException(ValidationException::class);
+        $this->setExpectedException(ValidationException::class, "foo, bar");
 
         $validateArguments = new ValidateArguments();
-        $validateArguments->handle($request, function() { return "result"; });
+        $validateArguments->handle($request, function () {
+            return "result";
+        });
     }
 }

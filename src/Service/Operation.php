@@ -63,9 +63,13 @@ class Operation
      */
     public function getValidationRules()
     {
-        return array_filter(array_map(function ($parameter) {
-            return $parameter->getValidate();
-        }, $this->getParameters()));
+        $rules = [];
+
+        foreach($this->getParameters() AS $parameter) {
+            $rules[$parameter->getName()] = $parameter->getValidate();
+        }
+
+        return array_filter($rules);
     }
 
     /**

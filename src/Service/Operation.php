@@ -9,6 +9,10 @@ namespace STS\Sdk\Service;
  * Class Operation
  * @package RC\Sdk\Config
  */
+/**
+ * Class Operation
+ * @package STS\Sdk\Service
+ */
 class Operation
 {
     /**
@@ -70,6 +74,18 @@ class Operation
         }
 
         return array_filter($rules);
+    }
+
+    /**
+     * @param $name
+     *
+     * @return null
+     */
+    public function getParameter($name)
+    {
+        return array_key_exists($name, $this->parameters)
+            ? $this->parameters[$name]
+            : null;
     }
 
     /**

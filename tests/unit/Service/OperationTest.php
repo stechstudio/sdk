@@ -59,6 +59,8 @@ class OperationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(count($o->getParametersByLocation('json')), 2);
         $this->assertEquals(count($o->getParametersByLocation('uri')), 1);
 
+        $this->assertEquals('baz', $o->getParameter('baz')->getName());
+
         $this->assertEquals(count($o->getValidationRules()), 2);
         $this->assertEquals($o->getValidationRules()['baz'], 'required|string');
     }

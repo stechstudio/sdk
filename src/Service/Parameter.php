@@ -5,6 +5,10 @@ namespace STS\Sdk\Service;
  * Class Parameter
  * @package RC\Sdk
  */
+/**
+ * Class Parameter
+ * @package STS\Sdk\Service
+ */
 class Parameter
 {
     /**
@@ -50,6 +54,14 @@ class Parameter
         return ($this->value == null)
             ? $this->config['default']
             : $this->value;
+    }
+
+    /**
+     * @param $value
+     */
+    public function setValue($value)
+    {
+        $this->value = $value;
     }
 
     /**

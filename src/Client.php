@@ -100,9 +100,17 @@ class Client
     /**
      * @param string $pipe
      */
-    public function addPipe($pipe)
+    public function appendPipe($pipe)
     {
         $this->pipes[] = $pipe;
+    }
+
+    /**
+     * @param $pipe
+     */
+    public function prependPipe($pipe)
+    {
+        array_unshift($this->pipes, $pipe);
     }
 
     /**

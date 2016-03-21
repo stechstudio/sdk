@@ -1,6 +1,7 @@
 <?php
 namespace STS\Sdk;
 
+use Closure;
 use STS\Sdk\Service\Description;
 use InvalidArgumentException;
 use GuzzleHttp\Client AS GuzzleClient;
@@ -67,5 +68,35 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException(InvalidArgumentException::class);
         $client->foo();
+    }
+
+    public function testAddPipes()
+    {
+        // First append a pipe
+        $client = new Client($this->description);
+        $client->appendPipe(Pipe1::class);
+
+        $this->assertEquals("inside pipe1", $client->getOk());
+
+        // Now append the second pipe, we should still have the first pipe responding
+        $client->appendPipe(Pipe2::class);
+        $this->assertEquals("inside pipe1", $client->getOk());
+
+        // But if we prepend the second pipe...
+        $client->prependPipe(Pipe2::class);
+        $this->assertEquals("inside pipe2", $client->getOk());
+    }
+}
+
+class Pipe1 {
+    public function handle(Request $request, Closure $next)
+    {
+        return "inside pipe1";
+    }
+}
+class Pipe2 {
+    public function handle(Request $request, Closure $next)
+    {
+        return "inside pipe2";
     }
 }

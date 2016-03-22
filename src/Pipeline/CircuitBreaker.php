@@ -24,7 +24,7 @@ class CircuitBreaker implements PipeInterface
             $breaker->success();
 
             return $result;
-            
+
         } catch(ClientException $e) {
             // This is specifically a 4xx response, which means the server was reached and deliberately
             // returned an error. We consider this a success.

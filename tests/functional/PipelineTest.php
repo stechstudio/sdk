@@ -35,7 +35,7 @@ class PipelineTest extends \PHPUnit_Framework_TestCase
     public function testCustomPipe()
     {
         $client = new Client($this->description);
-        $client->addPipe(BreakingPipe::class);
+        $client->appendPipe(BreakingPipe::class);
 
         $result = $client->getOk();
 
@@ -49,7 +49,7 @@ class PipelineTest extends \PHPUnit_Framework_TestCase
     public function testHeaderPipe()
     {
         $client = new Client($this->description);
-        $client->addPipe(HeaderPipe::class);
+        $client->appendPipe(HeaderPipe::class);
 
         $result = $client->getRequest();
         $this->assertTrue(isset($result['headers']['x-foo']));
@@ -73,7 +73,7 @@ class PipelineTest extends \PHPUnit_Framework_TestCase
     public function testGetRequestPath()
     {
         $client = new Client($this->description);
-        $client->addPipe(GetPathPipe::class);
+        $client->appendPipe(GetPathPipe::class);
         $result = $client->getRequest();
 
         $this->assertEquals($result, "/request");

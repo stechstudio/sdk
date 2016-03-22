@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker\BreakerPanel;
+use STS\Sdk\CircuitBreaker\BreakerSwitch;
 use STS\Sdk\Pipeline\Caching;
 use STS\Sdk\Pipeline\CircuitBreaker;
 use STS\Sdk\Service\Description;
@@ -62,6 +63,11 @@ class Client
      * @var BreakerPanel
      */
     protected $breakerPanel;
+
+    /**
+     * @var BreakerSwitch
+     */
+    protected $breakerSwitch;
 
     /**
      * @param null $description
@@ -164,7 +170,9 @@ class Client
             $this->getName(),
             $this->getDescription(),
             $this->getDescription()->getOperation($name, $data),
-            $data
+            $data,
+            $this->cachePool,
+            $this->breakerPanel
         );
     }
 
@@ -226,6 +234,8 @@ class Client
 
         if($this->getDescription()->wantsCache() && $this->getDescription()->wantsCircuitBreaker()) {
             $this->breakerPanel = (new BreakerPanel())->setCachePool($this->cachePool);
+            $this->breakerSwitch = $this->breakerPanel->get($this->getName());
+
             $this->servicePipes[] = CircuitBreaker::class;
         }
     }

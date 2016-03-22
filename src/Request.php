@@ -7,6 +7,7 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker\BreakerPanel;
+use STS\Sdk\CircuitBreaker\BreakerSwitch;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Service\Operation;
 
@@ -69,9 +70,9 @@ class Request
     protected $cachePool;
 
     /**
-     * @var BreakerPanel
+     * @var BreakerSwitch
      */
-    protected $breakerPanel;
+    protected $breakerSwitch;
 
 
     /**
@@ -81,9 +82,9 @@ class Request
      * @param Operation       $operation
      * @param                 $data
      * @param                 $cachePool
-     * @param                 $breakerPanel
+     * @param                 $breakerSwitch
      */
-    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data, $cachePool, $breakerPanel)
+    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data, $cachePool, $breakerSwitch)
     {
         $this->client = $client;
         $this->serviceName = $serviceName;
@@ -93,7 +94,7 @@ class Request
 
         $this->request = new GuzzleRequest($operation->getHttpMethod(), '');
         $this->cachePool = $cachePool;
-        $this->breakerPanel = $breakerPanel;
+        $this->breakerSwitch = $breakerSwitch;
     }
 
     /**
@@ -150,15 +151,15 @@ class Request
      */
     public function hasBreakerSwitch()
     {
-        return $this->breakerPanel instanceof BreakerPanel;
+        return $this->breakerSwitch instanceof BreakerSwitch;
     }
 
     /**
-     * @return mixed
+     * @return BreakerSwitch
      */
     public function getBreakerSwitch()
     {
-        return $this->breakerPanel->get($this->getServiceName());
+        return $this->breakerSwitch;
     }
 
     /**

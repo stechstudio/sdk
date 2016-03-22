@@ -7,10 +7,10 @@ use Exception;
  * Class ApiResponseException
  * @package RC\Sdk\Exceptions
  */
-class ServiceResponseException extends SdkException
+class ServiceUnavailableException extends SdkException
 {
     /**
      * @var int HTTP Status code
      */
-    protected $status = 400;
+    protected $status = 503;
 }

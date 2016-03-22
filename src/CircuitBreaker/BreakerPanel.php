@@ -14,7 +14,7 @@ use Stash\Pool;
  * Class Panel
  * @package STS\Sdk\Breaker
  */
-class Panel
+class BreakerPanel
 {
     /**
      * @var array

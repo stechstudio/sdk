@@ -1,6 +1,7 @@
 <?php
 namespace STS\Sdk\Service;
 
+use Stash\Interfaces\DriverInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 /**
@@ -69,6 +70,38 @@ class Description
     }
 
     /**
+     * @return bool
+     */
+    public function wantsCache()
+    {
+        return isset($this->config['cache']) && isset($this->config['cache']['driver']);
+    }
+
+    /**
+     * @return DriverInterface
+     */
+    public function getCacheDriver()
+    {
+       return $this->getCallableValue($this->config['cache']['driver']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function wantsCircuitBreaker()
+    {
+        return isset($this->config['circuitBreaker']) && is_array($this->config['circuitBreaker']);
+    }
+
+    /**
+     * @return null
+     */
+    public function getCircuitBreakerConfig()
+    {
+        return $this->config['circuitBreaker'];
+    }
+
+    /**
      *
      */
     protected function verifyConfig()
@@ -82,6 +115,24 @@ class Description
 
         if(!is_array($this->config['operations'])) {
             throw new \InvalidArgumentException("List of 'operations' must be an array");
+        }
+    }
+
+    /**
+     * Give me a callable or a class path (that is invokable)
+     * @param $input
+     *
+     * @return mixed
+     */
+    protected function getCallableValue($input)
+    {
+        if(is_callable($input)) {
+            return call_user_func($input);
+        }
+
+        if(is_string($input) && class_exists($input, true)) {
+            $instance = container()->make($input);
+            return call_user_func($instance);
         }
     }
 }

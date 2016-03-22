@@ -5,6 +5,8 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7;
+use Stash\Pool;
+use STS\Sdk\CircuitBreaker\BreakerPanel;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Service\Operation;
 
@@ -61,15 +63,27 @@ class Request
      */
     protected $responseBody = null;
 
+    /**
+     * @var Pool
+     */
+    protected $cachePool;
 
     /**
-     * @param ClientInterface  $client
-     * @param             $serviceName
-     * @param Description $description
-     * @param Operation   $operation
-     * @param             $data
+     * @var BreakerPanel
      */
-    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data)
+    protected $breakerPanel;
+
+
+    /**
+     * @param ClientInterface $client
+     * @param                 $serviceName
+     * @param Description     $description
+     * @param Operation       $operation
+     * @param                 $data
+     * @param                 $cachePool
+     * @param                 $breakerPanel
+     */
+    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data, $cachePool, $breakerPanel)
     {
         $this->client = $client;
         $this->serviceName = $serviceName;
@@ -78,6 +92,8 @@ class Request
         $this->data = $data;
 
         $this->request = new GuzzleRequest($operation->getHttpMethod(), '');
+        $this->cachePool = $cachePool;
+        $this->breakerPanel = $breakerPanel;
     }
 
     /**
@@ -127,6 +143,22 @@ class Request
     public function setUri($uri)
     {
         $this->request = $this->request->withUri(new Uri($uri));
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasBreakerSwitch()
+    {
+        return $this->breakerPanel instanceof BreakerPanel;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBreakerSwitch()
+    {
+        return $this->breakerPanel->get($this->getServiceName());
     }
 
     /**

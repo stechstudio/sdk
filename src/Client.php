@@ -4,6 +4,10 @@ namespace STS\Sdk;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
+use Stash\Pool;
+use STS\Sdk\CircuitBreaker\BreakerPanel;
+use STS\Sdk\Pipeline\Caching;
+use STS\Sdk\Pipeline\CircuitBreaker;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Pipeline\BuildUri;
@@ -38,11 +42,26 @@ class Client
     /**
      * @var array
      */
-    protected $pipes = [
+    protected $basePipes = [
         ValidateArguments::class,
         BuildBody::class,
         BuildUri::class,
     ];
+
+    /**
+     * @var array
+     */
+    protected $servicePipes = [];
+
+    /**
+     * @var Pool
+     */
+    protected $cachePool;
+
+    /**
+     * @var BreakerPanel
+     */
+    protected $breakerPanel;
 
     /**
      * @param null $description
@@ -102,7 +121,7 @@ class Client
      */
     public function appendPipe($pipe)
     {
-        $this->pipes[] = $pipe;
+        $this->basePipes[] = $pipe;
     }
 
     /**
@@ -110,7 +129,7 @@ class Client
      */
     public function prependPipe($pipe)
     {
-        array_unshift($this->pipes, $pipe);
+        array_unshift($this->basePipes, $pipe);
     }
 
     /**
@@ -140,7 +159,13 @@ class Client
      */
     protected function prepareRequest($name, $data)
     {
-        return new Request($this->getClient(), $this->getName(), $this->getDescription(), $this->getDescription()->getOperation($name, $data), $data);
+        return new Request(
+            $this->getClient(),
+            $this->getName(),
+            $this->getDescription(),
+            $this->getDescription()->getOperation($name, $data),
+            $data
+        );
     }
 
     /**
@@ -153,7 +178,7 @@ class Client
     protected function handle($request)
     {
         return $this->getPipeline()->send($request)
-            ->through($this->pipes)
+            ->through(array_merge($this->basePipes, $this->servicePipes))
             ->then(function ($request) {
                 try {
                     $response = $request->send();
@@ -182,10 +207,31 @@ class Client
         } else {
             $this->description = new Description($description);
         }
+
+        $this->initServicePipeline();
     }
 
     /**
-     * @return array
+     * Setup the service-specific pipeline pipes
+     */
+    protected function initServicePipeline()
+    {
+        // Clear it out, in case we had a previously loaded service
+        $this->servicePipes = [];
+
+        if($this->getDescription()->wantsCache()) {
+            $this->cachePool = new Pool($this->getDescription()->getCacheDriver());
+            $this->servicePipes[] = Caching::class;
+        }
+
+        if($this->getDescription()->wantsCache() && $this->getDescription()->wantsCircuitBreaker()) {
+            $this->breakerPanel = (new BreakerPanel())->setCachePool($this->cachePool);
+            $this->servicePipes[] = CircuitBreaker::class;
+        }
+    }
+
+    /**
+     * @return Description
      */
     public function getDescription()
     {

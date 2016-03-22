@@ -6,8 +6,7 @@
  * Time: 9:36 PM
  */
 
-namespace STS\Sdk\Breaker;
-
+namespace STS\Sdk\CircuitBreaker;
 
 use Stash\Pool;
 
@@ -43,6 +42,16 @@ class Panel
     protected $failureHandler;
 
     /**
+     * @var callable
+     */
+    protected $successHandler;
+
+    /**
+     * @var callable
+     */
+    protected $resetHandler;
+
+    /**
      *
      */
     public function __construct()
@@ -50,6 +59,8 @@ class Panel
         $this->cachePool = new Pool();
         $this->tripHandler = function () {};
         $this->failureHandler = function () {};
+        $this->successHandler = function () {};
+        $this->resetHandler = function () {};
     }
 
     /**
@@ -121,8 +132,7 @@ class Panel
      */
     protected function initialize($name)
     {
-        $switch = (new BreakerSwitch($name))
-            ->setState(BreakerSwitch::CLOSED)
+        $switch = (new BreakerSwitch($name, new SwitchCache($this->cachePool, $name)))
             ->setMaxFailures($this->maxFailures)
             ->onTrip($this->tripHandler)
             ->onFailure($this->failureHandler);

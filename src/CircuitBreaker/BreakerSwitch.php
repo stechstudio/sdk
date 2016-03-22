@@ -6,12 +6,13 @@
  * Time: 8:56 PM
  */
 
-namespace STS\Sdk\Breaker;
+namespace STS\Sdk\CircuitBreaker;
 
 /**
  * Class CircuitBreaker
  * @package STS\Sdk
  */
+
 /**
  * Class BreakerSwitch
  * @package STS\Sdk\Breaker
@@ -35,6 +36,11 @@ class BreakerSwitch
      * @var string
      */
     protected $serviceName;
+
+    /**
+     * @var SwitchCache
+     */
+    protected $cache;
 
     /**
      * @var int
@@ -62,13 +68,25 @@ class BreakerSwitch
     protected $failureHandler;
 
     /**
-     *
+     * @var callable
      */
-    public function __construct($name)
+    protected $successHandler;
+
+    /**
+     * @var callable
+     */
+    protected $resetHandler;
+
+    /**
+     * @param             $name
+     * @param SwitchCache $cache
+     */
+    public function __construct($name, SwitchCache $cache)
     {
         $this->setName($name);
-        $this->tripHandler = function () {};
-        $this->failureHandler = function () {};
+        $this->setCache($cache);
+        $this->name = $name;
+        $this->cache = $cache;
     }
 
     /**
@@ -78,7 +96,8 @@ class BreakerSwitch
      */
     public function setName($name)
     {
-        $this->serviceName($name);
+        $this->serviceName = $name;
+
         return $this;
     }
 
@@ -87,7 +106,23 @@ class BreakerSwitch
      */
     public function name()
     {
-        return $this->name;
+        return $this->serviceName;
+    }
+
+    /**
+     * @param SwitchCache $cache
+     *
+     * @return $this
+     */
+    public function setCache(SwitchCache $cache)
+    {
+        $this->cache = $cache;
+
+        $this->state = $this->cache->getState();
+
+        $this->failures = $this->cache->getFailures();
+
+        return $this;
     }
 
     /**
@@ -98,6 +133,7 @@ class BreakerSwitch
     public function setMaxFailures($max)
     {
         $this->maxFailures = $max;
+
         return $this;
     }
 
@@ -126,6 +162,30 @@ class BreakerSwitch
     }
 
     /**
+     * @param callable $handler
+     *
+     * @return $this
+     */
+    public function onSuccess(callable $handler)
+    {
+        $this->successHandler = $handler;
+
+        return $this;
+    }
+
+    /**
+     * @param callable $handler
+     *
+     * @return $this
+     */
+    public function onReset(callable $handler)
+    {
+        $this->resetHandler = $handler;
+
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isClosed()
@@ -148,24 +208,53 @@ class BreakerSwitch
     {
         $this->state = self::OPEN;
 
-        $this->tripHandler($this);
+        if (is_callable($this->tripHandler)) {
+            call_user_func($this->tripHandler, $this);
+        }
 
         return $this;
     }
 
     /**
-     * @return BreakerSwitch
+     * @return $this
      */
     public function failure()
     {
-        if($this->failures >= $this->maxFailures) {
-            return $this->trip();
-        } else {
-            $this->failures++;
+        $this->failures++;
+
+        if ($this->state == self::CLOSED) {
             $this->state = self::HALF_OPEN;
         }
 
-        $this->failureHandler($this);
+        $this->cache->recordFailure();
+
+        if (is_callable($this->failureHandler)) {
+            call_user_func($this->failureHandler, $this);
+        }
+
+        if ($this->failures >= $this->maxFailures) {
+            $this->trip();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function success()
+    {
+        $this->cache->recordSuccess();
+
+        if (is_callable($this->successHandler)) {
+            call_user_func($this->successHandler, $this);
+        }
+
+        if($this->state == self::HALF_OPEN) {
+            $this->reset();
+        }
+
+        return $this;
     }
 
     /**
@@ -174,6 +263,12 @@ class BreakerSwitch
     public function reset()
     {
         $this->state = self::CLOSED;
+
+        $this->cache->reset();
+
+        if (is_callable($this->resetHandler)) {
+            call_user_func($this->resetHandler, $this);
+        }
 
         return $this;
     }
@@ -185,7 +280,7 @@ class BreakerSwitch
      */
     public function setState($state)
     {
-        if(in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN])) {
+        if (in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN])) {
             $this->state = $state;
         }
 

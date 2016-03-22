@@ -10,7 +10,7 @@ namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
-use STS\Sdk\Exceptions\ApiResponseException;
+use STS\Sdk\Exceptions\ServiceResponseException;
 
 /**
  * Class ErrorHandler
@@ -23,7 +23,7 @@ class ErrorHandler
      * @param array           $serviceExceptionClasses
      *
      * @return bool
-     * @throws ApiResponseException
+     * @throws ServiceResponseException
      */
     public function handleClientError(ClientException $e, $serviceExceptionClasses = []) {
         $body = json_decode($e->getResponse()->getBody(), true);
@@ -49,6 +49,6 @@ class ErrorHandler
         }
 
         // Aight then, we'll use our own default
-        throw new ApiResponseException($message, $code);
+        throw new ServiceResponseException($message, $code);
     }
 }

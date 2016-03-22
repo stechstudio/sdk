@@ -7,7 +7,7 @@ use Exception;
  * Class ApiResponseException
  * @package RC\Sdk\Exceptions
  */
-class ApiResponseException extends Exception
+class ServiceResponseException extends Exception
 {
     /**
      * @var int HTTP Status code

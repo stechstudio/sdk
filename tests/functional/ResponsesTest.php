@@ -2,7 +2,7 @@
 namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
-use STS\Sdk\Exceptions\ApiResponseException;
+use STS\Sdk\Exceptions\ServiceResponseException;
 use PHPUnit_Framework_TestCase;
 
 class ResponsesTest extends PHPUnit_Framework_TestCase
@@ -121,7 +121,7 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
 
         $client = new Client($description);
 
-        $this->setExpectedException(ApiResponseException::class);
+        $this->setExpectedException(ServiceResponseException::class);
 
         $client->remoteErrorWithoutMatchingException();
     }

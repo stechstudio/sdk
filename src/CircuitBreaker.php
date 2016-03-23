@@ -18,15 +18,15 @@ use Stash\Pool;
 class CircuitBreaker
 {
     /**
-     *
+     * Service is fully operational
      */
     const CLOSED = 2;
     /**
-     *
+     * Service has had some failures, and breaker will trip once we reach $failureThreshold
      */
     const HALF_OPEN = 1;
     /**
-     *
+     * Breaker has tripped, service is unavailable. We will retry after $autoRetryInterval
      */
     const OPEN = 0;
 
@@ -53,7 +53,36 @@ class CircuitBreaker
     /**
      * @var int
      */
+    protected $successes = 0;
+
+    /**
+     * Once in the Half-Open state, this is the number of failures at which point
+     * the circuit breaker will trip to Open
+     *
+     * @var int
+     */
     protected $failureThreshold = 10;
+
+    /**
+     * Once in the Half-Open state, this is the number of success at which point
+     * the circuit breaker will reset back to Closed
+     *
+     * @var int
+     */
+    protected $successThreshold = 5;
+
+    /**
+     * Once in the Open state, we will wait this many seconds, at which point
+     * we'll automatically go back to Half-Open for retries
+     *
+     * @var int
+     */
+    protected $autoRetryInterval = 300;
+
+    /**
+     * @var int
+     */
+    protected $trippedAt = 0;
 
     /**
      * @var array
@@ -165,6 +194,18 @@ class CircuitBreaker
     }
 
     /**
+     * @param $autoRetryInterval
+     *
+     * @return $this
+     */
+    public function setAutoRetryInterval($autoRetryInterval)
+    {
+        $this->autoRetryInterval = $autoRetryInterval;
+
+        return $this;
+    }
+
+    /**
      * @param $timeout
      *
      * @return $this
@@ -218,6 +259,7 @@ class CircuitBreaker
     public function trip()
     {
         $this->state = self::OPEN;
+
         $this->handle('trip');
 
         return $this;
@@ -270,7 +312,7 @@ class CircuitBreaker
     }
 
     /**
-     *
+     * Initialize the circuit breaker data from cache
      */
     protected function loadFromCache()
     {
@@ -278,39 +320,65 @@ class CircuitBreaker
             throw new \InvalidArgumentException("You must specify a name before setting cache");
         }
 
-        $this->cacheItem = $this->cachePool->get($this->cacheKey);
+        $this->cacheItem = $this->cachePool->getItem($this->cacheKey);
 
         if($this->cacheItem->isHit()) {
             $data = $this->cacheItem->get();
 
-            $this->failures = $data['failures'];
-            $this->state = $data['state'];
-            $this->history = $data['history'];
+            if(isset($data['failures'])) {
+                $this->failures = $data['failures'];
+            }
+            if(isset($data['successes'])) {
+                $this->successes = $data['successes'];
+            }
+            if(isset($data['state'])) {
+                $this->state = $data['state'];
+            }
+            if(isset($data['history'])) {
+                $this->history = $data['history'];
+            }
+            if(isset($data['trippedAt'])) {
+                $this->trippedAt = $data['trippedAt'];
+            }
         }
     }
 
     /**
-     *
+     * Saves our circuit breaker data to cache
      */
     protected function save()
     {
         $this->cacheItem->set([
-            'failures' => $this->failures,
             'state' => $this->state,
-            'history' => $this->history
+            'failures' => $this->failures,
+            'successes' => $this->successes,
+            'history' => $this->history,
+            'trippedAt' => $this->trippedAt
         ]);
 
         $this->cachePool->save($this->cacheItem);
     }
 
     /**
+     * Helpful for quickloading an array of circuit breaker options from a description file or other config file
      * @param array $config
      *
      * @return $this
      */
     public function loadConfig(array $config)
     {
+        foreach(['failureThreshold','successThreshold','autoRetryInterval'] AS $attribute) {
+            if(isset($config[$attribute])) {
+                $setter = "set" . ucwords($attribute);
+                $this->{$setter}($config[$attribute]);
+            }
+        }
 
+        if(isset($config['handlers']) && is_array($config['handlers'])) {
+            foreach($config['handlers'] AS $event => $handler) {
+                $this->registerHandler($event, $handler);
+            }
+        }
 
         return $this;
     }

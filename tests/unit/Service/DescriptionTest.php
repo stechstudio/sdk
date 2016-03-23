@@ -10,6 +10,7 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
     public function testInstantiate()
     {
         $d = new Description([
+            'name' => 'test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => []
         ]);
@@ -27,12 +28,13 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(InvalidArgumentException::class);
 
-        $d = new Description(['baseUrl' => 'foo', 'operations' => false]);
+        $d = new Description(['name' => 'test', 'baseUrl' => 'foo', 'operations' => false]);
     }
 
     public function testBaseUrl()
     {
         $d = new Description([
+            'name' => 'test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => []
         ]);
@@ -42,6 +44,7 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
     public function testGetOperation()
     {
         $d = new Description([
+            'name' => 'test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => [
                 'foo' => [
@@ -70,6 +73,7 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($d->getErrorHandlers(), []);
 
         $d = new Description([
+            'name' => 'test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => [],
             'errorHandlers' => [

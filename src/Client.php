@@ -5,8 +5,6 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
 use Stash\Pool;
-use STS\Sdk\CircuitBreaker\BreakerPanel;
-use STS\Sdk\CircuitBreaker\BreakerSwitch;
 use STS\Sdk\Pipeline\Caching;
 use STS\Sdk\Pipeline\CircuitBreaker;
 use STS\Sdk\Service\Description;

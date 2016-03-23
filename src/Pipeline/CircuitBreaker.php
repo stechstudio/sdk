@@ -4,8 +4,6 @@ namespace STS\Sdk\Pipeline;
 use Closure;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
-use STS\Sdk\CircuitBreaker\BreakerSwitch;
-use STS\Sdk\CircuitBreaker\SwitchCache;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 use STS\Sdk\Request;
 

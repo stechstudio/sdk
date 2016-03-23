@@ -9,6 +9,7 @@ use GuzzleHttp\Client AS GuzzleClient;
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
     protected $description = [
+        'name' => 'test',
         'baseUrl' => 'http://mockbin.org/bin',
         'operations' => [
             'getOk' => [

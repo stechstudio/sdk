@@ -64,16 +64,6 @@ class Request
      */
     protected $responseBody = null;
 
-    /**
-     * @var Pool
-     */
-    protected $cachePool;
-
-    /**
-     * @var BreakerSwitch
-     */
-    protected $breakerSwitch;
-
 
     /**
      * @param ClientInterface $client
@@ -81,10 +71,8 @@ class Request
      * @param Description     $description
      * @param Operation       $operation
      * @param                 $data
-     * @param                 $cachePool
-     * @param                 $breakerSwitch
      */
-    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data, $cachePool, $breakerSwitch)
+    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data)
     {
         $this->client = $client;
         $this->serviceName = $serviceName;
@@ -93,8 +81,6 @@ class Request
         $this->data = $data;
 
         $this->request = new GuzzleRequest($operation->getHttpMethod(), '');
-        $this->cachePool = $cachePool;
-        $this->breakerSwitch = $breakerSwitch;
     }
 
     /**
@@ -144,22 +130,6 @@ class Request
     public function setUri($uri)
     {
         $this->request = $this->request->withUri(new Uri($uri));
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasBreakerSwitch()
-    {
-        return $this->breakerSwitch instanceof BreakerSwitch;
-    }
-
-    /**
-     * @return BreakerSwitch
-     */
-    public function getBreakerSwitch()
-    {
-        return $this->breakerSwitch;
     }
 
     /**

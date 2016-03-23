@@ -44,7 +44,9 @@ class Client
      * @var array
      */
     protected $basePipes = [
+        CircuitBreaker::class,
         ValidateArguments::class,
+        Caching::class,
         BuildBody::class,
         BuildUri::class,
     ];
@@ -53,21 +55,6 @@ class Client
      * @var array
      */
     protected $servicePipes = [];
-
-    /**
-     * @var Pool
-     */
-    protected $cachePool;
-
-    /**
-     * @var BreakerPanel
-     */
-    protected $breakerPanel;
-
-    /**
-     * @var BreakerSwitch
-     */
-    protected $breakerSwitch;
 
     /**
      * @param null $description
@@ -170,9 +157,7 @@ class Client
             $this->getName(),
             $this->getDescription(),
             $this->getDescription()->getOperation($name, $data),
-            $data,
-            $this->cachePool,
-            $this->breakerPanel
+            $data
         );
     }
 
@@ -215,29 +200,30 @@ class Client
         } else {
             $this->description = new Description($description);
         }
-
-        $this->initServicePipeline();
     }
 
     /**
-     * Setup the service-specific pipeline pipes
+     * @return Pool
      */
-    protected function initServicePipeline()
+    public function getCachePool()
     {
-        // Clear it out, in case we had a previously loaded service
-        $this->servicePipes = [];
+        return $this->getDescription()->getCachePool();
+    }
 
-        if($this->getDescription()->wantsCache()) {
-            $this->cachePool = new Pool($this->getDescription()->getCacheDriver());
-            $this->servicePipes[] = Caching::class;
-        }
+    /**
+     * @return mixed
+     */
+    public function getCircuitBreaker()
+    {
+        return $this->getDescription()->getCircuitBreaker();
+    }
 
-        if($this->getDescription()->wantsCache() && $this->getDescription()->wantsCircuitBreaker()) {
-            $this->breakerPanel = (new BreakerPanel())->setCachePool($this->cachePool);
-            $this->breakerSwitch = $this->breakerPanel->get($this->getName());
-
-            $this->servicePipes[] = CircuitBreaker::class;
-        }
+    /**
+     * @return mixed
+     */
+    public function isAvailable()
+    {
+        return $this->getCircuitBreaker()->isAvailable();
     }
 
     /**

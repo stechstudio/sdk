@@ -8,6 +8,8 @@
 
 namespace STS\Sdk;
 
+use DateTime;
+use Illuminate\Contracts\Support\Arrayable;
 use Stash\Item;
 use Stash\Pool;
 
@@ -15,7 +17,7 @@ use Stash\Pool;
  * Class CircuitBreaker
  * @package STS\Sdk
  */
-class CircuitBreaker
+class CircuitBreaker implements Arrayable
 {
     /**
      * Service is fully operational
@@ -80,9 +82,9 @@ class CircuitBreaker
     protected $autoRetryInterval = 300;
 
     /**
-     * @var int
+     * @var DateTime
      */
-    protected $trippedAt = 0;
+    protected $lastTrippedAt;
 
     /**
      * @var array
@@ -98,11 +100,6 @@ class CircuitBreaker
      * @var Item
      */
     protected $cacheItem;
-
-    /**
-     * @var int
-     */
-    protected $timeout = 120;
 
     /**
      * @var array
@@ -137,9 +134,29 @@ class CircuitBreaker
     public function setName($name)
     {
         $this->name = $name;
-        $this->cacheKey = "sdk/$name";
+        $this->setCacheKey("Sdk/CircuitBreaker/$name");
 
         return $this;
+    }
+
+    /**
+     * @param $cacheKey
+     *
+     * @return $this
+     */
+    public function setCacheKey($cacheKey)
+    {
+        $this->cacheKey = $cacheKey;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCacheKey()
+    {
+        return $this->cacheKey;
     }
 
     /**
@@ -149,11 +166,31 @@ class CircuitBreaker
      */
     public function setState($state)
     {
-        if (in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN])) {
-            $this->state = $state;
+        if (!in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN])) {
+            throw new \InvalidArgumentException("Invalid circuit breaker state [$state]");
         }
 
+        // If state is changing, reset counters
+        if($state != $this->state) {
+            $this->failures = 0;
+            $this->successes = 0;
+        }
+
+        $this->state = $state;
+
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getState()
+    {
+        if($this->state == self::OPEN) {
+            $this->checkAutoRetryInterval();
+        }
+
+        return $this->state;
     }
 
     /**
@@ -206,6 +243,14 @@ class CircuitBreaker
     }
 
     /**
+     * @return int
+     */
+    public function getAutoRetryInterval()
+    {
+        return $this->autoRetryInterval;
+    }
+
+    /**
      * @param $timeout
      *
      * @return $this
@@ -215,6 +260,38 @@ class CircuitBreaker
         $this->timeout = $timeout;
 
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFailures()
+    {
+        return $this->failures;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSuccesses()
+    {
+        return $this->successes;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFailureThreshold()
+    {
+        return $this->failureThreshold;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSuccessThreshold()
+    {
+        return $this->successThreshold;
     }
 
     /**
@@ -238,10 +315,12 @@ class CircuitBreaker
      */
     public function failure()
     {
-        $this->failures++;
+        if ($this->state == self::HALF_OPEN) {
+            $this->failures++;
+        }
 
         if ($this->state == self::CLOSED) {
-            $this->state = self::HALF_OPEN;
+            $this->setState(self::HALF_OPEN);
         }
 
         $this->handle('failure');
@@ -258,7 +337,8 @@ class CircuitBreaker
      */
     public function trip()
     {
-        $this->state = self::OPEN;
+        $this->setState(self::OPEN);
+        $this->lastTrippedAt = new DateTime();
 
         $this->handle('trip');
 
@@ -270,9 +350,13 @@ class CircuitBreaker
      */
     public function success()
     {
+        if ($this->state == self::HALF_OPEN) {
+            $this->successes++;
+        }
+
         $this->handle('success');
 
-        if($this->state == self::HALF_OPEN) {
+        if ($this->successes >= $this->successThreshold) {
             $this->reset();
         }
 
@@ -284,8 +368,7 @@ class CircuitBreaker
      */
     public function reset()
     {
-        $this->state = self::CLOSED;
-        $this->failures = 0;
+        $this->setState(self::CLOSED);
 
         $this->handle('reset');
 
@@ -293,12 +376,29 @@ class CircuitBreaker
     }
 
     /**
+     *
+     */
+    protected function checkAutoRetryInterval()
+    {
+        $current = new DateTime();
+        $diff = $current->diff($this->lastTrippedAt);
+
+        if($diff->s >= $this->getAutoRetryInterval()) {
+            $this->setState(self::HALF_OPEN);
+        }
+    }
+
+    /**
      * @param          $event
      * @param callable $handler
+     *
+     * @return $this
      */
     public function registerHandler($event, callable $handler)
     {
         $this->handlers[$event] = $handler;
+
+        return $this;
     }
 
     /**
@@ -306,9 +406,27 @@ class CircuitBreaker
      */
     protected function handle($event)
     {
+        $this->addToHistory($event);
+
         if(array_key_exists($event, $this->handlers) && is_callable($this->handlers[$event])) {
-            call_user_func($this->handlers[$event], $this);
+            call_user_func($this->handlers[$event], $event, $this);
         }
+    }
+
+    /**
+     * @param $event
+     */
+    protected function addToHistory($event)
+    {
+        array_push($this->history, [
+            $event, new DateTime()
+        ]);
+
+        if(count($this->history) > 50) {
+            array_shift($this->history);
+        }
+
+        $this->save();
     }
 
     /**
@@ -337,8 +455,8 @@ class CircuitBreaker
             if(isset($data['history'])) {
                 $this->history = $data['history'];
             }
-            if(isset($data['trippedAt'])) {
-                $this->trippedAt = $data['trippedAt'];
+            if(isset($data['lastTrippedAt'])) {
+                $this->lastTrippedAt = $data['lastTrippedAt'];
             }
         }
     }
@@ -348,14 +466,15 @@ class CircuitBreaker
      */
     protected function save()
     {
-        $this->cacheItem->set([
-            'state' => $this->state,
-            'failures' => $this->failures,
-            'successes' => $this->successes,
-            'history' => $this->history,
-            'trippedAt' => $this->trippedAt
-        ]);
+        if(!$this->cacheItem) {
+            // No cache setup. Just going to silently fail here, in case we purposefully
+            // didn't want this breaker to be cache-backed. Should this be an exception
+            // instead?
 
+            return;
+        }
+
+        $this->cacheItem->set($this->toArray());
         $this->cachePool->save($this->cacheItem);
     }
 
@@ -376,10 +495,42 @@ class CircuitBreaker
 
         if(isset($config['handlers']) && is_array($config['handlers'])) {
             foreach($config['handlers'] AS $event => $handler) {
-                $this->registerHandler($event, $handler);
+                $this->registerHandler($event, $this->getCallable($handler));
             }
         }
 
         return $this;
+    }
+
+    /**
+     * @param $item
+     *
+     * @return mixed
+     */
+    protected function getCallable($item)
+    {
+        if(is_string($item) && class_exists($item, true)) {
+            $item = container()->make($item);
+        }
+
+        if(is_callable($item)) {
+            return $item;
+        }
+
+        throw new \InvalidArgumentException("Not a valid callable [$item]");
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'state' => $this->state,
+            'failures' => $this->failures,
+            'successes' => $this->successes,
+            'history' => $this->history,
+            'lastTrippedAt' => $this->lastTrippedAt
+        ];
     }
 }

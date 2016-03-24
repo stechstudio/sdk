@@ -8,10 +8,10 @@ use STS\Sdk\Exceptions\ServiceUnavailableException;
 use STS\Sdk\Request;
 
 /**
- * Class UseCircuitBreaker
+ * Class CircuitBreakerProtection
  * @package STS\Sdk\Pipeline
  */
-class UseCircuitBreaker implements PipeInterface
+class CircuitBreakerProtection implements PipeInterface
 {
     /**
      * @param Request $request

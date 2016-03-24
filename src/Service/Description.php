@@ -106,7 +106,7 @@ class Description
     public function getCachePool()
     {
         if(!$this->cachePool) {
-            $this->initCachePool();
+            $this->cachePool = $this->buildCachePool();
         }
 
         return $this->cachePool;
@@ -115,7 +115,7 @@ class Description
     /**
      * @return Pool
      */
-    protected function initCachePool()
+    protected function buildCachePool()
     {
         return new Pool($this->buildCacheDriver());
     }
@@ -138,8 +138,7 @@ class Description
             throw new \InvalidArgumentException("Invalid cache driver [" . $this->config['cache']['driver']['name'] . "]");
         }
 
-        $driver = new $driverClass();
-        $driver->setOptions($this->config['cache']['driver']['options']);
+        $driver = new $driverClass($this->config['cache']['driver']['options']);
 
         return $driver;
     }
@@ -158,7 +157,7 @@ class Description
     public function getCircuitBreaker()
     {
         if(!$this->circuitBreaker) {
-            $this->initCircuitBreaker();
+            $this->circuitBreaker = $this->buildCircuitBreaker();
         }
 
         return $this->circuitBreaker;
@@ -167,11 +166,11 @@ class Description
     /**
      *
      */
-    protected function initCircuitBreaker()
+    protected function buildCircuitBreaker()
     {
         $config = $this->config['circuitBreaker'];
 
-        $this->circuitBreaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History()))
+        return (new CircuitBreaker(new Cache($this->getCachePool()), new History()))
             ->setName($this->getName())
             ->loadConfig($config);
     }

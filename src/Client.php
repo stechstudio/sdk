@@ -6,7 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
 use Stash\Pool;
 use STS\Sdk\Pipeline\Caching;
-use STS\Sdk\Pipeline\UseCircuitBreaker;
+use STS\Sdk\Pipeline\CircuitBreakerProtection;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Pipeline\BuildUri;
@@ -42,7 +42,7 @@ class Client
      * @var array
      */
     protected $basePipes = [
-        UseCircuitBreaker::class,
+        CircuitBreakerProtection::class,
         ValidateArguments::class,
         Caching::class,
         BuildBody::class,
@@ -77,7 +77,9 @@ class Client
      */
     public function getName()
     {
-        return $this->name;
+        return $this->name == null
+            ? $this->description->getName()
+            : $this->name;
     }
 
     /**
@@ -209,7 +211,7 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return CircuitBreaker
      */
     public function getCircuitBreaker()
     {
@@ -217,7 +219,7 @@ class Client
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     public function isAvailable()
     {

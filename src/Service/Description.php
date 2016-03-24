@@ -115,58 +115,29 @@ class Description
      */
     protected function initCachePool()
     {
-        return new Pool($this->getCacheDriver());
+        return new Pool($this->buildCacheDriver());
     }
 
     /**
      * @return DriverInterface
      */
-    protected function getCacheDriver()
+    protected function buildCacheDriver()
     {
-        if(is_array($this->config['cache']['driver']) && isset($this->config['cache']['driver']['name']) && isset($this->config['cache']['driver']['options'])) {
-            return $this->buildCacheDriverFromConfig($this->config['cache']['driver']);
+        if(!is_array($this->config['cache']['driver']) ||
+            !isset($this->config['cache']['driver']['name']) || !
+            isset($this->config['cache']['driver']['options'])) {
+
+            throw new \InvalidArgumentException("No valid cache driver config found");
         }
 
-        return $this->buildCacheDriverFromBuilder($this->config['cache']['driver']);
-    }
+        $driverClass = DriverList::getDriverClass($this->config['cache']['driver']['name']);
 
-    /**
-     * @param $config
-     *
-     * @return bool
-     */
-    protected function buildCacheDriverFromConfig($config)
-    {
-        $driver = DriverList::getDriverClass($config['name']);
-
-        if(!$driver) {
-            throw new \InvalidArgumentException("Invalid cache driver [" . $config['name'] . "]");
+        if(!$driverClass) {
+            throw new \InvalidArgumentException("Invalid cache driver [" . $this->config['cache']['driver']['name'] . "]");
         }
 
-        $driver->setOptions($config['options']);
-
-        return $driver;
-    }
-
-    /**
-     * @param $builder
-     *
-     * @return mixed
-     */
-    protected function buildCacheDriverFromBuilder($builder)
-    {
-        if(is_callable($builder)) {
-            $driver = call_user_func($builder);
-        }
-
-        if(is_string($builder) && class_exists($builder, true)) {
-            $instance = container()->make($builder);
-            $driver = call_user_func($instance);
-        }
-
-        if(!isset($driver) || !$driver instanceof DriverInterface) {
-            throw new \InvalidArgumentException("Cache driver builder invalid or returned an invalid driver");
-        }
+        $driver = new $driverClass();
+        $driver->setOptions($this->config['cache']['driver']['options']);
 
         return $driver;
     }

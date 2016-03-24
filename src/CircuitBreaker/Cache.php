@@ -44,7 +44,7 @@ class Cache
         }
 
         if(array_key_exists('history', $data)) {
-            $breaker->setHistory($data['history']);
+            $breaker->getHistory()->set($data['history']);
         }
 
         if(array_key_exists('lastTrippedAt', $data)) {

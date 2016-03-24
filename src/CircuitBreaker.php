@@ -315,17 +315,17 @@ class CircuitBreaker implements Arrayable
      */
     public function failure()
     {
-        if ($this->state == self::HALF_OPEN) {
-            $this->failures++;
-        }
-
-        if ($this->state == self::CLOSED) {
-            $this->setState(self::HALF_OPEN);
-        }
+        $this->failures++;
 
         $this->handle('failure');
 
-        if ($this->failures >= $this->failureThreshold) {
+        if($this->getState() == self::HALF_OPEN) {
+            // Go right back to open
+            $this->trip();
+        }
+
+        if ($this->state == self::CLOSED && $this->failures >= $this->failureThreshold) {
+            // Exceeded threshold, go to open
             $this->trip();
         }
 
@@ -350,13 +350,14 @@ class CircuitBreaker implements Arrayable
      */
     public function success()
     {
-        if ($this->state == self::HALF_OPEN) {
+        if ($this->getState() == self::HALF_OPEN) {
             $this->successes++;
         }
 
         $this->handle('success');
 
-        if ($this->successes >= $this->successThreshold) {
+        if ($this->getState() == self::HALF_OPEN && $this->successes >= $this->successThreshold) {
+            // Exceeded threshold, go to closed
             $this->reset();
         }
 
@@ -434,11 +435,11 @@ class CircuitBreaker implements Arrayable
      */
     protected function loadFromCache()
     {
-        if(!$this->cacheKey) {
-            throw new \InvalidArgumentException("You must specify a name before setting cache");
+        if(!$this->getCacheKey()) {
+            throw new \InvalidArgumentException("You must specify a name/cacheKey before setting cache");
         }
 
-        $this->cacheItem = $this->cachePool->getItem($this->cacheKey);
+        $this->cacheItem = $this->cachePool->getItem($this->getCacheKey());
 
         if($this->cacheItem->isHit()) {
             $data = $this->cacheItem->get();

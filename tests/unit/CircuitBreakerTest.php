@@ -27,9 +27,9 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         // We start off closed by default
         $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
 
-        // A single failure puts us at half-open
+        // A single failure should leave use closed
         $breaker->failure();
-        $this->assertEquals($breaker->getState(), CircuitBreaker::HALF_OPEN);
+        $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
 
         // Now go fail enough times to reash the threshold
         for($i = 0; $i < $breaker->getFailureThreshold(); $i++) {
@@ -44,6 +44,13 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         // We are back to half-open
         $this->assertEquals($breaker->getState(), CircuitBreaker::HALF_OPEN);
+
+        // One failure should trip us at this point
+        $breaker->failure();
+        $this->assertEquals($breaker->getState(), CircuitBreaker::OPEN);
+
+        // Sleep again
+        sleep($breaker->getAutoRetryInterval());
 
         // Succeed enough to snap closed
         for($i = 0; $i < $breaker->getSuccessThreshold(); $i++) {
@@ -86,28 +93,20 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache);
 
         $breaker->failure();
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state'], CircuitBreaker::HALF_OPEN);
-        $this->assertEquals(count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']), 1);
-
-        // Note that since the switch just moved to Half-Open, counters are 0
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['failures'], 0);
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes'], 0);
-
-        $breaker->failure();
-        // Now we'll have one failure
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['failures'], 1);
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes'], 0);
+        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
+        $this->assertEquals(1, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['failures']);
+        $this->assertEquals(0, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes']);
 
         $breaker->success();
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes'], 1);
+        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes']));
 
         $breaker->trip();
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state'], CircuitBreaker::OPEN);
-        $this->assertEquals(count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']), 4);
+        $this->assertEquals(CircuitBreaker::OPEN, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
+        $this->assertEquals(3, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['histortowy']));
 
         $breaker->reset();
-        $this->assertEquals($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state'], CircuitBreaker::CLOSED);
-        $this->assertEquals(count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']), 5);
+        $this->assertEquals(CircuitBreaker::CLOSED, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
+        $this->assertEquals(4, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
     }
 
     public function testHandlers()

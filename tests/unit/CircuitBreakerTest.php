@@ -68,9 +68,14 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         $array = [
             'state' => CircuitBreaker::HALF_OPEN,
-            'failures' => 5,
-            'successes' => 4,
-            'history' => [],
+            'history' => [
+                'failure' => [
+                    new \DateTime()
+                ],
+                'success' => [
+                    new \DateTime(), new \DateTime()
+                ]
+            ],
             'lastTrippedAt' => null
         ];
 
@@ -81,8 +86,8 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($breaker->isAvailable());
         $this->assertFalse($breaker->isClosed());
-        $this->assertEquals(5, $breaker->getFailures());
-        $this->assertEquals(4, $breaker->getSuccesses());
+        $this->assertEquals(1, $breaker->getFailures());
+        $this->assertEquals(2, $breaker->getSuccesses());
         $this->assertEquals($array, $breaker->toArray());
     }
 
@@ -90,23 +95,24 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
     {
         $cache = new Pool(new Ephemeral());
 
-        $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache);
+        $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache)->setAutoRetryInterval(0);
 
         $breaker->failure();
-        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
-        $this->assertEquals(1, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['failures']);
-        $this->assertEquals(0, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes']);
+        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']['failure']));
+        $this->assertFalse(array_key_exists("success", $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
 
+        // Success events are NOT tracked when the breaker is closed
         $breaker->success();
-        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['successes']));
+        $this->assertFalse(array_key_exists("success", $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
 
         $breaker->trip();
         $this->assertEquals(CircuitBreaker::OPEN, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
-        $this->assertEquals(3, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['histortowy']));
 
-        $breaker->reset();
-        $this->assertEquals(CircuitBreaker::CLOSED, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
-        $this->assertEquals(4, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
+        // Because we set autoRetry to 0, the breaker will be half-open on the next check. And success events tracked.
+
+        $breaker->success();
+        $this->assertEquals(CircuitBreaker::HALF_OPEN, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
+        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']['success']));
     }
 
     public function testHandlers()
@@ -124,7 +130,51 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $breaker->trip();
         $breaker->reset();
 
-        $this->assertEquals($counter, 4);
+        $this->assertEquals(4, $counter);
+    }
+
+    public function testFailureInterval()
+    {
+        $cache = new Pool(new Ephemeral());
+        $item = $cache->getItem('Sdk/CircuitBreaker/Foo');
+
+        $array = [
+            'state' => CircuitBreaker::HALF_OPEN,
+            'history' => [
+                'failure' => [
+                    new \DateTime()
+                ],
+                'success' => [
+                    new \DateTime(), new \DateTime()
+                ]
+            ],
+            'lastTrippedAt' => null
+        ];
+
+        $item->set($array);
+        $cache->save($item);
+
+        $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache)->setFailureThreshold(3)->setFailureInterval(1);
+
+        // Ok, so we want to fail three times and ensure the breaker is tripped
+        $breaker->failure(); $breaker->failure(); $breaker->failure();
+
+        $this->assertFalse($breaker->isAvailable());
+
+        // Awesome. Now let's reset.
+        $breaker->reset();
+
+        // Fail twice.
+        $breaker->failure(); $breaker->failure();
+        $this->assertEquals(2, $breaker->getFailures());
+
+        // And now sleep for two seconds before failing the third time. Note we set our failure interval above to 1, so we shouldn't trip.
+        sleep(2);
+        $breaker->failure();
+
+        // And we should still be closed.
+        $this->assertTrue($breaker->isAvailable());
+        $this->assertEquals(1, $breaker->getFailures());
     }
 
     public function testLoadConfig()

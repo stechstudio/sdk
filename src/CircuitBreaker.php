@@ -48,22 +48,17 @@ class CircuitBreaker implements Arrayable
     protected $state;
 
     /**
-     * @var int
-     */
-    protected $failures = 0;
-
-    /**
-     * @var int
-     */
-    protected $successes = 0;
-
-    /**
-     * Once in the Half-Open state, this is the number of failures at which point
-     * the circuit breaker will trip to Open
+     * In the Closed state, this is the number of failures (within the $failureInterval)
+     * that will trip the breaker and go to Open
      *
      * @var int
      */
     protected $failureThreshold = 10;
+
+    /**
+     * @var int
+     */
+    protected $failureInterval = 300;
 
     /**
      * Once in the Half-Open state, this is the number of success at which point
@@ -111,7 +106,7 @@ class CircuitBreaker implements Arrayable
      */
     public function __construct($name = null)
     {
-        if($name != null) {
+        if ($name != null) {
             $this->setName($name);
         }
 
@@ -170,10 +165,9 @@ class CircuitBreaker implements Arrayable
             throw new \InvalidArgumentException("Invalid circuit breaker state [$state]");
         }
 
-        // If state is changing, reset counters
-        if($state != $this->state) {
-            $this->failures = 0;
-            $this->successes = 0;
+        // If state is changing, clear history
+        if ($state != $this->state) {
+            $this->resetHistory();
         }
 
         $this->state = $state;
@@ -186,7 +180,7 @@ class CircuitBreaker implements Arrayable
      */
     public function getState()
     {
-        if($this->state == self::OPEN) {
+        if ($this->state == self::OPEN) {
             $this->checkAutoRetryInterval();
         }
 
@@ -231,6 +225,26 @@ class CircuitBreaker implements Arrayable
     }
 
     /**
+     * @return int
+     */
+    public function getFailureInterval()
+    {
+        return $this->failureInterval;
+    }
+
+    /**
+     * @param int $failureInterval
+     *
+     * @return $this
+     */
+    public function setFailureInterval($failureInterval)
+    {
+        $this->failureInterval = $failureInterval;
+
+        return $this;
+    }
+
+    /**
      * @param $autoRetryInterval
      *
      * @return $this
@@ -267,7 +281,9 @@ class CircuitBreaker implements Arrayable
      */
     public function getFailures()
     {
-        return $this->failures;
+        return array_key_exists('failure', $this->history)
+            ? $this->countEventsInInterval($this->history['failure'], $this->getFailureInterval())
+            : 0;
     }
 
     /**
@@ -275,7 +291,9 @@ class CircuitBreaker implements Arrayable
      */
     public function getSuccesses()
     {
-        return $this->successes;
+        return array_key_exists('success', $this->history)
+            ? count($this->history['success'])
+            : 0;
     }
 
     /**
@@ -315,17 +333,14 @@ class CircuitBreaker implements Arrayable
      */
     public function failure()
     {
-        $this->failures++;
-
         $this->handle('failure');
 
-        if($this->getState() == self::HALF_OPEN) {
+        if ($this->getState() == self::HALF_OPEN) {
             // Go right back to open
             $this->trip();
         }
 
-        if ($this->state == self::CLOSED && $this->failures >= $this->failureThreshold) {
-            // Exceeded threshold, go to open
+        if ($this->failureThresholdReached()) {
             $this->trip();
         }
 
@@ -350,14 +365,9 @@ class CircuitBreaker implements Arrayable
      */
     public function success()
     {
-        if ($this->getState() == self::HALF_OPEN) {
-            $this->successes++;
-        }
-
         $this->handle('success');
 
-        if ($this->getState() == self::HALF_OPEN && $this->successes >= $this->successThreshold) {
-            // Exceeded threshold, go to closed
+        if ($this->successThresholdReached()) {
             $this->reset();
         }
 
@@ -384,7 +394,7 @@ class CircuitBreaker implements Arrayable
         $current = new DateTime();
         $diff = $current->diff($this->lastTrippedAt);
 
-        if($diff->s >= $this->getAutoRetryInterval()) {
+        if ($diff->s >= $this->getAutoRetryInterval()) {
             $this->setState(self::HALF_OPEN);
         }
     }
@@ -397,7 +407,11 @@ class CircuitBreaker implements Arrayable
      */
     public function registerHandler($event, callable $handler)
     {
-        $this->handlers[$event] = $handler;
+        if(!array_key_exists($event, $this->handlers)) {
+            $this->handlers[$event] = [];
+        }
+
+        $this->handlers[$event][] = $handler;
 
         return $this;
     }
@@ -407,10 +421,17 @@ class CircuitBreaker implements Arrayable
      */
     protected function handle($event)
     {
-        $this->addToHistory($event);
+        // These are the events we specifically need to track in our history
+        if ($this->getState() == self::CLOSED && $event == "failure" || $this->getState() == self::HALF_OPEN && $event == "success") {
+            $this->addToHistory($event);
+        }
 
-        if(array_key_exists($event, $this->handlers) && is_callable($this->handlers[$event])) {
-            call_user_func($this->handlers[$event], $event, $this);
+        if (!array_key_exists($event, $this->handlers) || !is_array($this->handlers[$event])) {
+            return;
+        }
+
+        foreach($this->handlers[$event] AS $handler) {
+            call_user_func($handler, $event, $this);
         }
     }
 
@@ -419,15 +440,55 @@ class CircuitBreaker implements Arrayable
      */
     protected function addToHistory($event)
     {
-        array_push($this->history, [
-            $event, new DateTime()
-        ]);
-
-        if(count($this->history) > 50) {
-            array_shift($this->history);
+        if (!array_key_exists($event, $this->history)) {
+            $this->history[$event] = [];
         }
 
+        array_push($this->history[$event], new DateTime());
+
         $this->save();
+    }
+
+    protected function resetHistory()
+    {
+        $this->history = [];
+        $this->save();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function failureThresholdReached()
+    {
+        return $this->state == self::CLOSED && $this->getFailures() >= $this->getFailureThreshold();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function successThresholdReached()
+    {
+        return $this->getState() == self::HALF_OPEN && $this->getSuccesses() >= $this->getSuccessThreshold();
+    }
+
+    /**
+     * @param $array
+     * @param $interval
+     *
+     * @return int
+     */
+    protected function countEventsInInterval($array, $interval)
+    {
+        $current = new DateTime();
+
+        // First remove any array items that are outside the interval
+        foreach ($array AS $key => $dateTime) {
+            if ($current->diff($dateTime)->s > $interval) {
+                unset($array[$key]);
+            }
+        }
+
+        return count($array);
     }
 
     /**
@@ -435,28 +496,22 @@ class CircuitBreaker implements Arrayable
      */
     protected function loadFromCache()
     {
-        if(!$this->getCacheKey()) {
+        if (!$this->getCacheKey()) {
             throw new \InvalidArgumentException("You must specify a name/cacheKey before setting cache");
         }
 
         $this->cacheItem = $this->cachePool->getItem($this->getCacheKey());
 
-        if($this->cacheItem->isHit()) {
+        if ($this->cacheItem->isHit()) {
             $data = $this->cacheItem->get();
 
-            if(isset($data['failures'])) {
-                $this->failures = $data['failures'];
-            }
-            if(isset($data['successes'])) {
-                $this->successes = $data['successes'];
-            }
-            if(isset($data['state'])) {
+            if (isset($data['state'])) {
                 $this->state = $data['state'];
             }
-            if(isset($data['history'])) {
+            if (isset($data['history'])) {
                 $this->history = $data['history'];
             }
-            if(isset($data['lastTrippedAt'])) {
+            if (isset($data['lastTrippedAt'])) {
                 $this->lastTrippedAt = $data['lastTrippedAt'];
             }
         }
@@ -467,7 +522,7 @@ class CircuitBreaker implements Arrayable
      */
     protected function save()
     {
-        if(!$this->cacheItem) {
+        if (!$this->cacheItem) {
             // No cache setup. Just going to silently fail here, in case we purposefully
             // didn't want this breaker to be cache-backed. Should this be an exception
             // instead?
@@ -481,21 +536,22 @@ class CircuitBreaker implements Arrayable
 
     /**
      * Helpful for quickloading an array of circuit breaker options from a description file or other config file
+     *
      * @param array $config
      *
      * @return $this
      */
     public function loadConfig(array $config)
     {
-        foreach(['failureThreshold','successThreshold','autoRetryInterval'] AS $attribute) {
-            if(isset($config[$attribute])) {
+        foreach (['failureThreshold', 'successThreshold', 'autoRetryInterval'] AS $attribute) {
+            if (isset($config[$attribute])) {
                 $setter = "set" . ucwords($attribute);
                 $this->{$setter}($config[$attribute]);
             }
         }
 
-        if(isset($config['handlers']) && is_array($config['handlers'])) {
-            foreach($config['handlers'] AS $event => $handler) {
+        if (isset($config['handlers']) && is_array($config['handlers'])) {
+            foreach ($config['handlers'] AS $event => $handler) {
                 $this->registerHandler($event, $this->getCallable($handler));
             }
         }
@@ -510,11 +566,11 @@ class CircuitBreaker implements Arrayable
      */
     protected function getCallable($item)
     {
-        if(is_string($item) && class_exists($item, true)) {
+        if (is_string($item) && class_exists($item, true)) {
             $item = container()->make($item);
         }
 
-        if(is_callable($item)) {
+        if (is_callable($item)) {
             return $item;
         }
 
@@ -528,8 +584,6 @@ class CircuitBreaker implements Arrayable
     {
         return [
             'state' => $this->state,
-            'failures' => $this->failures,
-            'successes' => $this->successes,
             'history' => $this->history,
             'lastTrippedAt' => $this->lastTrippedAt
         ];

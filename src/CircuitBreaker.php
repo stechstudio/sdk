@@ -88,10 +88,7 @@ class CircuitBreaker implements Arrayable
 
     /**
      * @param Cache   $cache
-     *
      * @param History $history
-     *
-     * @internal param null $name
      */
     public function __construct(Cache $cache, History $history)
     {
@@ -238,18 +235,6 @@ class CircuitBreaker implements Arrayable
     public function getAutoRetryInterval()
     {
         return $this->autoRetryInterval;
-    }
-
-    /**
-     * @param $timeout
-     *
-     * @return $this
-     */
-    public function setTimeout($timeout)
-    {
-        $this->timeout = $timeout;
-
-        return $this;
     }
 
     /**

@@ -5,6 +5,8 @@ use Stash\DriverList;
 use Stash\Interfaces\DriverInterface;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker;
+use STS\Sdk\CircuitBreaker\Cache;
+use STS\Sdk\CircuitBreaker\History;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 /**
@@ -169,10 +171,9 @@ class Description
     {
         $config = $this->config['circuitBreaker'];
 
-        $this->circuitBreaker = (new CircuitBreaker())
+        $this->circuitBreaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History()))
             ->setName($this->getName())
-            ->loadConfig($config)
-            ->setCachePool($this->getCachePool());
+            ->loadConfig($config);
     }
 
     /**
@@ -198,25 +199,5 @@ class Description
         if(!is_array($this->config['operations'])) {
             throw new \InvalidArgumentException("List of 'operations' must be an array");
         }
-    }
-
-    /**
-     * Give me a callable or a class path (that is invokable)
-     * @param $input
-     *
-     * @return mixed
-     */
-    protected function getCallableValue($input)
-    {
-        if(is_callable($input)) {
-            return call_user_func($input);
-        }
-
-        if(is_string($input) && class_exists($input, true)) {
-            $instance = container()->make($input);
-            return call_user_func($instance);
-        }
-
-        return false;
     }
 }

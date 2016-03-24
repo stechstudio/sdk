@@ -210,6 +210,18 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($counter, 4);
     }
 
+    public function testInvalidHandler()
+    {
+        $config = [
+            'handlers' => [
+                "success" => "invalid"
+            ]
+        ];
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
+    }
+
     public function testClassInvokeHandler()
     {
         $breaker = container()->make(CircuitBreaker::class)->setName("Foo")
@@ -221,6 +233,23 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         $this->setExpectedException(Exception::class, "Got event [failure] for breaker [Foo]");
         $breaker->failure();
+    }
+
+    public function testGetTrippedAt()
+    {
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo");
+
+        $breaker->trip();
+
+        $this->assertEquals($breaker->getLastTrippedAt(), new \DateTime());
+    }
+
+    public function setInvalidState()
+    {
+        // We expect this to fail gracefully, no exceptions thrown
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setState("invalid");
+
+        $this->assertEquals(CircuitBreaker::CLOSED, $breaker->getState());
     }
 }
 

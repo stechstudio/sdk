@@ -6,7 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
 use Stash\Pool;
 use STS\Sdk\Pipeline\Caching;
-use STS\Sdk\Pipeline\CircuitBreaker;
+use STS\Sdk\Pipeline\UseCircuitBreaker;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Pipeline\BuildUri;
@@ -42,7 +42,7 @@ class Client
      * @var array
      */
     protected $basePipes = [
-        CircuitBreaker::class,
+        UseCircuitBreaker::class,
         ValidateArguments::class,
         Caching::class,
         BuildBody::class,

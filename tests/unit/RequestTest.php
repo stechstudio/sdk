@@ -8,6 +8,7 @@ use STS\Sdk\Service\Description;
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
     protected $description = [
+        'name' => 'Test',
         'baseUrl' => 'http://mockbin.org/bin',
         'operations' => [
             'getOk' => [

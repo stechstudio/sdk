@@ -67,6 +67,7 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
     public function testGetErrorHandlers()
     {
         $d = new Description([
+            'name' => 'Test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => []
         ]);
@@ -85,7 +86,7 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
 
     public function testStaticLoader()
     {
-        $contents = "<?php return [ 'baseUrl' => 'http://www.foo.local','operations' => [] ];";
+        $contents = "<?php return [ 'name' => 'Test', 'baseUrl' => 'http://www.foo.local','operations' => [] ];";
         $file = __DIR__ . "/config.php";
 
         file_put_contents($file, $contents);

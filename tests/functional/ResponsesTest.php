@@ -8,6 +8,7 @@ use PHPUnit_Framework_TestCase;
 class ResponsesTest extends PHPUnit_Framework_TestCase
 {
     protected $description = [
+        'name' => 'Test',
         'baseUrl' => 'http://mockbin.org/bin',
         'operations' => [
             'getOk' => [

@@ -7,6 +7,7 @@ use STS\Sdk\Request;
 class PipelineTest extends \PHPUnit_Framework_TestCase
 {
     protected $description = [
+        'name' => 'Test',
         'baseUrl' => 'http://mockbin.org',
         'operations' => [
             'getOk' => [

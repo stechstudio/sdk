@@ -186,6 +186,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
             'failureThreshold' => 2,
             'successThreshold' => 3,
             'autoRetryInterval' => 1,
+            'failureInterval' => 4,
             'handlers' => [
                 "success" => function($event, $breaker) use(&$counter) { $counter++; },
                 "failure" => function($event, $breaker) use(&$counter) { $counter++; },
@@ -199,6 +200,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($config['failureThreshold'], $breaker->getFailureThreshold());
         $this->assertEquals($config['successThreshold'], $breaker->getSuccessThreshold());
         $this->assertEquals($config['autoRetryInterval'], $breaker->getAutoRetryInterval());
+        $this->assertEquals($config['failureInterval'], $breaker->getFailureInterval());
 
         $breaker->success();
         $breaker->failure();

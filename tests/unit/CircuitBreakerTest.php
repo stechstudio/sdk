@@ -4,17 +4,17 @@ namespace STS\Sdk;
 use Exception;
 use Stash\Driver\Ephemeral;
 use Stash\Pool;
+use STS\Sdk\CircuitBreaker\Cache;
 
 class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 {
     public function testInstantiateAndDefaults()
     {
-        $breaker = new CircuitBreaker("Foo");
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo");
 
         $this->assertTrue($breaker instanceof CircuitBreaker);
 
         $this->assertEquals("Foo", $breaker->getName());
-        $this->assertEquals("Sdk/CircuitBreaker/Foo", $breaker->getCacheKey());
     }
 
     /**
@@ -22,7 +22,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
      */
     public function testStateFlow()
     {
-        $breaker = (new CircuitBreaker("Foo"))->setAutoRetryInterval(1);
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1);
 
         // We start off closed by default
         $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
@@ -63,8 +63,8 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFromCache()
     {
-        $cache = new Pool(new Ephemeral());
-        $item = $cache->getItem('Sdk/CircuitBreaker/Foo');
+        $pool = new Pool(new Ephemeral());
+        $item = $pool->getItem('Sdk/CircuitBreaker/Foo');
 
         $array = [
             'state' => CircuitBreaker::HALF_OPEN,
@@ -80,9 +80,10 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $item->set($array);
-        $cache->save($item);
+        $pool->save($item);
+        $cache = new Cache($pool);
 
-        $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache);
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setCache($cache);
 
         $this->assertTrue($breaker->isAvailable());
         $this->assertFalse($breaker->isClosed());
@@ -93,33 +94,32 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
     public function testCacheIsUpdated()
     {
-        $cache = new Pool(new Ephemeral());
-
-        $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache)->setAutoRetryInterval(0);
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(0);
+        $cache = $breaker->getCache();
 
         $breaker->failure();
-        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']['failure']));
-        $this->assertFalse(array_key_exists("success", $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
+        $this->assertEquals(1, count($cache->getItem($breaker)->get()['history']['failure']));
+        $this->assertFalse(array_key_exists("success", $cache->getItem($breaker)->get()['history']));
 
         // Success events are NOT tracked when the breaker is closed
         $breaker->success();
-        $this->assertFalse(array_key_exists("success", $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']));
+        $this->assertFalse(array_key_exists("success", $cache->getItem($breaker)->get()['history']));
 
         $breaker->trip();
-        $this->assertEquals(CircuitBreaker::OPEN, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
+        $this->assertEquals(CircuitBreaker::OPEN, $cache->getItem($breaker)->get()['state']);
 
         // Because we set autoRetry to 0, the breaker will be half-open on the next check. And success events tracked.
 
         $breaker->success();
-        $this->assertEquals(CircuitBreaker::HALF_OPEN, $cache->getItem('Sdk/CircuitBreaker/Foo')->get()['state']);
-        $this->assertEquals(1, count($cache->getItem('Sdk/CircuitBreaker/Foo')->get()['history']['success']));
+        $this->assertEquals(CircuitBreaker::HALF_OPEN, $cache->getItem($breaker)->get()['state']);
+        $this->assertEquals(1, count($cache->getItem($breaker)->get()['history']['success']));
     }
 
     public function testHandlers()
     {
         $counter = 0;
 
-        $breaker = (new CircuitBreaker("Foo"))
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")
             ->registerHandler("success", function($event, $breaker) use(&$counter) { $counter++; })
             ->registerHandler("failure", function($event, $breaker) use(&$counter) { $counter++; })
             ->registerHandler("trip", function($event, $breaker) use(&$counter) { $counter++; })
@@ -135,8 +135,8 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
     public function testFailureInterval()
     {
-        $cache = new Pool(new Ephemeral());
-        $item = $cache->getItem('Sdk/CircuitBreaker/Foo');
+        $pool = new Pool(new Ephemeral());
+        $item = $pool->getItem('Sdk/CircuitBreaker/Foo');
 
         $array = [
             'state' => CircuitBreaker::HALF_OPEN,
@@ -152,9 +152,10 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $item->set($array);
-        $cache->save($item);
+        $pool->save($item);
+        $cache = new Cache($pool);
 
-        $breaker = (new CircuitBreaker("Foo"))->setCachePool($cache)->setFailureThreshold(3)->setFailureInterval(1);
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setCache($cache)->setFailureThreshold(3)->setFailureInterval(1);
 
         // Ok, so we want to fail three times and ensure the breaker is tripped
         $breaker->failure(); $breaker->failure(); $breaker->failure();
@@ -193,7 +194,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $breaker = (new CircuitBreaker("Foo"))->loadConfig($config);
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
 
         $this->assertEquals($config['failureThreshold'], $breaker->getFailureThreshold());
         $this->assertEquals($config['successThreshold'], $breaker->getSuccessThreshold());
@@ -209,7 +210,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
     public function testClassInvokeHandler()
     {
-        $breaker = (new CircuitBreaker("Foo"))
+        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")
             ->loadConfig([
                 'handlers' => [
                     "failure" => EventHandler::class

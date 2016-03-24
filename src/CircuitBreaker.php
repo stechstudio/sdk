@@ -12,6 +12,7 @@ use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
 use Stash\Item;
 use Stash\Pool;
+use STS\Sdk\CircuitBreaker\Cache;
 
 /**
  * Class CircuitBreaker
@@ -36,11 +37,6 @@ class CircuitBreaker implements Arrayable
      * @var
      */
     protected $name;
-
-    /**
-     * @var
-     */
-    protected $cacheKey;
 
     /**
      * @var int
@@ -87,14 +83,9 @@ class CircuitBreaker implements Arrayable
     protected $history = [];
 
     /**
-     * @var Pool
+     * @var Cache
      */
-    protected $cachePool;
-
-    /**
-     * @var Item
-     */
-    protected $cacheItem;
+    protected $cache;
 
     /**
      * @var array
@@ -102,15 +93,15 @@ class CircuitBreaker implements Arrayable
     protected $handlers = [];
 
     /**
-     * @param null $name
+     * @param Cache $cache
+     *
+     * @internal param null $name
      */
-    public function __construct($name = null)
+    public function __construct(Cache $cache)
     {
-        if ($name != null) {
-            $this->setName($name);
-        }
-
         $this->state = self::CLOSED;
+
+        $this->setCache($cache);
     }
 
     /**
@@ -129,29 +120,29 @@ class CircuitBreaker implements Arrayable
     public function setName($name)
     {
         $this->name = $name;
-        $this->setCacheKey("Sdk/CircuitBreaker/$name");
 
         return $this;
     }
 
     /**
-     * @param $cacheKey
+     * @param Cache $cache
      *
      * @return $this
      */
-    public function setCacheKey($cacheKey)
+    public function setCache(Cache $cache)
     {
-        $this->cacheKey = $cacheKey;
+        $this->cache = $cache;
+        $this->cache->load($this);
 
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return Cache
      */
-    public function getCacheKey()
+    public function getCache()
     {
-        return $this->cacheKey;
+        return $this->cache;
     }
 
     /**
@@ -162,7 +153,7 @@ class CircuitBreaker implements Arrayable
     public function setState($state)
     {
         if (!in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN])) {
-            throw new \InvalidArgumentException("Invalid circuit breaker state [$state]");
+            return;
         }
 
         // If state is changing, clear history
@@ -185,19 +176,6 @@ class CircuitBreaker implements Arrayable
         }
 
         return $this->state;
-    }
-
-    /**
-     * @param $cachePool
-     *
-     * @return $this
-     */
-    public function setCachePool($cachePool)
-    {
-        $this->cachePool = $cachePool;
-        $this->loadFromCache();
-
-        return $this;
     }
 
     /**
@@ -310,6 +288,46 @@ class CircuitBreaker implements Arrayable
     public function getSuccessThreshold()
     {
         return $this->successThreshold;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHistory()
+    {
+        return $this->history;
+    }
+
+    /**
+     * @param array $history
+     *
+     * @return $this
+     */
+    public function setHistory(array $history)
+    {
+        $this->history = $history;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function getLastTrippedAt()
+    {
+        return $this->lastTrippedAt;
+    }
+
+    /**
+     * @param DateTime $lastTrippedAt
+     *
+     * @return $this
+     */
+    public function setLastTrippedAt($lastTrippedAt)
+    {
+        $this->lastTrippedAt = $lastTrippedAt;
+
+        return $this;
     }
 
     /**
@@ -449,6 +467,9 @@ class CircuitBreaker implements Arrayable
         $this->save();
     }
 
+    /**
+     *
+     */
     protected function resetHistory()
     {
         $this->history = [];
@@ -492,46 +513,11 @@ class CircuitBreaker implements Arrayable
     }
 
     /**
-     * Initialize the circuit breaker data from cache
-     */
-    protected function loadFromCache()
-    {
-        if (!$this->getCacheKey()) {
-            throw new \InvalidArgumentException("You must specify a name/cacheKey before setting cache");
-        }
-
-        $this->cacheItem = $this->cachePool->getItem($this->getCacheKey());
-
-        if ($this->cacheItem->isHit()) {
-            $data = $this->cacheItem->get();
-
-            if (isset($data['state'])) {
-                $this->state = $data['state'];
-            }
-            if (isset($data['history'])) {
-                $this->history = $data['history'];
-            }
-            if (isset($data['lastTrippedAt'])) {
-                $this->lastTrippedAt = $data['lastTrippedAt'];
-            }
-        }
-    }
-
-    /**
      * Saves our circuit breaker data to cache
      */
     protected function save()
     {
-        if (!$this->cacheItem) {
-            // No cache setup. Just going to silently fail here, in case we purposefully
-            // didn't want this breaker to be cache-backed. Should this be an exception
-            // instead?
-
-            return;
-        }
-
-        $this->cacheItem->set($this->toArray());
-        $this->cachePool->save($this->cacheItem);
+        $this->cache->save($this);
     }
 
     /**

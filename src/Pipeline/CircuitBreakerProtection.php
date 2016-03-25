@@ -4,6 +4,7 @@ namespace STS\Sdk\Pipeline;
 use Closure;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
+use STS\Sdk\Exceptions\CircuitBreakerOpenException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 use STS\Sdk\Request;
 
@@ -31,7 +32,7 @@ class CircuitBreakerProtection implements PipeInterface
 
         // If the breaker is already tripped, we halt
         if(!$circuitBreaker->isAvailable()) {
-            throw new ServiceUnavailableException();
+            throw new CircuitBreakerOpenException();
         }
 
         try {

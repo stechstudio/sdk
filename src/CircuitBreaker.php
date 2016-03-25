@@ -310,7 +310,7 @@ class CircuitBreaker implements Arrayable
      */
     public function isAvailable()
     {
-        return $this->state == self::CLOSED || $this->state == self::HALF_OPEN;
+        return $this->getState() == self::CLOSED || $this->getState() == self::HALF_OPEN;
     }
 
     /**

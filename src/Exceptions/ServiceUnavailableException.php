@@ -10,7 +10,7 @@ use Exception;
 class ServiceUnavailableException extends SdkException
 {
     /**
-     * @var int HTTP Status code
+     * @var int HsTTP Status code
      */
     protected $status = 503;
 }

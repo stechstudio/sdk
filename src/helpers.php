@@ -8,7 +8,7 @@ if (! function_exists('make')) {
      * @param string $abstract
      * @param array $parameters
      *
-     * @return Container
+     * @return mixed
      */
     function make($abstract, array $parameters = [])
     {

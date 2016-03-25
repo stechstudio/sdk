@@ -2,6 +2,7 @@
 namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
+use Psr\Log\LoggerInterface;
 use STS\Sdk\Exceptions\CircuitBreakerOpenException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 
@@ -98,12 +99,53 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
         $client->success();
     }
 
+    public function testLogging()
+    {
+        // Add in our logger class
+        $description = $this->description;
+        $description['circuitBreaker']['logger'] = MyLogger::class;
 
+        $client = new Client($description);
+
+        $this->setExpectedException(\Exception::class, "error");
+        $this->callFailureAndSuppress($client);
+    }
 
     protected function callFailureAndSuppress($client)
     {
         try {
             $client->failure();
         } catch(ServiceUnavailableException $e) {}
+    }
+}
+
+
+class MyLogger implements LoggerInterface {
+    public function emergency($message, array $context = array()) {
+        throw new \Exception('emergency');
+    }
+    public function alert($message, array $context = array()) {
+        throw new \Exception('alert');
+    }
+    public function critical($message, array $context = array()) {
+        throw new \Exception('critical');
+    }
+    public function error($message, array $context = array()) {
+        throw new \Exception('error');
+    }
+    public function warning($message, array $context = array()) {
+        throw new \Exception('warning');
+    }
+    public function notice($message, array $context = array()) {
+        throw new \Exception('notice');
+    }
+    public function info($message, array $context = array()) {
+        throw new \Exception('info');
+    }
+    public function debug($message, array $context = array()) {
+        throw new \Exception('debug');
+    }
+    public function log($level, $message, array $context = array()) {
+        return $this->{$level}($message, $context);
     }
 }

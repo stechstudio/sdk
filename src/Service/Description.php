@@ -6,7 +6,9 @@ use Stash\Interfaces\DriverInterface;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker;
 use STS\Sdk\CircuitBreaker\Cache;
+use STS\Sdk\CircuitBreaker\ConfigLoader;
 use STS\Sdk\CircuitBreaker\History;
+use STS\Sdk\CircuitBreaker\Monitor;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 /**
@@ -164,13 +166,13 @@ class Description
     }
 
     /**
-     *
+     * Builds a new CircuitBreaker and sets it up with our config
      */
     protected function buildCircuitBreaker()
     {
-        return (new CircuitBreaker(new Cache($this->getCachePool()), new History()))
-            ->setName($this->getName())
-            ->loadConfig($this->config['circuitBreaker']);
+        $breaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor()))->setName($this->getName());
+
+        return (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
     }
 
     /**

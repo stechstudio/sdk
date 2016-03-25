@@ -12,6 +12,7 @@ use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
 use STS\Sdk\CircuitBreaker\Cache;
 use STS\Sdk\CircuitBreaker\History;
+use STS\Sdk\CircuitBreaker\Monitor;
 
 /**
  * Class CircuitBreaker
@@ -82,20 +83,22 @@ class CircuitBreaker implements Arrayable
     protected $cache;
 
     /**
-     * @var array
+     * @var Monitor
      */
-    protected $handlers = [];
+    protected $monitor;
 
     /**
      * @param Cache   $cache
      * @param History $history
+     * @param Monitor $monitor
      */
-    public function __construct(Cache $cache, History $history)
+    public function __construct(Cache $cache, History $history, Monitor $monitor)
     {
         $this->state = self::CLOSED;
 
         $this->setCache($cache);
         $this->history = $history;
+        $this->monitor = $monitor;
     }
 
     /**
@@ -137,6 +140,14 @@ class CircuitBreaker implements Arrayable
     public function getCache()
     {
         return $this->cache;
+    }
+
+    /**
+     * @return Monitor
+     */
+    public function getMonitor()
+    {
+        return $this->monitor;
     }
 
     /**
@@ -302,7 +313,7 @@ class CircuitBreaker implements Arrayable
      */
     public function isClosed()
     {
-        return $this->state == self::CLOSED;
+        return $this->getState() == self::CLOSED;
     }
 
     /**
@@ -314,11 +325,13 @@ class CircuitBreaker implements Arrayable
     }
 
     /**
+     * @param null $context
+     *
      * @return $this
      */
-    public function failure()
+    public function failure($context = null)
     {
-        $this->handle('failure');
+        $this->handle('failure', $context);
 
         if ($this->getState() == self::HALF_OPEN) {
             // Go right back to open
@@ -385,26 +398,23 @@ class CircuitBreaker implements Arrayable
     }
 
     /**
-     * @param          $event
-     * @param callable $handler
+     * @param string $event
+     * @param mixed $callback
      *
      * @return $this
      */
-    public function registerHandler($event, callable $handler)
+    public function registerCallback($event, $callback)
     {
-        if(!array_key_exists($event, $this->handlers)) {
-            $this->handlers[$event] = [];
-        }
-
-        $this->handlers[$event][] = $handler;
+        $this->monitor->on($event, $callback);
 
         return $this;
     }
 
     /**
-     * @param $event
+     * @param      $event
+     * @param null $context
      */
-    protected function handle($event)
+    protected function handle($event, $context = null)
     {
         // These are the events we specifically need to track in our history
         if ($this->getState() == self::CLOSED && $event == "failure" || $this->getState() == self::HALF_OPEN && $event == "success") {
@@ -412,13 +422,7 @@ class CircuitBreaker implements Arrayable
             $this->save();
         }
 
-        if (!array_key_exists($event, $this->handlers) || !is_array($this->handlers[$event])) {
-            return;
-        }
-
-        foreach($this->handlers[$event] AS $handler) {
-            call_user_func($handler, $event, $this);
-        }
+        $this->monitor->handle($event, $this, $context);
     }
 
     /**
@@ -443,49 +447,6 @@ class CircuitBreaker implements Arrayable
     protected function save()
     {
         $this->cache->save($this);
-    }
-
-    /**
-     * Helpful for quickloading an array of circuit breaker options from a description file or other config file
-     *
-     * @param array $config
-     *
-     * @return $this
-     */
-    public function loadConfig(array $config)
-    {
-        foreach (['failureThreshold', 'failureInterval', 'successThreshold', 'autoRetryInterval'] AS $attribute) {
-            if (isset($config[$attribute])) {
-                $setter = "set" . ucwords($attribute);
-                $this->{$setter}($config[$attribute]);
-            }
-        }
-
-        if (isset($config['handlers']) && is_array($config['handlers'])) {
-            foreach ($config['handlers'] AS $event => $handler) {
-                $this->registerHandler($event, $this->getCallable($handler));
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param $item
-     *
-     * @return mixed
-     */
-    protected function getCallable($item)
-    {
-        if (is_string($item) && class_exists($item, true)) {
-            $item = make($item);
-        }
-
-        if (is_callable($item)) {
-            return $item;
-        }
-
-        throw new \InvalidArgumentException("Not a valid callable [$item]");
     }
 
     /**

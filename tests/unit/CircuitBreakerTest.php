@@ -10,7 +10,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 {
     public function testInstantiateAndDefaults()
     {
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo");
+        $breaker = make(CircuitBreaker::class)->setName("Foo");
 
         $this->assertTrue($breaker instanceof CircuitBreaker);
 
@@ -22,7 +22,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
      */
     public function testStateFlow()
     {
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1);
 
         // We start off closed by default
         $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
@@ -83,7 +83,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $pool->save($item);
         $cache = new Cache($pool);
 
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setCache($cache);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache);
 
         $this->assertTrue($breaker->isAvailable());
         $this->assertFalse($breaker->isClosed());
@@ -94,7 +94,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
     public function testCacheIsUpdated()
     {
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(0);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(0);
         $cache = $breaker->getCache();
 
         $breaker->failure();
@@ -119,7 +119,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
     {
         $counter = 0;
 
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")
+        $breaker = make(CircuitBreaker::class)->setName("Foo")
             ->registerHandler("success", function($event, $breaker) use(&$counter) { $counter++; })
             ->registerHandler("failure", function($event, $breaker) use(&$counter) { $counter++; })
             ->registerHandler("trip", function($event, $breaker) use(&$counter) { $counter++; })
@@ -155,7 +155,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $pool->save($item);
         $cache = new Cache($pool);
 
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setCache($cache)->setFailureThreshold(3)->setFailureInterval(1);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache)->setFailureThreshold(3)->setFailureInterval(1);
 
         // Ok, so we want to fail three times and ensure the breaker is tripped
         $breaker->failure(); $breaker->failure(); $breaker->failure();
@@ -195,7 +195,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
 
         $this->assertEquals($config['failureThreshold'], $breaker->getFailureThreshold());
         $this->assertEquals($config['successThreshold'], $breaker->getSuccessThreshold());
@@ -219,12 +219,12 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $this->setExpectedException(\InvalidArgumentException::class);
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
     }
 
     public function testClassInvokeHandler()
     {
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")
+        $breaker = make(CircuitBreaker::class)->setName("Foo")
             ->loadConfig([
                 'handlers' => [
                     "failure" => EventHandler::class
@@ -237,7 +237,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
     public function testGetTrippedAt()
     {
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo");
+        $breaker = make(CircuitBreaker::class)->setName("Foo");
 
         $breaker->trip();
 
@@ -247,7 +247,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
     public function setInvalidState()
     {
         // We expect this to fail gracefully, no exceptions thrown
-        $breaker = container()->make(CircuitBreaker::class)->setName("Foo")->setState("invalid");
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setState("invalid");
 
         $this->assertEquals(CircuitBreaker::CLOSED, $breaker->getState());
     }

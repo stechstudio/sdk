@@ -1,13 +1,16 @@
 <?php
 use Illuminate\Container\Container;
 
-if (! function_exists('container')) {
+if (! function_exists('make')) {
     /**
-     * Get the available container instance... and create a new one if needed!
+     * Resolve the given type from the container. Initialize container if needed.
      *
-     * @return Illuminate\Container\Container
+     * @param string $abstract
+     * @param array $parameters
+     *
+     * @return Container
      */
-    function container()
+    function make($abstract, array $parameters = [])
     {
         if(is_null(Container::getInstance())) {
             $container = new Container();
@@ -15,7 +18,7 @@ if (! function_exists('container')) {
             Container::setInstance($container);
         }
 
-        return Container::getInstance();
+        return Container::getInstance()->make($abstract, $parameters);
     }
 }
 

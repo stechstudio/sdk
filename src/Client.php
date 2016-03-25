@@ -106,7 +106,7 @@ class Client
      */
     protected function getPipeline()
     {
-        return container()->make(Pipeline::class);
+        return make(Pipeline::class);
     }
 
     /**

@@ -478,7 +478,7 @@ class CircuitBreaker implements Arrayable
     protected function getCallable($item)
     {
         if (is_string($item) && class_exists($item, true)) {
-            $item = container()->make($item);
+            $item = make($item);
         }
 
         if (is_callable($item)) {

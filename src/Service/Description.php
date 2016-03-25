@@ -168,19 +168,9 @@ class Description
      */
     protected function buildCircuitBreaker()
     {
-        $config = $this->config['circuitBreaker'];
-
         return (new CircuitBreaker(new Cache($this->getCachePool()), new History()))
             ->setName($this->getName())
-            ->loadConfig($config);
-    }
-
-    /**
-     * @return null
-     */
-    public function getCircuitBreakerConfig()
-    {
-        return $this->config['circuitBreaker'];
+            ->loadConfig($this->config['circuitBreaker']);
     }
 
     /**

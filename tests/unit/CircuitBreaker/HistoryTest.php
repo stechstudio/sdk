@@ -48,4 +48,14 @@ class HistoryTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, $history->failures());
     }
+
+    public function testSetGetEvents()
+    {
+        $events = ["foo" => "bar"];
+
+        $history = new History();
+        $history->set($events);
+
+        $this->assertEquals($events, $history->toArray());
+    }
 }

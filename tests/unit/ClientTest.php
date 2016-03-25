@@ -2,6 +2,7 @@
 namespace STS\Sdk;
 
 use Closure;
+use Stash\Pool;
 use STS\Sdk\Service\Description;
 use InvalidArgumentException;
 use GuzzleHttp\Client AS GuzzleClient;
@@ -87,15 +88,72 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client->prependPipe(Pipe2::class);
         $this->assertEquals("inside pipe2", $client->getOk());
     }
+
+    public function testNoCachePool()
+    {
+        $client = new Client($this->description);
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $client->getCachePool();
+    }
+
+    public function testValidCachePool()
+    {
+        $description = $this->description;
+        $description['cache'] = [
+            'driver' => [
+                'name' => 'Ephemeral',
+                'options' => []
+            ]
+        ];
+
+        $client = new Client($description);
+        $this->assertTrue($client->getCachePool() instanceof Pool);
+    }
+
+    public function testNoCircuitBreaker()
+    {
+        $client = new Client($this->description);
+
+        $this->assertTrue($client->isAvailable());
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $client->getCircuitBreaker();
+    }
+
+    public function testHasCircuitBreaker()
+    {
+        $description = $this->description;
+        $description['cache'] = [
+            'driver' => [
+                'name' => 'Ephemeral',
+                'options' => []
+            ]
+        ];
+        $description['circuitBreaker'] = [
+            'failureThreshold' => 10
+        ];
+
+        $client = new Client($description);
+
+        $this->assertTrue($client->isAvailable());
+        $this->assertTrue($client->getCircuitBreaker() instanceof CircuitBreaker);
+
+        $client->getCircuitBreaker()->trip();
+        $this->assertFalse($client->isAvailable());
+    }
 }
 
-class Pipe1 {
+class Pipe1
+{
     public function handle(Request $request, Closure $next)
     {
         return "inside pipe1";
     }
 }
-class Pipe2 {
+
+class Pipe2
+{
     public function handle(Request $request, Closure $next)
     {
         return "inside pipe2";

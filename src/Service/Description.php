@@ -127,7 +127,8 @@ class Description
      */
     protected function buildCacheDriver()
     {
-        if(!is_array($this->config['cache']['driver']) ||
+        if(!$this->wantsCache() ||
+            !is_array($this->config['cache']['driver']) ||
             !isset($this->config['cache']['driver']['name']) || !
             isset($this->config['cache']['driver']['options'])) {
 
@@ -173,6 +174,7 @@ class Description
         $breaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor()))->setName($this->getName());
 
         return (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
+
     }
 
     /**

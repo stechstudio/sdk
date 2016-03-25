@@ -74,7 +74,7 @@ class ConfigLoader
      */
     public function registerCallbacks(array $config)
     {
-        if (isset($config['circuitBreaker']['handlers']) && is_array($config['handlers'])) {
+        if (isset($config['handlers']) && is_array($config['handlers'])) {
             foreach ($config['handlers'] AS $event => $handler) {
                 $this->getBreaker()->registerCallback($event, $handler);
             }

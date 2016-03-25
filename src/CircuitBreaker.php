@@ -34,7 +34,7 @@ class CircuitBreaker implements Arrayable
     const OPEN = 0;
 
     /**
-     * @var
+     * @var string
      */
     protected $name;
 
@@ -157,8 +157,8 @@ class CircuitBreaker implements Arrayable
      */
     public function setState($state)
     {
-        if (!in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN])) {
-            return;
+        if (!in_array($state, [self::CLOSED, self::HALF_OPEN, self::OPEN], true)) {
+            return $this;
         }
 
         // If state is changing, clear history
@@ -293,6 +293,11 @@ class CircuitBreaker implements Arrayable
      */
     public function getLastTrippedAt()
     {
+        if(!$this->lastTrippedAt instanceof DateTime) {
+            // No valid lastTrippedAt, set it to now
+            $this->setLastTrippedAt(new DateTime());
+        }
+
         return $this->lastTrippedAt;
     }
 
@@ -333,12 +338,7 @@ class CircuitBreaker implements Arrayable
     {
         $this->handle('failure', $context);
 
-        if ($this->getState() == self::HALF_OPEN) {
-            // Go right back to open
-            $this->trip();
-        }
-
-        if ($this->failureThresholdReached()) {
+        if ($this->getState() == self::HALF_OPEN || $this->failureThresholdReached()) {
             $this->trip();
         }
 
@@ -351,7 +351,7 @@ class CircuitBreaker implements Arrayable
     public function trip()
     {
         $this->setState(self::OPEN);
-        $this->lastTrippedAt = new DateTime();
+        $this->setLastTrippedAt(new DateTime());
 
         $this->handle('trip');
 
@@ -390,7 +390,7 @@ class CircuitBreaker implements Arrayable
     protected function checkAutoRetryInterval()
     {
         $current = new DateTime();
-        $diff = $current->diff($this->lastTrippedAt);
+        $diff = $current->diff($this->getLastTrippedAt());
 
         if ($diff->s >= $this->getAutoRetryInterval()) {
             $this->setState(self::HALF_OPEN);

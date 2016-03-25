@@ -223,7 +223,9 @@ class Client
      */
     public function isAvailable()
     {
-        return $this->getCircuitBreaker()->isAvailable();
+        return $this->getDescription()->wantsCircuitBreaker()
+            ? $this->getCircuitBreaker()->isAvailable()
+            : true;
     }
 
     /**

@@ -1,10 +1,11 @@
 <?php
 namespace Sdk\Pipeline;
 
+use Illuminate\Validation\Validator;
 use STS\Sdk\Pipeline\ValidateArguments;
 use STS\Sdk\Request;
 use Mockery as m;
-use Illuminate\Validation\ValidationException;
+use STS\Sdk\Exceptions\ValidationException;
 
 class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
 {
@@ -38,11 +39,14 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
         $request = m::mock(Request::class);
         $request->shouldReceive("getOperation")->andReturn($operation);
 
-        $this->setExpectedException(ValidationException::class, "foo, bar");
-
         $validateArguments = new ValidateArguments();
-        $validateArguments->handle($request, function () {
-            return "result";
-        });
+
+        try {
+            $validateArguments->handle($request, function () {
+                return "result";
+            });
+        } catch(ValidationException $e) {}
+
+        $this->assertTrue($e->getValidator() instanceof Validator);
     }
 }

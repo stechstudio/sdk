@@ -52,4 +52,13 @@ class ParameterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($p->getName(), "my-foo");
     }
+
+    public function testSetValue()
+    {
+        $p = new Parameter('myFoo', "value", []);
+        $this->assertEquals($p->getValue(), 'value');
+
+        $p->setValue("newvalue");
+        $this->assertEquals($p->getValue(), 'newvalue');
+    }
 }

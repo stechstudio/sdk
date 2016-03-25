@@ -5,6 +5,7 @@ use Exception;
 use Stash\Driver\Ephemeral;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker\Cache;
+use STS\Sdk\CircuitBreaker\Monitor;
 
 class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 {
@@ -22,7 +23,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
      */
     public function testStateFlow()
     {
-        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1)->setSuccessThreshold(3);
 
         // We start off closed by default
         $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
@@ -30,20 +31,25 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         // A single failure should leave use closed
         $breaker->failure();
         $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
+        $this->assertTrue($breaker->isClosed());
 
-        // Now go fail enough times to reash the threshold
+        // Now go fail enough times to reach the threshold
         for($i = 0; $i < $breaker->getFailureThreshold(); $i++) {
             $breaker->failure();
         }
 
         // Breaker has tripped
         $this->assertEquals($breaker->getState(), CircuitBreaker::OPEN);
+        $this->assertFalse($breaker->isClosed());
+        $this->assertFalse($breaker->isAvailable());
 
         // Sleep long enough for the breaker to retry
         sleep($breaker->getAutoRetryInterval());
 
         // We are back to half-open
         $this->assertEquals($breaker->getState(), CircuitBreaker::HALF_OPEN);
+        $this->assertFalse($breaker->isClosed());
+        $this->assertTrue($breaker->isAvailable());
 
         // One failure should trip us at this point
         $breaker->failure();
@@ -59,60 +65,8 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         // And we're good!
         $this->assertEquals($breaker->getState(), CircuitBreaker::CLOSED);
-    }
-
-    public function testLoadFromCache()
-    {
-        $pool = new Pool(new Ephemeral());
-        $item = $pool->getItem('Sdk/CircuitBreaker/Foo');
-
-        $array = [
-            'state' => CircuitBreaker::HALF_OPEN,
-            'history' => [
-                'failure' => [
-                    new \DateTime()
-                ],
-                'success' => [
-                    new \DateTime(), new \DateTime()
-                ]
-            ],
-            'lastTrippedAt' => null
-        ];
-
-        $item->set($array);
-        $pool->save($item);
-        $cache = new Cache($pool);
-
-        $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache);
-
+        $this->assertTrue($breaker->isClosed());
         $this->assertTrue($breaker->isAvailable());
-        $this->assertFalse($breaker->isClosed());
-        $this->assertEquals(1, $breaker->getFailures());
-        $this->assertEquals(2, $breaker->getSuccesses());
-        $this->assertEquals($array, $breaker->toArray());
-    }
-
-    public function testCacheIsUpdated()
-    {
-        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(0);
-        $cache = $breaker->getCache();
-
-        $breaker->failure();
-        $this->assertEquals(1, count($cache->getItem($breaker)->get()['history']['failure']));
-        $this->assertFalse(array_key_exists("success", $cache->getItem($breaker)->get()['history']));
-
-        // Success events are NOT tracked when the breaker is closed
-        $breaker->success();
-        $this->assertFalse(array_key_exists("success", $cache->getItem($breaker)->get()['history']));
-
-        $breaker->trip();
-        $this->assertEquals(CircuitBreaker::OPEN, $cache->getItem($breaker)->get()['state']);
-
-        // Because we set autoRetry to 0, the breaker will be half-open on the next check. And success events tracked.
-
-        $breaker->success();
-        $this->assertEquals(CircuitBreaker::HALF_OPEN, $cache->getItem($breaker)->get()['state']);
-        $this->assertEquals(1, count($cache->getItem($breaker)->get()['history']['success']));
     }
 
     public function testHandlers()
@@ -170,6 +124,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $breaker->getFailures());
 
         // And now sleep for two seconds before failing the third time. Note we set our failure interval above to 1, so we shouldn't trip.
+        $this->assertEquals(1, $breaker->getFailureInterval());
         sleep(2);
         $breaker->failure();
 
@@ -177,86 +132,69 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($breaker->isAvailable());
         $this->assertEquals(1, $breaker->getFailures());
     }
-//
-//    public function testLoadConfig()
-//    {
-//        $counter = 0;
-//
-//        $config = [
-//            'failureThreshold' => 2,
-//            'successThreshold' => 3,
-//            'autoRetryInterval' => 1,
-//            'failureInterval' => 4,
-//            'handlers' => [
-//                "success" => function($event, $breaker) use(&$counter) { $counter++; },
-//                "failure" => function($event, $breaker) use(&$counter) { $counter++; },
-//                "trip" => function($event, $breaker) use(&$counter) { $counter++; },
-//                "reset" => function($event, $breaker) use(&$counter) { $counter++; },
-//            ]
-//        ];
-//
-//        $breaker = make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
-//
-//        $this->assertEquals($config['failureThreshold'], $breaker->getFailureThreshold());
-//        $this->assertEquals($config['successThreshold'], $breaker->getSuccessThreshold());
-//        $this->assertEquals($config['autoRetryInterval'], $breaker->getAutoRetryInterval());
-//        $this->assertEquals($config['failureInterval'], $breaker->getFailureInterval());
-//
-//        $breaker->success();
-//        $breaker->failure();
-//        $breaker->trip();
-//        $breaker->reset();
-//
-//        $this->assertEquals($counter, 4);
-//    }
-//
-//    public function testInvalidHandler()
-//    {
-//        $config = [
-//            'handlers' => [
-//                "success" => "invalid"
-//            ]
-//        ];
-//
-//        $this->setExpectedException(\InvalidArgumentException::class);
-//        $breaker = make(CircuitBreaker::class)->setName("Foo")->loadConfig($config);
-//    }
-//
-//    public function testClassInvokeHandler()
-//    {
-//        $breaker = make(CircuitBreaker::class)->setName("Foo")
-//            ->loadConfig([
-//                'handlers' => [
-//                    "failure" => EventHandler::class
-//                ]
-//            ]);
-//
-//        $this->setExpectedException(Exception::class, "Got event [failure] for breaker [Foo]");
-//        $breaker->failure();
-//    }
+
+    public function testSuccesses()
+    {
+        /** @var CircuitBreaker $breaker */
+        $breaker = make(CircuitBreaker::class);
+
+        // We don't track successes when closed
+        $breaker->success();
+        $this->assertEquals(0, $breaker->getSuccesses());
+
+        // But we do when half-open
+        $breaker->setState(CircuitBreaker::HALF_OPEN);
+        $breaker->success();
+        $breaker->success();
+        $this->assertEquals(2, $breaker->getSuccesses());
+    }
 
     public function testGetTrippedAt()
     {
         $breaker = make(CircuitBreaker::class)->setName("Foo");
 
-        $breaker->trip();
+        // Since it hasn't been set, default value is now
+        $this->assertEquals(new \DateTime(), $breaker->getLastTrippedAt());
 
-        $this->assertEquals($breaker->getLastTrippedAt(), new \DateTime());
+        $breaker->trip();
+        $trippedAt = new \DateTime();
+
+        sleep(1);
+
+        $this->assertEquals($trippedAt, $breaker->getLastTrippedAt());
     }
 
-    public function setInvalidState()
+    public function testSetState()
+    {
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setState(CircuitBreaker::HALF_OPEN);
+
+        $this->assertEquals(CircuitBreaker::HALF_OPEN, $breaker->getState());
+    }
+
+    public function testSetInvalidState()
     {
         // We expect this to fail gracefully, no exceptions thrown
         $breaker = make(CircuitBreaker::class)->setName("Foo")->setState("invalid");
 
         $this->assertEquals(CircuitBreaker::CLOSED, $breaker->getState());
     }
+
+    public function testSetGetCache()
+    {
+        $cache = new MyCache(new Pool());
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache);
+
+        $this->assertTrue($breaker->getCache() instanceof MyCache);
+    }
+
+    public function testSetGetMonitor()
+    {
+        $breaker = make(CircuitBreaker::class);
+
+        $this->assertTrue($breaker->getMonitor() instanceof Monitor);
+    }
 }
 
+class MyCache extends Cache {
 
-class EventHandler {
-    public function __invoke($event, $breaker)
-    {
-        throw new Exception("Got event [$event] for breaker [{$breaker->getName()}]");
-    }
 }

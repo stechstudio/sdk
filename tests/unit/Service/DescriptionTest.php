@@ -3,6 +3,8 @@ namespace STS\Sdk\Service;
 
 use PHPUnit_Framework_TestCase;
 use InvalidArgumentException;
+use Stash\Pool;
+use STS\Sdk\CircuitBreaker;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 class DescriptionTest extends PHPUnit_Framework_TestCase
@@ -31,14 +33,16 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
         $d = new Description(['name' => 'test', 'baseUrl' => 'foo', 'operations' => false]);
     }
 
-    public function testBaseUrl()
+    public function testTopLevelParameters()
     {
         $d = new Description([
             'name' => 'test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => []
         ]);
-        $this->assertEquals($d->getBaseUrl(), 'http://www.foo.local');
+
+        $this->assertEquals('http://www.foo.local',$d->getBaseUrl());
+        $this->assertEquals('test',$d->getName());
     }
 
     public function testGetOperation()
@@ -102,5 +106,91 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException(FileNotFoundException::class);
 
         $d = Description::loadFromFile('foo');
+    }
+
+    public function testNoCache()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => []
+        ]);
+
+        $this->assertFalse($d->wantsCache());
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $d->getCachePool();
+    }
+
+    public function testHasCache()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'cache' => [
+                'driver' => [
+                    'name' => 'Ephemeral',
+                    'options' => []
+                ]
+            ],
+            'operations' => []
+        ]);
+
+        $this->assertTrue($d->wantsCache());
+        $this->assertTrue($d->getCachePool() instanceof Pool);
+    }
+
+    public function testInvalidCacheDriver()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'cache' => [
+                'driver' => [
+                    'name' => 'invalid',
+                    'options' => []
+                ]
+            ],
+            'operations' => []
+        ]);
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $d->getCachePool();
+    }
+
+    public function testNoCircuitBreaker()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => []
+        ]);
+
+        $this->assertFalse($d->wantsCircuitBreaker());
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $d->getCircuitBreaker();
+    }
+
+    public function testHasCircuitBreaker()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'cache' => [
+                'driver' => [
+                    'name' => 'Ephemeral',
+                    'options' => []
+                ]
+            ],
+            'circuitBreaker' => [
+                'failureThreshold' => 10
+            ],
+            'operations' => []
+        ]);
+
+        $this->assertTrue($d->wantsCircuitBreaker());
+        $this->assertTrue($d->getCircuitBreaker() instanceof CircuitBreaker);
+        $this->assertEquals(10, $d->getCircuitBreaker()->getFailureThreshold());
     }
 }

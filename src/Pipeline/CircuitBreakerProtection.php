@@ -4,6 +4,7 @@ namespace STS\Sdk\Pipeline;
 use Closure;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
+use Prophecy\Exception\Exception;
 use STS\Sdk\Exceptions\CircuitBreakerOpenException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 use STS\Sdk\Request;
@@ -19,19 +20,21 @@ class CircuitBreakerProtection implements PipeInterface
      * @param Closure $next
      *
      * @return mixed
+     * @throws CircuitBreakerOpenException
      * @throws ServiceUnavailableException
+     * @throws Exception
      */
     public function handle(Request $request, Closure $next)
     {
         // If this service description doesn't specify a circuit breaker, just move right along
-        if(!$request->getDescription()->wantsCircuitBreaker()) {
+        if (!$request->getDescription()->wantsCircuitBreaker()) {
             return $next($request);
         }
 
         $circuitBreaker = $request->getDescription()->getCircuitBreaker();
 
         // If the breaker is already tripped, we halt
-        if(!$circuitBreaker->isAvailable()) {
+        if (!$circuitBreaker->isAvailable()) {
             throw new CircuitBreakerOpenException();
         }
 
@@ -42,20 +45,18 @@ class CircuitBreakerProtection implements PipeInterface
 
             return $result;
 
-        } catch(ClientException $e) {
-            // This is specifically a 4xx response, which means the server was reached and deliberately
-            // returned an error. We consider this a success.
-            $circuitBreaker->success();
-
-            // Bubble up
-            throw $e;
-
-        } catch(BadResponseException $e) {
-            // Ok now that we filtered out 4xx above, we can assume this is a 5xx error. A failure.
+        } catch (BadResponseException $e) {
+            // This is the only exception we consider to mean failure.
             $circuitBreaker->failure();
 
             // Throw our own exception, but with previous included
             throw new ServiceUnavailableException("Unable to reach [" . $request->getServiceName() . "]", 503, $e);
+
+        } catch (Exception $e) {
+            // All other exceptions we assume are intention errors from the remote service, and we still succeeding
+            $circuitBreaker->success();
+
+            throw $e;
         }
 
     }

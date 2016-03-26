@@ -4,6 +4,7 @@ namespace STS\Sdk;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
 use STS\Sdk\Exceptions\CircuitBreakerOpenException;
+use STS\Sdk\Exceptions\ServiceResponseException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 
 class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
@@ -33,7 +34,11 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
             'error400WithNoBody' => [
                 'httpMethod' => 'GET',
                 'uri' => '/bin/0704da9e-bdab-40e8-8ac2-7a76bae5f7fa'
-            ]
+            ],
+            'remoteErrorWithDefaultException' => [
+                'httpMethod' => 'GET',
+                'uri' => '/bin/e59a596a-5965-4e00-a1f8-f50474ddd9d3'
+            ],
         ]
     ];
 
@@ -54,14 +59,28 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
         $client->failure();
     }
 
-    public function test400ErrorDoesNotCauseCircuitBreakerException()
+    public function test400WithValidErrorPayloadDoesNotCauseCircuitBreakerFailure()
     {
-        // We want to ensure that a 4XX error (instead of 5XX) is unhandled by circuit breaker,
-        // and our normal error parsing/handling takes over
+        // We're going to call an endpoint that results in a 400 failure,
+        // however it contains a valid JSON error payload. We do NOT want this
+        // to result in a circuit breaker failure. Instead we expect a generic
+        // ServiceResponseException
 
         $client = new Client($this->description);
 
-        $this->setExpectedException(ClientException::class);
+        $this->setExpectedException(ServiceResponseException::class);
+
+        $client->remoteErrorWithDefaultException();
+    }
+
+    public function test400WithInvalidErrorPayloadCausesCircuitBreakerFailure()
+    {
+        // A 4XX response with a valid error payload should not trigger circuit breaker,
+        // however a 4XX _without_ a valid error payload should:
+
+        $client = new Client($this->description);
+
+        $this->setExpectedException(ServiceUnavailableException::class);
 
         $client->error400WithNoBody();
     }

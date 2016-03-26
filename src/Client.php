@@ -7,6 +7,8 @@ use Illuminate\Pipeline\Pipeline;
 use Stash\Pool;
 use STS\Sdk\Pipeline\Caching;
 use STS\Sdk\Pipeline\CircuitBreakerProtection;
+use STS\Sdk\Pipeline\HandleError;
+use STS\Sdk\Pipeline\SendRequest;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Pipeline\BuildUri;
@@ -41,18 +43,14 @@ class Client
     /**
      * @var array
      */
-    protected $basePipes = [
-        CircuitBreakerProtection::class,
+    protected $pipes = [
         ValidateArguments::class,
         Caching::class,
         BuildBody::class,
         BuildUri::class,
+        CircuitBreakerProtection::class,
+        HandleError::class
     ];
-
-    /**
-     * @var array
-     */
-    protected $servicePipes = [];
 
     /**
      * @param null $description
@@ -114,7 +112,7 @@ class Client
      */
     public function appendPipe($pipe)
     {
-        $this->basePipes[] = $pipe;
+        $this->pipes[] = $pipe;
     }
 
     /**
@@ -122,7 +120,7 @@ class Client
      */
     public function prependPipe($pipe)
     {
-        array_unshift($this->basePipes, $pipe);
+        array_unshift($this->pipes, $pipe);
     }
 
     /**
@@ -170,23 +168,19 @@ class Client
      */
     protected function handle($request)
     {
-        return $this->getPipeline()->send($request)
-            ->through(array_merge($this->basePipes, $this->servicePipes))
-            ->then(function ($request) {
-                try {
-                    $response = $request->send();
+        return $this->getPipeline()
+            ->send($request)
+            ->through($this->pipes)
+            ->then(function($request) {
+                $response = $request->send();
 
-                    // Try to decode it
-                    $body = (string) $response->getBody();
-                    if(is_array(json_decode($body, true))) {
-                        $body = json_decode($body, true);
-                    }
-
-                    return $body;
-
-                } catch(ClientException $e) {
-                    (new ErrorHandler())->handleClientError($e, $this->getDescription()->getErrorHandlers());
+                // Try to decode it
+                $body = (string) $response->getBody();
+                if(is_array(json_decode($body, true))) {
+                    $body = json_decode($body, true);
                 }
+
+                return $body;
             });
     }
 

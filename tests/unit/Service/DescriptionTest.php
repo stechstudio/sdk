@@ -64,7 +64,10 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
             ]
         ]);
 
+        $this->assertTrue($d->hasOperation("foo"));
         $this->assertTrue($d->getOperation('foo', []) instanceof Operation);
+
+        $this->assertFalse($d->hasOperation("bar"));
         $this->assertNull($d->getOperation('bar'));
     }
 

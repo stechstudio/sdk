@@ -196,6 +196,52 @@ class OperationTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(array_key_exists('bar', $o->getValidationRules()));
         $this->assertTrue(array_key_exists('bar', $o->getData()));
     }
+
+    public function testCache()
+    {
+        $o = new Operation("foo", [
+            'httpMethod' => 'POST'
+        ], []);
+
+        $this->assertFalse($o->wantsCache());
+        $this->assertFalse($o->prefersCache());
+
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET'
+        ], []);
+
+        $this->assertTrue($o->wantsCache());
+        $this->assertFalse($o->prefersCache());
+
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET',
+            'cache' => [
+                'fallback' => false
+            ]
+        ], []);
+
+        $this->assertFalse($o->wantsCache());
+        $this->assertFalse($o->prefersCache());
+
+        $o = new Operation("foo", [
+            'httpMethod' => 'POST',
+            'cache' => [
+                'fallback' => true
+            ]
+        ], []);
+
+        $this->assertTrue($o->wantsCache());
+        $this->assertFalse($o->prefersCache());
+
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET',
+            'cache' => [
+                'prefers' => true
+            ]
+        ], []);
+
+        $this->assertTrue($o->prefersCache());
+    }
 }
 
 

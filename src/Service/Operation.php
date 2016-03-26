@@ -1,13 +1,21 @@
 <?php
 namespace STS\Sdk\Service;
 
+    /**
+     * Class Operation
+     * @package RC\Sdk
+     */
+    /**
+     * Class Operation
+     * @package RC\Sdk\Config
+     */
 /**
  * Class Operation
- * @package RC\Sdk
+ * @package STS\Sdk\Service
  */
 /**
  * Class Operation
- * @package RC\Sdk\Config
+ * @package STS\Sdk\Service
  */
 /**
  * Class Operation
@@ -69,7 +77,7 @@ class Operation
     {
         $rules = [];
 
-        foreach($this->getParameters() AS $parameter) {
+        foreach ($this->getParameters() AS $parameter) {
             $rules[$parameter->getName()] = $parameter->getValidate();
         }
 
@@ -83,9 +91,7 @@ class Operation
      */
     public function getParameter($name)
     {
-        return array_key_exists($name, $this->parameters)
-            ? $this->parameters[$name]
-            : null;
+        return array_get($this->parameters, $name);
     }
 
     /**
@@ -113,25 +119,27 @@ class Operation
      *
      * @return bool
      */
-    public function allowAdditionalParametersAt($location) {
+    public function allowAdditionalParametersAt($location)
+    {
         return $this->additionalParameters instanceof Parameter
-            && $this->additionalParameters->getLocation() == $location;
+        && $this->additionalParameters->getLocation() == $location;
     }
 
     /**
-     * Return the full data, including defaults. Note we have to getName() here because the parameter may have an alternate key (`sentAs`)
+     * Return the full data, including defaults. Note we have to getName() here because the parameter may have an
+     * alternate key (`sentAs`)
      */
     public function getData()
     {
         $return = [];
 
         // First get the data that belongs with out mapped parameters
-        foreach($this->getParameters() AS $parameter) {
+        foreach ($this->getParameters() AS $parameter) {
             $return[$parameter->getName()] = $parameter->getValue();
         }
 
         // Do we allow additional parameters? If so, add the rest of the data
-        if($this->additionalParameters != null) {
+        if ($this->additionalParameters != null) {
             $return = $return + array_diff_key($this->data, $this->getParameters());
         }
 
@@ -150,16 +158,32 @@ class Operation
         $return = [];
 
         // First get the data that matches parameters at this location
-        foreach($this->getParametersByLocation($location) AS $parameter) {
+        foreach ($this->getParametersByLocation($location) AS $parameter) {
             $return[$parameter->getName()] = $parameter->getValue();
         }
 
         // Now add the additional data only if we allow at this location
-        if($this->additionalParameters != null && $this->additionalParameters->getLocation() == $location) {
+        if ($this->additionalParameters != null && $this->additionalParameters->getLocation() == $location) {
             $return = $return + array_diff_key($this->data, $this->getParameters());
         }
 
         return $return;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function wantsCache()
+    {
+        return (bool)array_get($this->config, "cache.fallback", $this->getHttpMethod() == "GET");
+    }
+
+    /**
+     * @return bool
+     */
+    public function prefersCache()
+    {
+        return (bool)array_get($this->config, "cache.prefers", false);
     }
 
     /**
@@ -180,7 +204,7 @@ class Operation
             $this->parameters[$name] = new Parameter($name, $value, $config);
         }
 
-        if (isset($this->config['additionalParameters']) && is_array($this->config['additionalParameters'])) {
+        if (is_array(array_get($this->config, 'additionalParameters'))) {
             $this->additionalParameters = new Parameter('*', null, $this->config['additionalParameters']);
         }
     }

@@ -40,10 +40,11 @@ class CacheFallback implements PipeInterface
             return $next($request);
         }
 
+        $this->cache->setPool($request->getDescription()->getCachePool());
+
         try {
             $response = $next($request);
 
-            // Store/update cache
             $this->cache->store($request, $response);
 
             return $response;

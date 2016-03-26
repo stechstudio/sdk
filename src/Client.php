@@ -5,7 +5,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Pipeline\Pipeline;
 use Stash\Pool;
-use STS\Sdk\Pipeline\Caching;
+use STS\Sdk\Pipeline\CacheFallback;
 use STS\Sdk\Pipeline\CircuitBreakerProtection;
 use STS\Sdk\Pipeline\HandleError;
 use STS\Sdk\Pipeline\SendRequest;
@@ -41,13 +41,16 @@ class Client
     protected $description;
 
     /**
+     * The order of some of these pipes is pretty important.
+     * Don't re-order these unless you've really thought through it.
+     *
      * @var array
      */
     protected $pipes = [
         ValidateArguments::class,
-        Caching::class,
         BuildBody::class,
         BuildUri::class,
+        CacheFallback::class,
         CircuitBreakerProtection::class,
         HandleError::class
     ];
@@ -133,7 +136,7 @@ class Client
      */
     public function __call($name, $arguments)
     {
-        if (!$this->getDescription()->getOperation($name)) {
+        if (!$this->getDescription()->hasOperation($name)) {
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
@@ -148,7 +151,7 @@ class Client
      *
      * @return Request
      */
-    protected function prepareRequest($name, $data)
+    public function prepareRequest($name, $data)
     {
         return new Request(
             $this->getClient(),

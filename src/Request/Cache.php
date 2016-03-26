@@ -58,8 +58,6 @@ class Cache
      */
     public function store(Request $request, $response)
     {
-        $this->setPool($request->getDescription()->getCachePool());
-
         $item = $this->getPool()->getItem($this->getCacheKey($request))->set($response);
 
         $this->getPool()->save($item);
@@ -72,8 +70,6 @@ class Cache
      */
     public function has(Request $request)
     {
-        $this->setPool($request->getDescription()->getCachePool());
-
         return $this->getPool()->getItem($this->getCacheKey($request))->isHit();
     }
 
@@ -84,8 +80,6 @@ class Cache
      */
     public function get(Request $request)
     {
-        $this->setPool($request->getDescription()->getCachePool());
-
         return $this->getPool()->getItem($this->getCacheKey($request))->get();
     }
 

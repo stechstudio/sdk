@@ -3,7 +3,7 @@ namespace STS\Sdk\Pipeline;
 
 use Closure;
 use STS\Sdk\Request;
-use STS\Sdk\Request\Uri;
+use STS\Sdk\Request\UriBuilder;
 
 /**
  * Class BuildUri
@@ -12,14 +12,14 @@ use STS\Sdk\Request\Uri;
 class BuildUri implements PipeInterface
 {
     /**
-     * @var Uri
+     * @var UriBuilder
      */
     private $uri;
 
     /**
-     * @param Uri $uri
+     * @param UriBuilder $uri
      */
-    public function __construct(Uri $uri)
+    public function __construct(UriBuilder $uri)
     {
         $this->uri = $uri;
     }

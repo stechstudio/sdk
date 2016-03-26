@@ -24,6 +24,10 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
         ],
         'operations' => [
             'success' => [
+                'cache' => [
+                    // We have to explicitely disable fallback caching here to accurately test the circuit breaker
+                    'fallback' => false
+                ],
                 'httpMethod' => 'GET',
                 'uri' => '/bin/f738e274-ba99-4405-accd-5bfb0358f27b'
             ],
@@ -134,37 +138,56 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
     {
         try {
             $client->failure();
-        } catch(ServiceUnavailableException $e) {}
+        } catch (ServiceUnavailableException $e) {
+        }
     }
 }
 
 
-class MyLogger implements LoggerInterface {
-    public function emergency($message, array $context = array()) {
+class MyLogger implements LoggerInterface
+{
+    public function emergency($message, array $context = array())
+    {
         throw new \Exception('emergency');
     }
-    public function alert($message, array $context = array()) {
+
+    public function alert($message, array $context = array())
+    {
         throw new \Exception('alert');
     }
-    public function critical($message, array $context = array()) {
+
+    public function critical($message, array $context = array())
+    {
         throw new \Exception('critical');
     }
-    public function error($message, array $context = array()) {
+
+    public function error($message, array $context = array())
+    {
         throw new \Exception('error');
     }
-    public function warning($message, array $context = array()) {
+
+    public function warning($message, array $context = array())
+    {
         throw new \Exception('warning');
     }
-    public function notice($message, array $context = array()) {
+
+    public function notice($message, array $context = array())
+    {
         throw new \Exception('notice');
     }
-    public function info($message, array $context = array()) {
+
+    public function info($message, array $context = array())
+    {
         throw new \Exception('info');
     }
-    public function debug($message, array $context = array()) {
+
+    public function debug($message, array $context = array())
+    {
         throw new \Exception('debug');
     }
-    public function log($level, $message, array $context = array()) {
+
+    public function log($level, $message, array $context = array())
+    {
         return $this->{$level}($message, $context);
     }
 }

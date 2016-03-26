@@ -12,7 +12,7 @@ namespace STS\Sdk\Request;
  * Class Uri
  * @package STS\Sdk\Request
  */
-class Uri
+class UriBuilder
 {
     /**
      * @var string

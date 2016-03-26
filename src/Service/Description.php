@@ -48,11 +48,21 @@ class Description
      */
     public static function loadFromFile($descriptionFile)
     {
-        if(!file_exists($descriptionFile)) {
+        if (!file_exists($descriptionFile)) {
             throw new FileNotFoundException("Description file not found");
         }
 
         return new static(include($descriptionFile));
+    }
+
+    /**
+     * @param $name
+     *
+     * @return bool
+     */
+    public function hasOperation($name)
+    {
+        return array_has($this->config['operations'], $name);
     }
 
     /**
@@ -63,7 +73,7 @@ class Description
      */
     public function getOperation($name, $data = [])
     {
-        return array_key_exists($name, $this->config['operations'])
+        return array_has($this->config['operations'], $name)
             ? new Operation($name, $this->config['operations'][$name], $data)
             : null;
     }
@@ -89,9 +99,7 @@ class Description
      */
     public function getErrorHandlers()
     {
-        return isset($this->config['errorHandlers']) && is_array($this->config['errorHandlers'])
-            ? $this->config['errorHandlers']
-            : [];
+        return (array)array_get($this->config, 'errorHandlers');
     }
 
     /**
@@ -99,7 +107,7 @@ class Description
      */
     public function wantsCache()
     {
-        return isset($this->config['cache']) && isset($this->config['cache']['driver']);
+        return array_has($this->config, 'cache.driver');
     }
 
     /**
@@ -107,7 +115,7 @@ class Description
      */
     public function getCachePool()
     {
-        if(!$this->cachePool) {
+        if (!$this->cachePool) {
             $this->cachePool = $this->buildCachePool();
         }
 
@@ -127,21 +135,17 @@ class Description
      */
     protected function buildCacheDriver()
     {
-        if(!$this->wantsCache() ||
-            !is_array($this->config['cache']['driver']) ||
-            !isset($this->config['cache']['driver']['name']) || !
-            isset($this->config['cache']['driver']['options'])) {
-
+        if (!$this->wantsCache()) {
             throw new \InvalidArgumentException("No valid cache driver config found");
         }
 
-        $driverClass = DriverList::getDriverClass($this->config['cache']['driver']['name']);
+        $driverClass = DriverList::getDriverClass(array_get($this->config, "cache.driver.name"));
 
-        if(!$driverClass) {
-            throw new \InvalidArgumentException("Invalid cache driver [" . $this->config['cache']['driver']['name'] . "]");
+        if (!$driverClass) {
+            throw new \InvalidArgumentException("Invalid cache driver [" . array_get($this->config, "cache.driver.name") . "]");
         }
 
-        $driver = new $driverClass($this->config['cache']['driver']['options']);
+        $driver = new $driverClass((array)array_get($this->config, "cache.driver.options"));
 
         return $driver;
     }
@@ -151,7 +155,7 @@ class Description
      */
     public function wantsCircuitBreaker()
     {
-        return isset($this->config['circuitBreaker']) && is_array($this->config['circuitBreaker']);
+        return is_array(array_get($this->config, 'circuitBreaker'));
     }
 
     /**
@@ -159,7 +163,7 @@ class Description
      */
     public function getCircuitBreaker()
     {
-        if(!$this->circuitBreaker) {
+        if (!$this->circuitBreaker) {
             $this->circuitBreaker = $this->buildCircuitBreaker();
         }
 
@@ -174,7 +178,6 @@ class Description
         $breaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor()))->setName($this->getName());
 
         return (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
-
     }
 
     /**
@@ -182,14 +185,13 @@ class Description
      */
     protected function verifyConfig()
     {
-        foreach(['name','baseUrl','operations'] AS $key)
-        {
-            if(!array_key_exists($key, $this->config)) {
+        foreach (['name', 'baseUrl', 'operations'] AS $key) {
+            if (!array_key_exists($key, $this->config)) {
                 throw new \InvalidArgumentException("Description must contain the top-level key '$key'");
             }
         }
 
-        if(!is_array($this->config['operations'])) {
+        if (!is_array($this->config['operations'])) {
             throw new \InvalidArgumentException("List of 'operations' must be an array");
         }
     }

@@ -74,7 +74,7 @@ class CacheFallbackTest extends \PHPUnit_Framework_TestCase
         );
 
         $client = new Client($description);
-        $cache = new Cache(new Pool());
+        $cache = new Cache($description->getCachePool());
 
         // This just works
         $this->assertEquals("ok", $client->success());
@@ -89,6 +89,7 @@ class CacheFallbackTest extends \PHPUnit_Framework_TestCase
 
         // This one is the working endpoint, but we're tripping the breaker first
         $client->getCircuitBreaker()->trip();
+        $this->assertFalse($client->isAvailable());
         $cache->store($request, "ok from cache again");
         $this->assertEquals("ok from cache again", $client->success());
 

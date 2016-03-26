@@ -3,6 +3,7 @@ namespace STS\Sdk\Pipeline;
 
 use Closure;
 use STS\Sdk\Request;
+use STS\Sdk\Request\Uri;
 
 /**
  * Class BuildUri
@@ -11,6 +12,19 @@ use STS\Sdk\Request;
 class BuildUri implements PipeInterface
 {
     /**
+     * @var Uri
+     */
+    private $uri;
+
+    /**
+     * @param Uri $uri
+     */
+    public function __construct(Uri $uri)
+    {
+        $this->uri = $uri;
+    }
+
+    /**
      * @param Request $request
      * @param Closure $next
      *
@@ -18,52 +32,15 @@ class BuildUri implements PipeInterface
      */
     public function handle(Request $request, Closure $next)
     {
-        $uriData = $request->getOperation()->getDataByLocation("uri");
-        $uriString = $this->getUriString($request->getDescription()->getBaseUrl(), $request->getOperation()->getUri());
-
-        $uri = $this->prepareUri($uriString, $uriData);
-
-        $queryData = $request->getOperation()->getDataByLocation("query");
-
-        if(count($queryData)) {
-            $uri .= "?" . http_build_query($queryData);
-        }
+        $uri = $this->uri->prepare(
+            $request->getDescription()->getBaseUrl(),
+            $request->getOperation()->getUri(),
+            $request->getOperation()->getDataByLocation("uri"),
+            $request->getOperation()->getDataByLocation("query")
+        );
 
         $request->setUri($uri);
 
         return $next($request);
-    }
-
-    /**
-     * @param $baseUri
-     * @param $uri
-     *
-     * @return string
-     */
-    protected function getUriString($baseUri, $uri)
-    {
-        if(strpos($uri, "http") === 0) {
-            // The config uri is a full url, just use it
-            return $uri;
-        }
-
-        // Otherwise append our uri to the existing baseUri
-        return $baseUri . $uri;
-    }
-
-    /**
-     * @param $string
-     * @param $arguments
-     *
-     * @return mixed
-     */
-    protected function prepareUri($string, $arguments)
-    {
-        $preparedArguments = [];
-        foreach($arguments AS $key => $value) {
-            $preparedArguments["{" . $key . "}"] = $value;
-        }
-
-        return str_replace(array_keys($preparedArguments), array_values($preparedArguments), $string);
     }
 }

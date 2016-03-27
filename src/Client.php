@@ -8,6 +8,7 @@ use Stash\Pool;
 use STS\Sdk\Pipeline\CacheFallback;
 use STS\Sdk\Pipeline\CircuitBreakerProtection;
 use STS\Sdk\Pipeline\HandleError;
+use STS\Sdk\Pipeline\LogRequest;
 use STS\Sdk\Pipeline\SendRequest;
 use STS\Sdk\Service\Description;
 use STS\Sdk\Pipeline\BuildBody;
@@ -51,6 +52,7 @@ class Client
         BuildBody::class,
         BuildUri::class,
         CacheFallback::class,
+        LogRequest::class,
         CircuitBreakerProtection::class,
         HandleError::class
     ];

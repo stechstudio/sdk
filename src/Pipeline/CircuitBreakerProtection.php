@@ -45,13 +45,11 @@ class CircuitBreakerProtection implements PipeInterface
 
             return $result;
 
-        } catch (BadResponseException $e) {
+        } catch (ServiceUnavailableException $e) {
             // This is the only exception we consider to mean failure.
             $circuitBreaker->failure();
 
-            // Throw our own exception, but with previous included
-            throw new ServiceUnavailableException("Unable to reach [" . $request->getServiceName() . "]", 503, $e);
-
+            throw $e;
         } catch (Exception $e) {
             // All other exceptions we assume are intention errors from the remote service, and we still succeeding
             $circuitBreaker->success();

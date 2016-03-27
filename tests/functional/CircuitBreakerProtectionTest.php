@@ -84,7 +84,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 
         $client = new Client($this->description);
 
-        $this->setExpectedException(ServiceUnavailableException::class);
+        $this->setExpectedException(ClientException::class);
 
         $client->error400WithNoBody();
     }
@@ -126,12 +126,14 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
     {
         // Add in our logger class
         $description = $this->description;
-        $description['circuitBreaker']['logger'] = MyLogger::class;
+        $description['logger'] = MyLogger::class;
 
         $client = new Client($description);
 
-        $this->setExpectedException(\Exception::class, "error");
+        $GLOBALS['loglevel'] = '';
         $this->callFailureAndSuppress($client);
+
+        $this->assertEquals("error", $GLOBALS['loglevel']);
     }
 
     protected function callFailureAndSuppress($client)
@@ -146,48 +148,31 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 
 class MyLogger implements LoggerInterface
 {
-    public function emergency($message, array $context = array())
-    {
-        throw new \Exception('emergency');
+    public function emergency($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'emergency';
     }
-
-    public function alert($message, array $context = array())
-    {
-        throw new \Exception('alert');
+    public function alert($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'alert';
     }
-
-    public function critical($message, array $context = array())
-    {
-        throw new \Exception('critical');
+    public function critical($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'critical';
     }
-
-    public function error($message, array $context = array())
-    {
-        throw new \Exception('error');
+    public function error($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'error';
     }
-
-    public function warning($message, array $context = array())
-    {
-        throw new \Exception('warning');
+    public function warning($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'warning';
     }
-
-    public function notice($message, array $context = array())
-    {
-        throw new \Exception('notice');
+    public function notice($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'notice';
     }
-
-    public function info($message, array $context = array())
-    {
-        throw new \Exception('info');
+    public function info($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'info';
     }
-
-    public function debug($message, array $context = array())
-    {
-        throw new \Exception('debug');
+    public function debug($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'debug';
     }
-
-    public function log($level, $message, array $context = array())
-    {
+    public function log($level, $message, array $context = array()) {
         return $this->{$level}($message, $context);
     }
 }

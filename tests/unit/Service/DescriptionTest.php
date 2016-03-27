@@ -3,8 +3,10 @@ namespace STS\Sdk\Service;
 
 use PHPUnit_Framework_TestCase;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker;
+use STS\Sdk\Client;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 class DescriptionTest extends PHPUnit_Framework_TestCase
@@ -195,5 +197,61 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($d->wantsCircuitBreaker());
         $this->assertTrue($d->getCircuitBreaker() instanceof CircuitBreaker);
         $this->assertEquals(10, $d->getCircuitBreaker()->getFailureThreshold());
+    }
+
+    public function testHasLogger()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => [],
+            'logger' => DescriptionTestLogger::class
+        ]);
+
+        $this->assertTrue($d->hasLogger());
+        $this->assertTrue($d->getLogger() instanceof DescriptionTestLogger);
+    }
+
+    public function testHasInvalidLogger()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => [],
+            'logger' => Client::class
+        ]);
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $d->getLogger();
+    }
+}
+
+class DescriptionTestLogger implements LoggerInterface {
+    public function emergency($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'emergency';
+    }
+    public function alert($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'alert';
+    }
+    public function critical($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'critical';
+    }
+    public function error($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'error';
+    }
+    public function warning($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'warning';
+    }
+    public function notice($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'notice';
+    }
+    public function info($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'info';
+    }
+    public function debug($message, array $context = array()) {
+        $GLOBALS['loglevel'] = 'debug';
+    }
+    public function log($level, $message, array $context = array()) {
+        return $this->{$level}($message, $context);
     }
 }

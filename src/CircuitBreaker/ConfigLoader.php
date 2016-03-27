@@ -26,7 +26,6 @@ class ConfigLoader
             ->setBreaker($breaker)
             ->loadAttributes($config)
             ->registerCallbacks($config)
-            ->setLogger($config)
             ->getBreaker();
     }
 
@@ -78,20 +77,6 @@ class ConfigLoader
             foreach ($config['handlers'] AS $event => $handler) {
                 $this->getBreaker()->registerCallback($event, $handler);
             }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param array $config
-     *
-     * @return $this
-     */
-    public function setLogger(array $config)
-    {
-        if(isset($config['logger'])) {
-            $this->getBreaker()->getMonitor()->setLogger(make($config['logger']));
         }
 
         return $this;

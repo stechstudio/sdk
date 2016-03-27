@@ -1,6 +1,7 @@
 <?php
 namespace STS\Sdk\Service;
 
+use Psr\Log\LoggerInterface;
 use Stash\DriverList;
 use Stash\Interfaces\DriverInterface;
 use Stash\Pool;
@@ -105,6 +106,28 @@ class Description
     /**
      * @return bool
      */
+    public function hasLogger()
+    {
+        return isset($this->config['logger']);
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        $logger = make($this->config['logger']);
+
+        if(!$logger instanceof LoggerInterface) {
+            throw new \InvalidArgumentException("Invalid logger provided");
+        }
+
+        return $logger;
+    }
+
+    /**
+     * @return bool
+     */
     public function wantsCache()
     {
         return array_has($this->config, 'cache.driver');
@@ -155,7 +178,7 @@ class Description
      */
     public function wantsCircuitBreaker()
     {
-        return is_array(array_get($this->config, 'circuitBreaker'));
+        return $this->wantsCache() && is_array(array_get($this->config, 'circuitBreaker'));
     }
 
     /**
@@ -177,7 +200,13 @@ class Description
     {
         $breaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor()))->setName($this->getName());
 
-        return (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
+        $breaker = (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
+
+        if($this->hasLogger()) {
+            $breaker->getMonitor()->setLogger($this->getLogger());
+        }
+
+        return $breaker;
     }
 
     /**

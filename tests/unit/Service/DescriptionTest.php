@@ -208,11 +208,21 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
             'name' => 'test',
             'baseUrl' => 'http://www.foo.local',
             'operations' => [],
-            'logger' => DescriptionTestLogger::class
+            'logger' => DescriptionTestLogger::class,
+            'cache' => [
+                'driver' => [
+                    'name' => 'Ephemeral',
+                    'options' => []
+                ]
+            ],
+            'circuitBreaker' => [
+                'failureThreshold' => 10
+            ],
         ]);
 
         $this->assertTrue($d->hasLogger());
         $this->assertTrue($d->getLogger() instanceof DescriptionTestLogger);
+        $this->assertTrue($d->getCircuitBreaker()->getMonitor()->getLogger() instanceof DescriptionTestLogger);
     }
 
     public function testHasInvalidLogger()
@@ -249,6 +259,20 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($d->getPrependedPipes()));
         $this->assertEquals(2, count($d->getAppendedPipes()));
+    }
+
+    public function testGetOptions()
+    {
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => [],
+            'options' => [
+                'foo' => 'bar'
+            ]
+        ]);
+
+        $this->assertEquals("bar", $d->getOptions()['foo']);
     }
 }
 

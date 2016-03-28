@@ -51,6 +51,10 @@ class Request
      */
     protected $request;
 
+    protected $options = [
+        'timeout' => 10
+    ];
+
 
     // Response from the HTTP request
 
@@ -139,7 +143,12 @@ class Request
      */
     public function send()
     {
-        return $this->client->send($this->request);
+        return $this->client->send($this->request, $this->getRequestOptions());
+    }
+
+    public function getRequestOptions()
+    {
+        return array_merge($this->options, $this->getDescription()->getOptions(), $this->getOperation()->getOptions());
     }
 
     /**

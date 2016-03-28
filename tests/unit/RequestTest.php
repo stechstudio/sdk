@@ -10,10 +10,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     protected $description = [
         'name' => 'Test',
         'baseUrl' => 'http://mockbin.org/bin',
+        'options' => [
+           "foo" => "bar",
+            "baz" => "quz"
+        ],
         'operations' => [
             'getOk' => [
                 'httpMethod' => 'GET',
-                'uri' => '/f738e274-ba99-4405-accd-5bfb0358f27b'
+                'uri' => '/f738e274-ba99-4405-accd-5bfb0358f27b',
+                'options' => [
+                    "baz" => 123
+                ]
             ]
         ]
     ];
@@ -36,5 +43,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($request->getUri() instanceof Uri);
 
         $this->assertEquals($request->getOperation()->getName(), 'getOk');
+
+        $this->assertEquals(10, $request->getRequestOptions()['timeout']);  // Request defaults
+        $this->assertEquals("bar", $request->getRequestOptions()['foo']);  // Description options
+        $this->assertEquals(123, $request->getRequestOptions()['baz']);  // Operation options, overriding description
     }
 }

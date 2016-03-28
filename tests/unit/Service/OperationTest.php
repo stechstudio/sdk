@@ -190,7 +190,7 @@ class OperationTest extends PHPUnit_Framework_TestCase
             ],
             'additionalParameters' => [],
         ], ['foo' => 123, 'abc' => 456]);
-        
+
         // Note we want to ensure that the 'foo' key is now listed as 'bar' so the
         // validation rules keys match the modified data keys
         $this->assertTrue(array_key_exists('bar', $o->getValidationRules()));
@@ -241,6 +241,18 @@ class OperationTest extends PHPUnit_Framework_TestCase
         ], []);
 
         $this->assertTrue($o->prefersCache());
+    }
+
+    public function testOptions()
+    {
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET',
+            'options' => [
+                "foo" => "bar"
+            ]
+        ], []);
+
+        $this->assertEquals("bar", $o->getOptions()['foo']);
     }
 }
 

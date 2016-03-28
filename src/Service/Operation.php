@@ -232,4 +232,12 @@ class Operation
     {
         return $this->config['uri'];
     }
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return (array)array_get($this->config, "options");
+    }
 }

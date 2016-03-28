@@ -226,6 +226,14 @@ class Description
     }
 
     /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return (array)array_get($this->config, "options");
+    }
+
+    /**
      *
      */
     protected function verifyConfig()

@@ -40,7 +40,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
     public function testCacheIsUpdated()
     {
-        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(0);
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1);
         $cache = $breaker->getCache();
 
         $breaker->failure();
@@ -54,7 +54,8 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $breaker->trip();
         $this->assertEquals(CircuitBreaker::OPEN, $cache->getItem($breaker)->get()['state']);
 
-        // Because we set autoRetry to 0, the breaker will be half-open on the next check. And success events tracked.
+        sleep(1);
+        usleep(100000);
 
         $breaker->success();
         $this->assertEquals(CircuitBreaker::HALF_OPEN, $cache->getItem($breaker)->get()['state']);

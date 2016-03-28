@@ -91,14 +91,16 @@ class CircuitBreaker implements Arrayable
      * @param Cache   $cache
      * @param History $history
      * @param Monitor $monitor
+     * @param null    $name
      */
-    public function __construct(Cache $cache, History $history, Monitor $monitor)
+    public function __construct(Cache $cache, History $history, Monitor $monitor, $name = null)
     {
         $this->state = self::CLOSED;
 
-        $this->setCache($cache);
+        $this->name = $name;
         $this->history = $history;
         $this->monitor = $monitor;
+        $this->setCache($cache);
     }
 
     /**
@@ -129,7 +131,10 @@ class CircuitBreaker implements Arrayable
     public function setCache(Cache $cache)
     {
         $this->cache = $cache;
-        $this->cache->load($this);
+
+        if($this->name != null) {
+            $this->cache->load($this);
+        }
 
         return $this;
     }
@@ -419,6 +424,10 @@ class CircuitBreaker implements Arrayable
         // These are the events we specifically need to track in our history
         if ($this->getState() == self::CLOSED && $event == "failure" || $this->getState() == self::HALF_OPEN && $event == "success") {
             $this->history->add($event);
+            $this->save();
+        }
+
+        if($event == "trip" || $event == "reset") {
             $this->save();
         }
 

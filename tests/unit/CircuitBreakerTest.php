@@ -93,15 +93,7 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $item = $pool->getItem('Sdk/CircuitBreaker/Foo');
 
         $array = [
-            'state' => CircuitBreaker::HALF_OPEN,
-            'history' => [
-                'failure' => [
-                    new \DateTime()
-                ],
-                'success' => [
-                    new \DateTime(), new \DateTime()
-                ]
-            ],
+            'history' => [],
             'lastTrippedAt' => null
         ];
 
@@ -109,11 +101,16 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $pool->save($item);
         $cache = new Cache($pool);
 
+        /** @var CircuitBreaker $breaker */
         $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache)->setFailureThreshold(3)->setFailureInterval(1);
 
         // Ok, so we want to fail three times and ensure the breaker is tripped
         $breaker->failure(); $breaker->failure(); $breaker->failure();
 
+        $this->assertFalse($breaker->isAvailable());
+
+        // Recreate the breaker, make sure it loads from cache and is still tripped
+        $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache)->setFailureThreshold(3)->setFailureInterval(1);
         $this->assertFalse($breaker->isAvailable());
 
         // Awesome. Now let's reset.

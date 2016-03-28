@@ -198,7 +198,7 @@ class Description
      */
     protected function buildCircuitBreaker()
     {
-        $breaker = (new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor()))->setName($this->getName());
+        $breaker = new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor(), $this->getName());
 
         $breaker = (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
 

@@ -173,9 +173,15 @@ class Client
      */
     protected function handle($request)
     {
+        $pipes = array_merge(
+            $this->getDescription()->getPrependedPipes(),
+            $this->pipes,
+            $this->getDescription()->getAppendedPipes()
+        );
+
         return $this->getPipeline()
             ->send($request)
-            ->through($this->pipes)
+            ->through($pipes)
             ->then(function($request) {
                 $response = $request->send();
 

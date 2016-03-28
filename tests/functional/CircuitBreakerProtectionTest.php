@@ -26,7 +26,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
         'operations' => [
             'success' => [
                 'cache' => [
-                    // We have to explicitely disable fallback caching here to accurately test the circuit breaker
+                    // We have to explicitly disable fallback caching here to accurately test the circuit breaker
                     'fallback' => false
                 ],
                 'httpMethod' => 'GET',

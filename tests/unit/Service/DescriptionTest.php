@@ -1,12 +1,15 @@
 <?php
 namespace STS\Sdk\Service;
 
+use Closure;
 use PHPUnit_Framework_TestCase;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker;
 use STS\Sdk\Client;
+use STS\Sdk\Pipeline\PipeInterface;
+use STS\Sdk\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 class DescriptionTest extends PHPUnit_Framework_TestCase
@@ -224,6 +227,29 @@ class DescriptionTest extends PHPUnit_Framework_TestCase
         $this->setExpectedException(\InvalidArgumentException::class);
         $d->getLogger();
     }
+
+    public function testAdditionalPipes()
+    {
+        $GLOBALS['pipes'] = [];
+
+        $d = new Description([
+            'name' => 'test',
+            'baseUrl' => 'http://www.foo.local',
+            'operations' => [],
+            'pipeline' => [
+                'prepend' => [
+                    DescriptionTestPipe1::class
+                ],
+                'append' => [
+                    DescriptionTestPipe2::class,
+                    DescriptionTestPipe3::class
+                ]
+            ]
+        ]);
+
+        $this->assertEquals(1, count($d->getPrependedPipes()));
+        $this->assertEquals(2, count($d->getAppendedPipes()));
+    }
 }
 
 class DescriptionTestLogger implements LoggerInterface {
@@ -253,5 +279,26 @@ class DescriptionTestLogger implements LoggerInterface {
     }
     public function log($level, $message, array $context = array()) {
         return $this->{$level}($message, $context);
+    }
+}
+
+
+class DescriptionTestPipe1 implements PipeInterface {
+    public function handle(Request $request, Closure $next) {
+        $GLOBALS['pipes'][] = "Inside Pipe1";
+        return $next($request);
+    }
+}
+
+class DescriptionTestPipe2 implements PipeInterface {
+    public function handle(Request $request, Closure $next) {
+        $GLOBALS['pipes'][] = "Inside Pipe2";
+        return $next($request);
+    }
+}
+class DescriptionTestPipe3 implements PipeInterface {
+    public function handle(Request $request, Closure $next) {
+        $GLOBALS['pipes'][] = "Inside Pipe3";
+        return $next($request);
     }
 }

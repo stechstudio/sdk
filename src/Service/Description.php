@@ -210,6 +210,22 @@ class Description
     }
 
     /**
+     * @return array
+     */
+    public function getPrependedPipes()
+    {
+        return (array)array_get($this->config, "pipeline.prepend");
+    }
+
+    /**
+     * @return array
+     */
+    public function getAppendedPipes()
+    {
+        return (array)array_get($this->config, "pipeline.append");
+    }
+
+    /**
      *
      */
     protected function verifyConfig()

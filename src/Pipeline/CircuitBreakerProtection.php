@@ -4,6 +4,7 @@ namespace STS\Sdk\Pipeline;
 use Closure;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use Prophecy\Exception\Exception;
 use STS\Sdk\Exceptions\CircuitBreakerOpenException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
@@ -47,7 +48,9 @@ class CircuitBreakerProtection implements PipeInterface
 
         } catch (ServiceUnavailableException $e) {
             // This is the only exception we consider to mean failure.
-            $circuitBreaker->failure();
+            $response = $e->getPrevious()->getResponse();
+            $context = RequestException::getResponseBodySummary($response);
+            $circuitBreaker->failure($context);
 
             throw $e;
         } catch (Exception $e) {

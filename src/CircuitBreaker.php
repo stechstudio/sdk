@@ -166,13 +166,14 @@ class CircuitBreaker implements Arrayable
             return $this;
         }
 
-        // If state is changing, clear history
-        if ($state != $this->state) {
+        $oldState = $this->state;
+        $this->state = $state;
+
+        // If state just changed, clear history
+        if ($state != $oldState) {
             $this->history->clear();
             $this->save();
         }
-
-        $this->state = $state;
 
         return $this;
     }

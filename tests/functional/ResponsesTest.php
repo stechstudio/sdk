@@ -2,6 +2,7 @@
 namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
+use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use PHPUnit_Framework_TestCase;
 
@@ -134,7 +135,7 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(ClientException::class);
+        $this->setExpectedException(ServiceErrorException::class);
 
         $client->remoteErrorWithNoBody();
     }

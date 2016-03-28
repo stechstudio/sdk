@@ -4,6 +4,7 @@ namespace STS\Sdk;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
 use STS\Sdk\Exceptions\CircuitBreakerOpenException;
+use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 
@@ -84,7 +85,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 
         $client = new Client($this->description);
 
-        $this->setExpectedException(ClientException::class);
+        $this->setExpectedException(ServiceErrorException::class);
 
         $client->error400WithNoBody();
     }
@@ -110,6 +111,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 
         // We should be available after the retry interval
         sleep($client->getCircuitBreaker()->getAutoRetryInterval());
+        usleep(100000);
         $this->assertTrue($client->getCircuitBreaker()->isAvailable());
 
         // And now just one more failure

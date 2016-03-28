@@ -125,7 +125,10 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         // And now sleep for two seconds before failing the third time. Note we set our failure interval above to 1, so we shouldn't trip.
         $this->assertEquals(1, $breaker->getFailureInterval());
+
         sleep(2);
+        usleep(100000);
+
         $breaker->failure();
 
         // And we should still be closed.

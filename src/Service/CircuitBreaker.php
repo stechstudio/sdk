@@ -6,7 +6,7 @@
  * Time: 8:26 AM
  */
 
-namespace STS\Sdk;
+namespace STS\Sdk\Service;
 
 use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
@@ -41,7 +41,7 @@ class CircuitBreaker implements Arrayable
     /**
      * @var int
      */
-    protected $state;
+    protected $state = 2;
 
     /**
      * In the Closed state, this is the number of failures (within the $failureInterval)
@@ -88,19 +88,30 @@ class CircuitBreaker implements Arrayable
     protected $monitor;
 
     /**
-     * @param Cache   $cache
-     * @param History $history
-     * @param Monitor $monitor
-     * @param null    $name
+     * @param string $name
+     * @param array  $config
      */
-    public function __construct(Cache $cache, History $history, Monitor $monitor, $name = null)
+    public function __construct($name, $config = [])
     {
-        $this->state = self::CLOSED;
-
         $this->name = $name;
-        $this->history = $history;
-        $this->monitor = $monitor;
-        $this->setCache($cache);
+        $this->loadConfig($config);
+    }
+
+    /**
+     * @param array $config
+     */
+    public function loadConfig(array $config)
+    {
+        foreach (['failureThreshold', 'failureInterval', 'successThreshold', 'autoRetryInterval'] AS $attribute) {
+            if (isset($config[$attribute])) {
+                $setter = "set" . ucwords($attribute);
+                $this->{$setter}($config[$attribute]);
+            }
+        }
+
+        foreach ((array)array_get($config, 'handlers') AS $event => $handler) {
+            $this->registerCallback($event, $handler);
+        }
     }
 
     /**
@@ -132,7 +143,7 @@ class CircuitBreaker implements Arrayable
     {
         $this->cache = $cache;
 
-        if($this->name != null) {
+        if ($this->name != null) {
             $this->cache->load($this);
         }
 
@@ -144,6 +155,10 @@ class CircuitBreaker implements Arrayable
      */
     public function getCache()
     {
+        if (!$this->cache) {
+            $this->cache = new Cache();
+        }
+
         return $this->cache;
     }
 
@@ -152,6 +167,10 @@ class CircuitBreaker implements Arrayable
      */
     public function getMonitor()
     {
+        if (!$this->monitor) {
+            $this->monitor = new Monitor();
+        }
+
         return $this->monitor;
     }
 
@@ -171,7 +190,7 @@ class CircuitBreaker implements Arrayable
 
         // If state just changed, clear history
         if ($state != $oldState) {
-            $this->history->clear();
+            $this->getHistory()->clear();
             $this->save();
         }
 
@@ -259,7 +278,7 @@ class CircuitBreaker implements Arrayable
      */
     public function getFailures()
     {
-        return $this->history->failures();
+        return $this->getHistory()->failures();
     }
 
     /**
@@ -267,7 +286,7 @@ class CircuitBreaker implements Arrayable
      */
     public function getSuccesses()
     {
-        return $this->history->successes();
+        return $this->getHistory()->successes();
     }
 
     /**
@@ -287,10 +306,14 @@ class CircuitBreaker implements Arrayable
     }
 
     /**
-     * @return array
+     * @return History
      */
     public function getHistory()
     {
+        if (!$this->history) {
+            $this->history = new History();
+        }
+
         return $this->history;
     }
 
@@ -299,7 +322,7 @@ class CircuitBreaker implements Arrayable
      */
     public function getLastTrippedAt()
     {
-        if(!$this->lastTrippedAt instanceof DateTime) {
+        if (!$this->lastTrippedAt instanceof DateTime) {
             // No valid lastTrippedAt, set it to now
             $this->setLastTrippedAt(new DateTime());
         }
@@ -404,13 +427,13 @@ class CircuitBreaker implements Arrayable
 
     /**
      * @param string $event
-     * @param mixed $callback
+     * @param mixed  $callback
      *
      * @return $this
      */
     public function registerCallback($event, $callback)
     {
-        $this->monitor->on($event, $callback);
+        $this->getMonitor()->on($event, $callback);
 
         return $this;
     }
@@ -423,15 +446,15 @@ class CircuitBreaker implements Arrayable
     {
         // These are the events we specifically need to track in our history
         if ($this->getState() == self::CLOSED && $event == "failure" || $this->getState() == self::HALF_OPEN && $event == "success") {
-            $this->history->add($event);
+            $this->getHistory()->add($event);
             $this->save();
         }
 
-        if($event == "trip" || $event == "reset") {
+        if ($event == "trip" || $event == "reset") {
             $this->save();
         }
 
-        $this->monitor->handle($event, $this, $context);
+        $this->getMonitor()->handle($event, $this, $context);
     }
 
     /**
@@ -439,7 +462,7 @@ class CircuitBreaker implements Arrayable
      */
     protected function failureThresholdReached()
     {
-        return $this->state == self::CLOSED && $this->history->failures() >= $this->getFailureThreshold();
+        return $this->getState() == self::CLOSED && $this->getHistory()->failures() >= $this->getFailureThreshold();
     }
 
     /**
@@ -447,7 +470,7 @@ class CircuitBreaker implements Arrayable
      */
     protected function successThresholdReached()
     {
-        return $this->getState() == self::HALF_OPEN && $this->history->successes() >= $this->getSuccessThreshold();
+        return $this->getState() == self::HALF_OPEN && $this->getHistory()->successes() >= $this->getSuccessThreshold();
     }
 
     /**
@@ -455,7 +478,7 @@ class CircuitBreaker implements Arrayable
      */
     protected function save()
     {
-        $this->cache->save($this);
+        $this->getCache()->save($this);
     }
 
     /**

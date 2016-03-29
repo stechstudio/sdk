@@ -1,22 +1,20 @@
 <?php
-namespace STS\Sdk\Service;
+namespace STS\Sdk;
 
 use Psr\Log\LoggerInterface;
 use Stash\DriverList;
 use Stash\Interfaces\DriverInterface;
 use Stash\Pool;
-use STS\Sdk\CircuitBreaker;
+use STS\Sdk\Service\CircuitBreaker;
 use STS\Sdk\CircuitBreaker\Cache;
-use STS\Sdk\CircuitBreaker\ConfigLoader;
-use STS\Sdk\CircuitBreaker\History;
-use STS\Sdk\CircuitBreaker\Monitor;
+use STS\Sdk\Service\Operation;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 /**
- * Class Description
+ * Class Service
  * @package RC\Sdk
  */
-class Description
+class Service
 {
     /**
      * @var
@@ -50,7 +48,7 @@ class Description
     public static function loadFromFile($descriptionFile)
     {
         if (!file_exists($descriptionFile)) {
-            throw new FileNotFoundException("Description file not found");
+            throw new FileNotFoundException("Service description file not found");
         }
 
         return new static(include($descriptionFile));
@@ -77,6 +75,14 @@ class Description
         return array_has($this->config['operations'], $name)
             ? new Operation($name, $this->config['operations'][$name], $data)
             : null;
+    }
+
+    /**
+     * @param Operation $operation
+     */
+    public function addOperation(Operation $operation)
+    {
+        $this->config['operations'][$operation->getName()] = $operation;
     }
 
     /**
@@ -201,9 +207,12 @@ class Description
      */
     protected function buildCircuitBreaker()
     {
-        $breaker = new CircuitBreaker(new Cache($this->getCachePool()), new History(), new Monitor(), $this->getName());
+        if(!is_array(array_get($this->config, 'circuitBreaker'))) {
+            throw new \InvalidArgumentException("No valid circuit breaker config found");
+        }
 
-        $breaker = (new ConfigLoader())->load($breaker, $this->config['circuitBreaker']);
+        $breaker = new CircuitBreaker($this->getName(), $this->config['circuitBreaker']);
+        $breaker->setCache(new Cache($this->getCachePool()));
 
         if($this->hasLogger()) {
             $breaker->getMonitor()->setLogger($this->getLogger());

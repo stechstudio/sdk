@@ -3,9 +3,10 @@ namespace STS\Sdk;
 
 use Closure;
 use Stash\Pool;
-use STS\Sdk\Service\Description;
+use STS\Sdk\Service;
 use InvalidArgumentException;
 use GuzzleHttp\Client AS GuzzleClient;
+use STS\Sdk\Service\CircuitBreaker;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -24,13 +25,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         // Just pass in the array
         $client = new Client($this->description);
-        $this->assertTrue($client->getDescription() instanceof Description);
-        $this->assertEquals($client->getDescription()->getBaseUrl(), 'http://mockbin.org/bin');
+        $this->assertTrue($client->getService() instanceof Service);
+        $this->assertEquals($client->getService()->getBaseUrl(), 'http://mockbin.org/bin');
 
         // Now pass in a Description instance
-        $client = new Client(new Description($this->description));
-        $this->assertTrue($client->getDescription() instanceof Description);
-        $this->assertEquals($client->getDescription()->getBaseUrl(), 'http://mockbin.org/bin');
+        $client = new Client(new Service($this->description));
+        $this->assertTrue($client->getService() instanceof Service);
+        $this->assertEquals($client->getService()->getBaseUrl(), 'http://mockbin.org/bin');
     }
 
     public function testCreateWithoutDescription()
@@ -38,7 +39,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = new Client();
 
         $this->setExpectedException(InvalidArgumentException::class);
-        $client->getDescription();
+        $client->getService();
     }
 
     public function testSetGetName()

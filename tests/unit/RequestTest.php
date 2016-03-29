@@ -3,7 +3,7 @@ namespace STS\Sdk;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Uri;
-use STS\Sdk\Service\Description;
+use STS\Sdk\Service;
 
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,7 +31,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     public function testBasics()
     {
         $guzzle = new Client(['base_uri' => 'http://foo.local']);
-        $description = new Description($this->description);
+        $description = new Service($this->description);
 
         $request = new Request($guzzle, "MySdk", $description, $description->getOperation('getOk'), []);
 

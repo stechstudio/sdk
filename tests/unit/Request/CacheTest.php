@@ -12,7 +12,7 @@ namespace STS\Sdk\Request;
 use GuzzleHttp\Client;
 use Stash\Pool;
 use STS\Sdk\Request;
-use STS\Sdk\Service\Description;
+use STS\Sdk\Service;
 use STS\Sdk\Service\Operation;
 
 class CacheTest extends \PHPUnit_Framework_TestCase
@@ -29,7 +29,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
     {
         $this->pool = new Pool();
 
-        $description = \Mockery::mock(Description::class)->makePartial();
+        $description = \Mockery::mock(Service::class)->makePartial();
         $description->shouldReceive("getCachePool")->andReturn($this->pool);
         $description->shouldReceive("wantsCache")->andReturn(true);
 

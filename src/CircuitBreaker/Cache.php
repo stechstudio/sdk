@@ -3,7 +3,7 @@ namespace STS\Sdk\CircuitBreaker;
 
 use Stash\Item;
 use Stash\Pool;
-use STS\Sdk\CircuitBreaker;
+use STS\Sdk\Service\CircuitBreaker;
 
 /**
  * Class Cache
@@ -21,15 +21,17 @@ class Cache
      *
      * @param Pool $pool
      */
-    public function __construct(Pool $pool)
+    public function __construct($pool = null)
     {
-        $this->setPool($pool);
+        if($pool) {
+            $this->setPool($pool);
+        }
     }
 
     /**
      * Load from cache and initialize the breaker
      *
-     * @param CircuitBreaker $breaker
+     * @param \STS\Sdk\Service\CircuitBreaker $breaker
      */
     public function load(CircuitBreaker $breaker)
     {
@@ -55,7 +57,7 @@ class Cache
     /**
      * Save the breaker state variables to cache
      *
-     * @param CircuitBreaker $breaker
+     * @param \STS\Sdk\Service\CircuitBreaker $breaker
      */
     public function save(CircuitBreaker $breaker)
     {
@@ -66,7 +68,7 @@ class Cache
     }
 
     /**
-     * @param CircuitBreaker $breaker
+     * @param \STS\Sdk\Service\CircuitBreaker $breaker
      *
      * @return \Stash\Interfaces\ItemInterface|Item
      */
@@ -90,6 +92,10 @@ class Cache
      */
     public function getPool()
     {
+        if(!$this->pool) {
+            $this->pool = new Pool();
+        }
+
         return $this->pool;
     }
 

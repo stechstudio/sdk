@@ -8,7 +8,7 @@ use STS\Sdk\Exceptions\CircuitBreakerOpenException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 use STS\Sdk\Request\Cache;
-use STS\Sdk\Service\Description;
+use STS\Sdk\Service;
 use Mockery AS m;
 use STS\Sdk\Service\Operation;
 
@@ -65,7 +65,7 @@ class CacheFallbackTest extends \PHPUnit_Framework_TestCase
             'uri' => '/bin/3d5b8a1a-48a3-47e9-8fe8-88a3887d99ef'
         ]);
 
-        $description = m::mock(Description::class, [$this->description])->makePartial();
+        $description = m::mock(Service::class, [$this->description])->makePartial();
         $description->shouldReceive("getOperation")->times(5)->andReturn(
             $workingOperation,                  // First call, we want this to work
             $workingOperation,                  // When we prepare the same request again to figure out the cache key

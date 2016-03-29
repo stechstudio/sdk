@@ -8,7 +8,7 @@ use GuzzleHttp\Psr7;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker\BreakerPanel;
 use STS\Sdk\CircuitBreaker\BreakerSwitch;
-use STS\Sdk\Service\Description;
+use STS\Sdk\Service;
 use STS\Sdk\Service\Operation;
 
 /**
@@ -31,7 +31,7 @@ class Request
     protected $serviceName;
 
     /**
-     * @var Description
+     * @var Service
      */
     protected $description;
     /**
@@ -72,11 +72,11 @@ class Request
     /**
      * @param ClientInterface $client
      * @param                 $serviceName
-     * @param Description     $description
+     * @param Service         $description
      * @param Operation       $operation
      * @param                 $data
      */
-    public function __construct(ClientInterface $client, $serviceName, Description $description, Operation $operation, $data)
+    public function __construct(ClientInterface $client, $serviceName, Service $description, Operation $operation, $data)
     {
         $this->client = $client;
         $this->serviceName = $serviceName;
@@ -96,7 +96,7 @@ class Request
     }
 
     /**
-     * @return Description
+     * @return Service
      */
     public function getDescription()
     {

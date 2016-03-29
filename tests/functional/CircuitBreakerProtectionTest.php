@@ -7,6 +7,7 @@ use STS\Sdk\Exceptions\CircuitBreakerOpenException;
 use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
+use STS\Sdk\Service\CircuitBreaker;
 
 class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -52,7 +53,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->assertTrue($client->getDescription()->wantsCircuitBreaker());
+        $this->assertTrue($client->getService()->wantsCircuitBreaker());
         $this->assertTrue($client->getCircuitBreaker() instanceof CircuitBreaker);
     }
 

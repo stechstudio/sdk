@@ -1,7 +1,7 @@
 <?php
 namespace STS\Sdk\CircuitBreaker;
 
-use STS\Sdk\CircuitBreaker;
+use STS\Sdk\Service\CircuitBreaker;
 use Psr\Log\LoggerInterface;
 
 class MonitorTest extends \PHPUnit_Framework_TestCase
@@ -9,7 +9,7 @@ class MonitorTest extends \PHPUnit_Framework_TestCase
     public function testCallbacks()
     {
         $monitor = new Monitor();
-        $breaker = make(CircuitBreaker::class)->setName("Foo");
+        $breaker = new CircuitBreaker("Foo");
         $counter = 0;
         $result = "";
 
@@ -31,7 +31,7 @@ class MonitorTest extends \PHPUnit_Framework_TestCase
     public function testNoCallbacks()
     {
         $monitor = new Monitor();
-        $breaker = make(CircuitBreaker::class)->setName("Foo");
+        $breaker = new CircuitBreaker("Foo");
 
         // Nothing should happen, no exceptions, no return
         $this->assertNull($monitor->handle("foo", $breaker));
@@ -41,7 +41,7 @@ class MonitorTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['loglevel'] = '';
         $monitor = new Monitor();
-        $breaker = make(CircuitBreaker::class)->setName("Foo");
+        $breaker = new CircuitBreaker("Foo");
 
         $monitor->setLogger(new MonitorTestLogger());
 
@@ -63,7 +63,7 @@ class MonitorTest extends \PHPUnit_Framework_TestCase
     public function testEventHandlerClass()
     {
         $monitor = new Monitor();
-        $breaker = make(CircuitBreaker::class)->setName("Foo");
+        $breaker = new CircuitBreaker("Foo");
 
         $monitor->on("foo", MonitorEventHandler::class);
 

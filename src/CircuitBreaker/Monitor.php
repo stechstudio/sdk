@@ -1,7 +1,7 @@
 <?php
 namespace STS\Sdk\CircuitBreaker;
 
-use STS\Sdk\CircuitBreaker;
+use STS\Sdk\Service\CircuitBreaker;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -35,8 +35,8 @@ class Monitor
 
     /**
      * @param                $event
-     * @param CircuitBreaker $breaker
-     * @param null           $context
+     * @param \STS\Sdk\Service\CircuitBreaker $breaker
+     * @param null $context
      */
     public function handle($event, CircuitBreaker $breaker, $context = null)
     {
@@ -69,7 +69,7 @@ class Monitor
 
     /**
      * @param                $event
-     * @param CircuitBreaker $breaker
+     * @param \STS\Sdk\Service\CircuitBreaker $breaker
      * @param                $context
      */
     protected function log($event, CircuitBreaker $breaker, $context)

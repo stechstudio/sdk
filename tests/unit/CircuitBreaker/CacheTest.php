@@ -3,7 +3,7 @@ namespace STS\Sdk\CircuitBreaker;
 
 use Stash\Driver\Ephemeral;
 use Stash\Pool;
-use STS\Sdk\CircuitBreaker;
+use STS\Sdk\Service\CircuitBreaker;
 
 class CacheTest extends \PHPUnit_Framework_TestCase
 {
@@ -29,7 +29,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $pool->save($item);
         $cache = new Cache($pool);
 
-        $breaker = make(CircuitBreaker::class)->setName("Foo")->setCache($cache);
+        $breaker = (new CircuitBreaker("Foo"))->setCache($cache);
 
         $this->assertTrue($breaker->isAvailable());
         $this->assertFalse($breaker->isClosed());
@@ -40,7 +40,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
 
     public function testCacheIsUpdated()
     {
-        $breaker = make(CircuitBreaker::class)->setName("Foo")->setAutoRetryInterval(1);
+        $breaker = (new CircuitBreaker("Foo"))->setCache(new Cache(new Pool()))->setAutoRetryInterval(1);
         $cache = $breaker->getCache();
 
         $breaker->failure();

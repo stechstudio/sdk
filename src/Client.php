@@ -10,10 +10,11 @@ use STS\Sdk\Pipeline\CircuitBreakerProtection;
 use STS\Sdk\Pipeline\HandleError;
 use STS\Sdk\Pipeline\LogRequest;
 use STS\Sdk\Pipeline\SendRequest;
-use STS\Sdk\Service\Description;
+use STS\Sdk\Service;
 use STS\Sdk\Pipeline\BuildBody;
 use STS\Sdk\Pipeline\BuildUri;
 use STS\Sdk\Pipeline\ValidateArguments;
+use STS\Sdk\Service\CircuitBreaker;
 
 /**
  * Class Client
@@ -37,9 +38,9 @@ class Client
     protected $pipeline;
 
     /**
-     * @var Description
+     * @var Service
      */
-    protected $description;
+    protected $service;
 
     /**
      * The order of some of these pipes is pretty important.
@@ -58,12 +59,12 @@ class Client
     ];
 
     /**
-     * @param null $description
+     * @param null $service
      */
-    public function __construct($description = null)
+    public function __construct($service = null)
     {
-        if(is_array($description) || $description instanceof Description) {
-            $this->setDescription($description);
+        if(is_array($service) || $service instanceof Service) {
+            $this->setService($service);
         }
     }
 
@@ -81,7 +82,7 @@ class Client
     public function getName()
     {
         return $this->name == null
-            ? $this->description->getName()
+            ? $this->service->getName()
             : $this->name;
     }
 
@@ -138,7 +139,7 @@ class Client
      */
     public function __call($name, $arguments)
     {
-        if (!$this->getDescription()->hasOperation($name)) {
+        if (!$this->getService()->hasOperation($name)) {
             throw new \InvalidArgumentException("Undefined method: $name");
         }
 
@@ -158,8 +159,8 @@ class Client
         return new Request(
             $this->getClient(),
             $this->getName(),
-            $this->getDescription(),
-            $this->getDescription()->getOperation($name, $data),
+            $this->getService(),
+            $this->getService()->getOperation($name, $data),
             $data
         );
     }
@@ -174,9 +175,9 @@ class Client
     protected function handle($request)
     {
         $pipes = array_merge(
-            $this->getDescription()->getPrependedPipes(),
+            $this->getService()->getPrependedPipes(),
             $this->pipes,
-            $this->getDescription()->getAppendedPipes()
+            $this->getService()->getAppendedPipes()
         );
 
         return $this->getPipeline()
@@ -196,14 +197,14 @@ class Client
     }
 
     /**
-     * @param $description
+     * @param $service
      */
-    public function setDescription($description)
+    public function setService($service)
     {
-        if($description instanceof Description) {
-            $this->description = $description;
+        if($service instanceof Service) {
+            $this->service = $service;
         } else {
-            $this->description = new Description($description);
+            $this->service = new Service($service);
         }
     }
 
@@ -212,7 +213,7 @@ class Client
      */
     public function getCachePool()
     {
-        return $this->getDescription()->getCachePool();
+        return $this->getService()->getCachePool();
     }
 
     /**
@@ -220,7 +221,7 @@ class Client
      */
     public function getCircuitBreaker()
     {
-        return $this->getDescription()->getCircuitBreaker();
+        return $this->getService()->getCircuitBreaker();
     }
 
     /**
@@ -228,20 +229,20 @@ class Client
      */
     public function isAvailable()
     {
-        return $this->getDescription()->wantsCircuitBreaker()
+        return $this->getService()->wantsCircuitBreaker()
             ? $this->getCircuitBreaker()->isAvailable()
             : true;
     }
 
     /**
-     * @return Description
+     * @return Service
      */
-    public function getDescription()
+    public function getService()
     {
-        if($this->description == null) {
-            throw new \InvalidArgumentException("Description config hasn't been provided");
+        if($this->service == null) {
+            throw new \InvalidArgumentException("Service hasn't been provided");
         }
 
-        return $this->description;
+        return $this->service;
     }
 }

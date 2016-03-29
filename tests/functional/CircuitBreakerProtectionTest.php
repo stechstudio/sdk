@@ -17,7 +17,8 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
             'driver' => [
                 'name' => 'Ephemeral',
                 'options' => []
-            ]
+            ],
+            'namespace' => 'testing'
         ],
         'circuitBreaker' => [
             'failureThreshold' => 3,

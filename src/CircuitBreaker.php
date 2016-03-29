@@ -395,10 +395,9 @@ class CircuitBreaker implements Arrayable
      */
     protected function checkAutoRetryInterval()
     {
-        $current = new DateTime();
-        $diff = $current->diff($this->getLastTrippedAt());
+        $diff = time() - $this->getLastTrippedAt()->getTimestamp();
 
-        if ($diff->s >= $this->getAutoRetryInterval()) {
+        if ($diff >= $this->getAutoRetryInterval()) {
             $this->setState(self::HALF_OPEN);
         }
     }

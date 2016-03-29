@@ -150,7 +150,10 @@ class Description
      */
     protected function buildCachePool()
     {
-        return new Pool($this->buildCacheDriver());
+        $pool = new Pool($this->buildCacheDriver());
+        $pool->setNamespace(array_get($this->config, "cache.namespace"));
+
+        return $pool;
     }
 
     /**

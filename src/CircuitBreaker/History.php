@@ -82,7 +82,7 @@ class History implements Arrayable
 
         // remove any array items that are outside the interval
         $this->events[$event] = array_filter($this->events[$event], function($eventDateTime) use($interval) {
-            return (new DateTime)->diff($eventDateTime)->s < $interval;
+            return (time() - $eventDateTime->getTimestamp()) < $interval;
         });
     }
 
@@ -107,6 +107,8 @@ class History implements Arrayable
      */
     public function toArray()
     {
+        $this->clean("failure", $this->failureInterval);
+
         return $this->events;
     }
 }

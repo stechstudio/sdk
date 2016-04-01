@@ -2,6 +2,7 @@
 namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Collection;
 use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use PHPUnit_Framework_TestCase;
@@ -51,6 +52,14 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
                 'uri' => '/7058b049-ab51-405f-91cc-dbb80abda9cd',
                 'response' => [
                     'model' => TestModel::class
+                ]
+            ],
+            'withResponseCollection' => [
+                'httpMethod' => 'GET',
+                'uri' => '/5d5591c7-0953-44ac-b635-d2e372bc0ca8',
+                'response' => [
+                    'model' => TestModel::class,
+                    'collection' => true
                 ]
             ]
         ],
@@ -162,6 +171,20 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($response->baz['nested']);
 
         $this->assertEquals(456, $response->qux);
+    }
+
+    public function testModelCollection()
+    {
+        $client = new Client($this->description);
+
+        $response = $client->withResponseCollection();
+
+        $this->assertTrue($response instanceof Collection);
+        $this->assertEquals(3, count($response));
+
+        foreach($response AS $model) {
+            $this->assertEquals(456, $model->qux);
+        }
     }
 }
 

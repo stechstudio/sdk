@@ -5,6 +5,7 @@ use GuzzleHttp\Exception\ClientException;
 use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use PHPUnit_Framework_TestCase;
+use STS\Sdk\Response\Model;
 
 class ResponsesTest extends PHPUnit_Framework_TestCase
 {
@@ -44,6 +45,13 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
             'remoteErrorWithNoBody' => [
                 'httpMethod' => 'GET',
                 'uri' => '/0704da9e-bdab-40e8-8ac2-7a76bae5f7fa'
+            ],
+            'withResponseModel' => [
+                'httpMethod' => 'GET',
+                'uri' => '/7058b049-ab51-405f-91cc-dbb80abda9cd',
+                'response' => [
+                    'model' => TestModel::class
+                ]
             ]
         ],
         'errorHandlers' => [
@@ -139,6 +147,18 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
 
         $client->remoteErrorWithNoBody();
     }
+
+    public function testModelResponse()
+    {
+        $client = new Client($this->description);
+
+        $response = $client->withResponseModel();
+
+        $this->assertTrue($response instanceof TestModel);
+        $this->assertEquals("bar", $response->foo);
+        $this->assertTrue($response->baz['nested']);
+        $this->assertEquals(456, $response->qux);
+    }
 }
 
 class CustomException extends \Exception {
@@ -146,4 +166,10 @@ class CustomException extends \Exception {
 }
 class DefaultException extends \Exception {
     protected $message = "bar";
+}
+class TestModel extends Model {
+    public function getQuxAttribute()
+    {
+        return 456;
+    }
 }

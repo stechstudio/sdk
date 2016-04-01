@@ -254,6 +254,34 @@ class OperationTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals("bar", $o->getOptions()['foo']);
     }
+
+    public function testResponseModel()
+    {
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET',
+            'response' => [
+                "model" => "ResponseModelClass"
+            ]
+        ], []);
+
+        $this->assertTrue($o->hasResponseModelClass());
+        $this->assertEquals("ResponseModelClass", $o->getResponseModelClass());
+        $this->assertFalse($o->wantsResponseCollection());
+
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET',
+            'response' => [
+                "model" => "ResponseModelClass",
+                "collection" => true
+            ]
+        ], []);
+
+        $this->assertTrue($o->wantsResponseCollection());
+
+        $o = new Operation("foo", [
+            'httpMethod' => 'GET',
+        ], []);
+
+        $this->assertFalse($o->hasResponseModelClass());
+    }
 }
-
-

@@ -156,7 +156,11 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($response instanceof TestModel);
         $this->assertEquals("bar", $response->foo);
+        $response->foo = "something else";
+        $this->assertEquals("something else", $response['foo']);
+
         $this->assertTrue($response->baz['nested']);
+
         $this->assertEquals(456, $response->qux);
     }
 }

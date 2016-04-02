@@ -9,10 +9,10 @@ use STS\Sdk\Response\Builder;
 use STS\Sdk\Response\Model;
 
 /**
- * Class ResponseModel
+ * Class ModelResponse
  * @package RC\Sdk\Pipeline
  */
-class ResponseModel implements PipeInterface
+class ModelResponse implements PipeInterface
 {
     /**
      * @var Builder

@@ -10,10 +10,6 @@ namespace STS\Sdk\Response;
 
 use ArrayAccess;
 
-/**
- * Class Model
- * @package STS\Sdk\Response
- */
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Str;
@@ -31,6 +27,16 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
     protected $attributes = [];
 
     /**
+     * @var array
+     */
+    protected $relatedModels = [];
+
+    /**
+     * @var array
+     */
+    protected $relations = [];
+
+    /**
      * @param array $attributes
      */
     public function __construct($attributes = [])
@@ -45,6 +51,10 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
      */
     public function __get($key)
     {
+        if(array_key_exists($key, $this->relatedModels)) {
+            return $this->getRelated($key);
+        }
+
         if($this->hasGetMutator($key)) {
             return $this->mutateAttribute($key, array_get($this->attributes, $key));
         }
@@ -54,6 +64,22 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
         }
 
         return null;
+    }
+
+    /**
+     * @param $key
+     *
+     * @return Model
+     */
+    protected function getRelated($key)
+    {
+        if(!array_key_exists($key, $this->relations)) {
+            $class = $this->relatedModels[$key];
+            $data = (array) array_get($this->attributes, $key);
+            $this->relations[$key] = new $class($data);
+        }
+
+        return $this->relations[$key];
     }
 
     /**
@@ -111,7 +137,7 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
      */
     public function offsetExists($offset)
     {
-        return isset($this->$offset);
+        return array_key_exists($offset, $this->attributes) || array_key_exists($offset, $this->relatedModels) || $this->hasGetMutator($offset);
     }
 
     /**
@@ -138,7 +164,13 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
      */
     public function offsetUnset($offset)
     {
-        unset($this->$offset);
+        if(array_key_exists($offset, $this->attributes)) {
+            unset($this->attributes[$offset]);
+        }
+
+        if(array_key_exists($offset, $this->relatedModels)) {
+            unset($this->relatedModels[$offset]);
+        }
     }
 
     /**
@@ -146,7 +178,6 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
      */
     public function toArray()
     {
-        // TODO include custom mutators via $appends array
         return $this->attributes;
     }
 

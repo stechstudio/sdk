@@ -8,7 +8,8 @@
 
 namespace STS\Sdk\Exceptions;
 
-use Illuminate\Validation\ValidationException as IlluminateValidationException;
+use Illuminate\Contracts\Support\MessageProvider;
+use Illuminate\Contracts\Validation\ValidationException as IlluminateValidationException;
 
 /**
  * Class ValidationException
@@ -16,20 +17,11 @@ use Illuminate\Validation\ValidationException as IlluminateValidationException;
  */
 class ValidationException extends IlluminateValidationException
 {
-    /**
-     * @param \Illuminate\Validation\Validator $validator
-     */
-    public function __construct($validator)
-    {
-        $this->validator = $validator;
-        $this->message = 'The following parameters are missing or invalid: ' . implode(', ', $validator->errors()->keys());
-    }
 
-    /**
-     * @return \Illuminate\Validation\Validator
-     */
-    public function getValidator()
+    public function __construct(MessageProvider $provider)
     {
-        return $this->validator;
+        $this->message = 'The following parameters are missing or invalid: ' . implode(', ', $provider->keys());
+
+        parent::__construct($provider);
     }
 }

@@ -41,12 +41,10 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
 
         $validateArguments = new ValidateArguments();
 
-        try {
-            $validateArguments->handle($request, function () {
-                return "result";
-            });
-        } catch(ValidationException $e) {}
+        $this->setExpectedException(ValidationException::class, "The following parameters are missing or invalid: foo, bar");
 
-        $this->assertTrue($e->getValidator() instanceof Validator);
+        $validateArguments->handle($request, function () {
+            return "result";
+        });
     }
 }

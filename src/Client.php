@@ -9,6 +9,7 @@ use STS\Sdk\Pipeline\CacheFallback;
 use STS\Sdk\Pipeline\CircuitBreakerProtection;
 use STS\Sdk\Pipeline\HandleError;
 use STS\Sdk\Pipeline\LogRequest;
+use STS\Sdk\Pipeline\ModelResponse;
 use STS\Sdk\Pipeline\SendRequest;
 use STS\Sdk\Service;
 use STS\Sdk\Pipeline\BuildBody;
@@ -52,6 +53,7 @@ class Client
         ValidateArguments::class,
         BuildBody::class,
         BuildUri::class,
+        ModelResponse::class,
         CacheFallback::class,
         LogRequest::class,
         CircuitBreakerProtection::class,

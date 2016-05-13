@@ -2,9 +2,11 @@
 namespace STS\Sdk;
 
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Collection;
 use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use PHPUnit_Framework_TestCase;
+use STS\Sdk\Response\Model;
 
 class ResponsesTest extends PHPUnit_Framework_TestCase
 {
@@ -44,6 +46,21 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
             'remoteErrorWithNoBody' => [
                 'httpMethod' => 'GET',
                 'uri' => '/0704da9e-bdab-40e8-8ac2-7a76bae5f7fa'
+            ],
+            'withResponseModel' => [
+                'httpMethod' => 'GET',
+                'uri' => '/7058b049-ab51-405f-91cc-dbb80abda9cd',
+                'response' => [
+                    'model' => TestModel::class
+                ]
+            ],
+            'withResponseCollection' => [
+                'httpMethod' => 'GET',
+                'uri' => '/5d5591c7-0953-44ac-b635-d2e372bc0ca8',
+                'response' => [
+                    'model' => TestModel::class,
+                    'collection' => true
+                ]
             ]
         ],
         'errorHandlers' => [
@@ -139,6 +156,36 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
 
         $client->remoteErrorWithNoBody();
     }
+
+    public function testModelResponse()
+    {
+        $client = new Client($this->description);
+
+        $response = $client->withResponseModel();
+
+        $this->assertTrue($response instanceof TestModel);
+        $this->assertEquals("bar", $response->foo);
+        $response->foo = "something else";
+        $this->assertEquals("something else", $response['foo']);
+
+        $this->assertTrue($response->baz['nested']);
+
+        $this->assertEquals(456, $response->qux);
+    }
+
+    public function testModelCollection()
+    {
+        $client = new Client($this->description);
+
+        $response = $client->withResponseCollection();
+
+        $this->assertTrue($response instanceof Collection);
+        $this->assertEquals(3, count($response));
+
+        foreach($response AS $model) {
+            $this->assertEquals(456, $model->qux);
+        }
+    }
 }
 
 class CustomException extends \Exception {
@@ -146,4 +193,10 @@ class CustomException extends \Exception {
 }
 class DefaultException extends \Exception {
     protected $message = "bar";
+}
+class TestModel extends Model {
+    public function getQuxAttribute()
+    {
+        return 456;
+    }
 }

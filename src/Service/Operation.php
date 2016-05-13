@@ -21,6 +21,10 @@ namespace STS\Sdk\Service;
  * Class Operation
  * @package STS\Sdk\Service
  */
+/**
+ * Class Operation
+ * @package STS\Sdk\Service
+ */
 class Operation
 {
     /**
@@ -239,5 +243,29 @@ class Operation
     public function getOptions()
     {
         return (array)array_get($this->config, "options");
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasResponseModelClass()
+    {
+        return array_get($this->config, "response.model") != null;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResponseModelClass()
+    {
+        return array_get($this->config, "response.model");
+    }
+
+    /**
+     * @return bool
+     */
+    public function wantsResponseCollection()
+    {
+        return array_get($this->config, "response.collection") == true;
     }
 }

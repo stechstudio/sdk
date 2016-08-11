@@ -48,9 +48,9 @@ class Operation
     protected $parameters = [];
 
     /**
-     * @var Parameter|null
+     * @var string|null
      */
-    protected $additionalParameters = null;
+    protected $additionalParametersAt = null;
 
     /**
      * @param string $name
@@ -125,8 +125,7 @@ class Operation
      */
     public function allowAdditionalParametersAt($location)
     {
-        return $this->additionalParameters instanceof Parameter
-        && $this->additionalParameters->getLocation() == $location;
+        return $this->additionalParametersAt == $location;
     }
 
     /**
@@ -140,11 +139,6 @@ class Operation
         // First get the data that belongs with out mapped parameters
         foreach ($this->getParameters() AS $parameter) {
             $return[$parameter->getName()] = $parameter->getValue();
-        }
-
-        // Do we allow additional parameters? If so, add the rest of the data
-        if ($this->additionalParameters != null) {
-            $return = $return + array_diff_key($this->data, $this->getParameters());
         }
 
         return array_filter($return, 'is_not_null');
@@ -164,11 +158,6 @@ class Operation
         // First get the data that matches parameters at this location
         foreach ($this->getParametersByLocation($location) AS $parameter) {
             $return[$parameter->getName()] = $parameter->getValue();
-        }
-
-        // Now add the additional data only if we allow at this location
-        if ($this->additionalParameters != null && $this->additionalParameters->getLocation() == $location) {
-            $return = $return + array_diff_key($this->data, $this->getParameters());
         }
 
         return $return;
@@ -209,7 +198,25 @@ class Operation
         }
 
         if (is_array(array_get($this->config, 'additionalParameters'))) {
-            $this->additionalParameters = new Parameter('*', null, $this->config['additionalParameters']);
+            $this->resolveAdditionalParameters($this->config['additionalParameters']);
+        }
+    }
+
+    /**
+     * @param array $config
+     */
+    protected function resolveAdditionalParameters(array $config)
+    {
+        $this->additionalParametersAt = array_get($config, "location");
+
+        // We need to setup parameters for any additional data key/value pairs provided
+        $additionalData = array_diff_key($this->data, $this->getParameters());
+        if(!count($additionalData)) {
+            return;
+        }
+
+        foreach($additionalData AS $name => $value) {
+            $this->parameters[$name] = new Parameter($name, $value, $config);
         }
     }
 

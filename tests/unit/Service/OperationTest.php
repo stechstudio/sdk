@@ -160,6 +160,10 @@ class OperationTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(count($o->getDataByLocation('json')), 3); // Includes the extra data
         $this->assertEquals(count($o->getDataByLocation('uri')), 1); // Does NOT include extra data
+
+        // Verify that a true parameter object was setup for our additional data
+        $this->assertTrue(array_key_exists("extra", $o->getParameters()));
+        $this->assertEquals('json', $o->getParameter('extra')->getLocation());
     }
 
     public function testInvalidParameter()

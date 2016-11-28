@@ -40,6 +40,11 @@ class ErrorParser
             throw new $serviceExceptionClasses[$type]($message, $code);
         }
 
+        // Same thing, but see if we have a match without the word "Exception" at the end
+        if(ends_with($type, "Exception") && array_key_exists(str_replace("Exception", "", $type), $serviceExceptionClasses)) {
+            throw new $serviceExceptionClasses[str_replace("Exception", "", $type)]($message, $code);
+        }
+
         // See if our service has a default we should use
         if(array_key_exists('default', $serviceExceptionClasses)) {
             throw new $serviceExceptionClasses['default']($message, $code);

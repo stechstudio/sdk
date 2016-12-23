@@ -3,7 +3,7 @@ use Illuminate\Container\Container;
 
 if (! function_exists('make')) {
     /**
-     * Resolve the given type from the container. Initialize container if needed.
+     * Resolve the given type from the container.
      *
      * @param string $abstract
      * @param array $parameters
@@ -12,13 +12,25 @@ if (! function_exists('make')) {
      */
     function make($abstract, array $parameters = [])
     {
+        return container()->make($abstract, $parameters);
+    }
+}
+
+if (! function_exists('container')) {
+    /**
+     * Return current container, initialize if need be
+     *
+     * @return Container
+     */
+    function container()
+    {
         if(is_null(Container::getInstance())) {
             $container = new Container();
             $container->instance('Illuminate\Contracts\Container\Container', $container);
             Container::setInstance($container);
         }
 
-        return Container::getInstance()->make($abstract, $parameters);
+        return Container::getInstance();
     }
 }
 

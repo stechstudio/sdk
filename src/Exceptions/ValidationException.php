@@ -9,7 +9,7 @@
 namespace STS\Sdk\Exceptions;
 
 use Illuminate\Contracts\Support\MessageProvider;
-use Illuminate\Contracts\Validation\ValidationException as IlluminateValidationException;
+use Illuminate\Validation\ValidationException as IlluminateValidationException;
 
 /**
  * Class ValidationException

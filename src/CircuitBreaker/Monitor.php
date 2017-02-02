@@ -115,7 +115,7 @@ class Monitor
     protected function getCallable($item)
     {
         if (is_string($item) && class_exists($item, true)) {
-            $item = make($item);
+            $item = app($item);
         }
 
         if (is_callable($item)) {

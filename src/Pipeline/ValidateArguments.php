@@ -3,8 +3,7 @@ namespace STS\Sdk\Pipeline;
 
 use Closure;
 use STS\Sdk\Exceptions\ValidationException;
-use Illuminate\Validation\Validator;
-use Symfony\Component\Translation\Translator;
+use Illuminate\Support\Facades\Validator;
 use STS\Sdk\Request;
 
 /**
@@ -40,6 +39,7 @@ class ValidateArguments implements PipeInterface
      */
     protected function getValidator($rules, $data)
     {
-        return new Validator(new Translator('en'), $data, $rules);
+
+        return Validator::make($data, $rules);
     }
 }

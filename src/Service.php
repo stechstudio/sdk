@@ -122,7 +122,7 @@ class Service
      */
     public function getLogger()
     {
-        $logger = make($this->config['logger']);
+        $logger = app($this->config['logger']);
 
         if(!$logger instanceof LoggerInterface) {
             throw new \InvalidArgumentException("Invalid logger provided");

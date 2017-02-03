@@ -112,7 +112,7 @@ class Client
      */
     protected function getPipeline()
     {
-        return new Pipeline(container());
+        return new app(Pipeline::class);
     }
 
     /**

@@ -50,7 +50,7 @@ class Client
      * @var array
      */
     protected $pipes = [
-        ValidateArguments::class,
+        //ValidateArguments::class,
         BuildBody::class,
         BuildUri::class,
         ModelResponse::class,

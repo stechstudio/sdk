@@ -39,7 +39,6 @@ class ValidateArguments implements PipeInterface
      */
     protected function getValidator($rules, $data)
     {
-
         return Validator::make($data, $rules);
     }
 }

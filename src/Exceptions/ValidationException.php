@@ -20,8 +20,8 @@ class ValidationException extends IlluminateValidationException
 
     public function __construct(MessageProvider $provider)
     {
-        $this->message = 'The following parameters are missing or invalid: ' . implode(', ', $provider->keys());
-
         parent::__construct($provider);
+
+        $this->message = 'The following parameters are missing or invalid: ' . implode(', ', $provider->keys());
     }
 }

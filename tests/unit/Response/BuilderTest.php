@@ -6,12 +6,14 @@
  * Time: 2:02 PM
  */
 
-namespace STS\Sdk\Response;
-
+namespace Tests\Response;
 
 use Illuminate\Support\Collection;
+use STS\Sdk\Response\Builder;
+use STS\Sdk\Response\Model;
+use Tests\TestCase;
 
-class BuilderTest extends \PHPUnit_Framework_TestCase
+class BuilderTest extends TestCase
 {
     public function testSingle()
     {

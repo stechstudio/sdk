@@ -9,7 +9,9 @@
 namespace STS\Sdk\Response;
 
 
-class ModelTest extends \PHPUnit_Framework_TestCase
+use Tests\TestCase;
+
+class ModelTest extends TestCase
 {
     public function testModel()
     {

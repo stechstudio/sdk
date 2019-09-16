@@ -6,8 +6,9 @@ use STS\Sdk\Pipeline\ValidateArguments;
 use STS\Sdk\Request;
 use Mockery as m;
 use STS\Sdk\Exceptions\ValidationException;
+use Tests\TestCase;
 
-class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
+class ValidateArgumentsTest extends TestCase
 {
     /**
      * Passing validation
@@ -41,7 +42,7 @@ class ValidateArgumentsTest extends \PHPUnit_Framework_TestCase
 
         $validateArguments = new ValidateArguments();
 
-        $this->setExpectedException(ValidationException::class, "The following parameters are missing or invalid: foo, bar");
+        $this->expectException(ValidationException::class, "The following parameters are missing or invalid: foo, bar");
 
         $validateArguments->handle($request, function () {
             return "result";

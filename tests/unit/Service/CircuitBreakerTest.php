@@ -11,9 +11,9 @@ use Stash\Driver\Ephemeral;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker\Cache;
 use STS\Sdk\CircuitBreaker\Monitor;
-use STS\Sdk\MyCache;
+use Tests\TestCase;
 
-class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
+class CircuitBreakerTest extends TestCase
 {
     public function testInstantiateAndDefaults()
     {
@@ -171,14 +171,14 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
         $breaker = (new CircuitBreaker("Foo"));
 
         // Since it hasn't been set, default value is now
-        $this->assertEquals(new \DateTime(), $breaker->getLastTrippedAt());
+        $this->assertEquals((new \DateTime())->format('r'), $breaker->getLastTrippedAt()->format('r'));
 
         $breaker->trip();
         $trippedAt = new \DateTime();
 
         sleep(1);
 
-        $this->assertEquals($trippedAt, $breaker->getLastTrippedAt());
+        $this->assertEquals($trippedAt->format('r'), $breaker->getLastTrippedAt()->format('r'));
     }
 
     public function testSetState()
@@ -210,4 +210,8 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($breaker->getMonitor() instanceof Monitor);
     }
+}
+
+class MyCache extends Cache {
+
 }

@@ -1,7 +1,9 @@
 <?php
 namespace STS\Sdk\CircuitBreaker;
 
-class HistoryTest extends \PHPUnit_Framework_TestCase
+use Tests\TestCase;
+
+class HistoryTest extends TestCase
 {
     public function testDefaults()
     {

@@ -8,7 +8,9 @@
 
 namespace STS\Sdk\Request;
 
-class UriBuilderTest  extends \PHPUnit_Framework_TestCase
+use Tests\TestCase;
+
+class UriBuilderTest  extends TestCase
 {
     protected $uri;
 

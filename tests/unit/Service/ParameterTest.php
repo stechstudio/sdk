@@ -1,9 +1,10 @@
 <?php
-namespace STS\Sdk\Service;
+namespace Tests\Service;
 
-use PHPUnit_Framework_TestCase;
+use STS\Sdk\Service\Parameter;
+use Tests\TestCase;
 
-class ParameterTest extends PHPUnit_Framework_TestCase
+class ParameterTest extends TestCase
 {
     public function testInstantiate()
     {

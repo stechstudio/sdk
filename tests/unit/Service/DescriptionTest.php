@@ -1,5 +1,5 @@
 <?php
-namespace STS\Sdk\Service;
+namespace Tests\Service;
 
 use Closure;
 use PHPUnit_Framework_TestCase;

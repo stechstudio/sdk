@@ -14,8 +14,9 @@ use Stash\Pool;
 use STS\Sdk\Request;
 use STS\Sdk\Service;
 use STS\Sdk\Service\Operation;
+use Tests\TestCase;
 
-class CacheTest extends \PHPUnit_Framework_TestCase
+class CacheTest extends TestCase
 {
     protected $request;
 

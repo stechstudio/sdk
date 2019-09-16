@@ -5,20 +5,23 @@
  * Date: 3/29/16
  * Time: 9:45 AM
  */
-namespace STS\Sdk;
+namespace Tests;
+
+require_once('Service/DescriptionTest.php');
 
 use InvalidArgumentException;
-use PHPUnit_Framework_TestCase;
 use Stash\Pool;
+use STS\Sdk\Client;
+use STS\Sdk\Service;
 use STS\Sdk\Service\CircuitBreaker;
-use STS\Sdk\Service\DescriptionTestLogger;
-use STS\Sdk\Service\DescriptionTestPipe1;
-use STS\Sdk\Service\DescriptionTestPipe2;
-use STS\Sdk\Service\DescriptionTestPipe3;
 use STS\Sdk\Service\Operation;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Tests\Service\DescriptionTestLogger;
+use Tests\Service\DescriptionTestPipe1;
+use Tests\Service\DescriptionTestPipe2;
+use Tests\Service\DescriptionTestPipe3;
 
-class ServiceTest extends PHPUnit_Framework_TestCase
+class ServiceTest extends TestCase
 {
     public function testInstantiate()
     {
@@ -32,14 +35,14 @@ class ServiceTest extends PHPUnit_Framework_TestCase
 
     public function testEmptyConfig()
     {
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $d = new Service([]);
     }
 
     public function testBadOperationsConfig()
     {
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $d = new Service(['name' => 'test', 'baseUrl' => 'foo', 'operations' => false]);
     }
@@ -117,7 +120,7 @@ class ServiceTest extends PHPUnit_Framework_TestCase
 
     public function testStaticLoaderInvalidFile()
     {
-        $this->setExpectedException(FileNotFoundException::class);
+        $this->expectException(FileNotFoundException::class);
 
         $d = Service::loadFromFile('foo');
     }
@@ -132,7 +135,7 @@ class ServiceTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($d->wantsCache());
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $d->getCachePool();
     }
 
@@ -168,7 +171,7 @@ class ServiceTest extends PHPUnit_Framework_TestCase
             'operations' => []
         ]);
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $d->getCachePool();
     }
 
@@ -182,7 +185,7 @@ class ServiceTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($d->wantsCircuitBreaker());
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $d->getCircuitBreaker();
     }
 
@@ -240,7 +243,7 @@ class ServiceTest extends PHPUnit_Framework_TestCase
             'logger' => Client::class
         ]);
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $d->getLogger();
     }
 

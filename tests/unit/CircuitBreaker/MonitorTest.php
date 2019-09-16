@@ -3,8 +3,9 @@ namespace STS\Sdk\CircuitBreaker;
 
 use STS\Sdk\Service\CircuitBreaker;
 use Psr\Log\LoggerInterface;
+use Tests\TestCase;
 
-class MonitorTest extends \PHPUnit_Framework_TestCase
+class MonitorTest extends TestCase
 {
     public function testCallbacks()
     {
@@ -67,7 +68,7 @@ class MonitorTest extends \PHPUnit_Framework_TestCase
 
         $monitor->on("foo", MonitorEventHandler::class);
 
-        $this->setExpectedException(\Exception::class, "Got event [foo] for breaker [Foo]");
+        $this->expectException(\Exception::class, "Got event [foo] for breaker [Foo]");
         $monitor->handle("foo", $breaker);
     }
 
@@ -75,7 +76,7 @@ class MonitorTest extends \PHPUnit_Framework_TestCase
     {
         $monitor = new Monitor();
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
 
         $monitor->on("foo", "invalid");
     }

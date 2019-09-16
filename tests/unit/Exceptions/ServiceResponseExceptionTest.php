@@ -1,7 +1,9 @@
 <?php
 namespace STS\Sdk\Exceptions;
 
-class ServiceResponseExceptionTest extends \PHPUnit_Framework_TestCase
+use Tests\TestCase;
+
+class ServiceResponseExceptionTest extends TestCase
 {
     public function testException()
     {

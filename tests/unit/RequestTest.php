@@ -1,11 +1,12 @@
 <?php
-namespace STS\Sdk;
+namespace Tests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Uri;
+use STS\Sdk\Request;
 use STS\Sdk\Service;
 
-class RequestTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends TestCase
 {
     protected $description = [
         'name' => 'Test',

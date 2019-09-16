@@ -4,8 +4,9 @@ namespace STS\Sdk\Pipeline;
 use STS\Sdk\Request;
 use Mockery as m;
 use STS\Sdk\Service\Operation;
+use Tests\TestCase;
 
-class BuildBodyTest extends \PHPUnit_Framework_TestCase
+class BuildBodyTest extends TestCase
 {
     /**
      * When one or more JSON parameters are provided, we expect to only have a json body and the header set

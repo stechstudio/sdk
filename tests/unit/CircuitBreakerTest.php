@@ -1,5 +1,5 @@
 <?php
-namespace STS\Sdk;
+namespace Tests;
 
 use Exception;
 use Stash\Driver\Ephemeral;

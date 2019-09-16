@@ -1,14 +1,16 @@
 <?php
-namespace STS\Sdk;
+namespace Tests;
 
 use Closure;
 use Stash\Pool;
+use STS\Sdk\Client;
+use STS\Sdk\Request;
 use STS\Sdk\Service;
 use InvalidArgumentException;
 use GuzzleHttp\Client AS GuzzleClient;
 use STS\Sdk\Service\CircuitBreaker;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends TestCase
 {
     protected $description = [
         'name' => 'test',
@@ -38,7 +40,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $client = new Client();
 
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $client->getService();
     }
 
@@ -69,7 +71,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $client->foo();
     }
 
@@ -94,7 +96,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $client->getCachePool();
     }
 
@@ -118,7 +120,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($client->isAvailable());
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $client->getCircuitBreaker();
     }
 

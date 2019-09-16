@@ -1,10 +1,11 @@
 <?php
-namespace STS\Sdk\Service;
+namespace Tests\Service;
 
-use PHPUnit_Framework_TestCase;
 use InvalidArgumentException;
+use STS\Sdk\Service\Operation;
+use Tests\TestCase;
 
-class OperationTest extends PHPUnit_Framework_TestCase
+class OperationTest extends TestCase
 {
     public function testInstantiate()
     {
@@ -168,7 +169,7 @@ class OperationTest extends PHPUnit_Framework_TestCase
 
     public function testInvalidParameter()
     {
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $o = new Operation('foo', [
             'parameters' => [

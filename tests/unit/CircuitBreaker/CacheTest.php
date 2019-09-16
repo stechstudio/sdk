@@ -4,8 +4,9 @@ namespace STS\Sdk\CircuitBreaker;
 use Stash\Driver\Ephemeral;
 use Stash\Pool;
 use STS\Sdk\Service\CircuitBreaker;
+use Tests\TestCase;
 
-class CacheTest extends \PHPUnit_Framework_TestCase
+class CacheTest extends TestCase
 {
     public function testLoadFromCache()
     {

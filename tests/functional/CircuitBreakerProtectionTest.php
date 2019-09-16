@@ -8,8 +8,9 @@ use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use STS\Sdk\Exceptions\ServiceUnavailableException;
 use STS\Sdk\Service\CircuitBreaker;
+use Tests\TestCase;
 
-class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
+class CircuitBreakerProtectionTest extends TestCase
 {
     protected $description = [
         'name' => 'Test',
@@ -61,7 +62,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(ServiceUnavailableException::class);
+        $this->expectException(ServiceUnavailableException::class);
 
         $client->failure();
     }
@@ -75,7 +76,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 
         $client = new Client($this->description);
 
-        $this->setExpectedException(ServiceResponseException::class);
+        $this->expectException(ServiceResponseException::class);
 
         $client->remoteErrorWithDefaultException();
     }
@@ -87,7 +88,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
 
         $client = new Client($this->description);
 
-        $this->setExpectedException(ServiceErrorException::class);
+        $this->expectException(ServiceErrorException::class);
 
         $client->error400WithNoBody();
     }
@@ -122,7 +123,7 @@ class CircuitBreakerProtectionTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($client->isAvailable());
 
         // Since we're unavailable, we will now get a CircuitBreakerOpenException
-        $this->setExpectedException(CircuitBreakerOpenException::class);
+        $this->expectException(CircuitBreakerOpenException::class);
         $client->success();
     }
 

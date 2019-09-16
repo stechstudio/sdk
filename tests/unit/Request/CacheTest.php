@@ -38,6 +38,7 @@ class CacheTest extends TestCase
         $operation->shouldReceive("getName")->andReturn("FooOperation");
         $operation->shouldReceive("getData")->andReturn($this->data);
         $operation->shouldReceive("wantsCache")->andReturn(true);
+        $operation->shouldReceive('getHttpMethod')->andReturn('POST');
 
         $this->request = new Request(new Client(), "Foo", $description, $operation, $this->data);
 

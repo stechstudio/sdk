@@ -11,8 +11,9 @@ use STS\Sdk\Request\Cache;
 use STS\Sdk\Service;
 use Mockery AS m;
 use STS\Sdk\Service\Operation;
+use Tests\TestCase;
 
-class CacheFallbackTest extends \PHPUnit_Framework_TestCase
+class CacheFallbackTest extends TestCase
 {
     protected $description = [
         'name' => 'Test',
@@ -96,7 +97,7 @@ class CacheFallbackTest extends \PHPUnit_Framework_TestCase
 
         // This is a different operation name, so it won't be in cache
         $client->getCircuitBreaker()->reset();
-        $this->setExpectedException(ServiceUnavailableException::class);
+        $this->expectException(ServiceUnavailableException::class);
         $client->success();
     }
 }

@@ -7,8 +7,9 @@ use STS\Sdk\Exceptions\ServiceErrorException;
 use STS\Sdk\Exceptions\ServiceResponseException;
 use PHPUnit_Framework_TestCase;
 use STS\Sdk\Response\Model;
+use Tests\TestCase;
 
-class ResponsesTest extends PHPUnit_Framework_TestCase
+class ResponsesTest extends TestCase
 {
     protected $description = [
         'name' => 'Test',
@@ -113,7 +114,7 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(CustomException::class);
+        $this->expectException(CustomException::class);
 
         $client->remoteErrorWithMatchingException();
     }
@@ -125,7 +126,7 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(DefaultException::class);
+        $this->expectException(DefaultException::class);
 
         $client->remoteErrorWithDefaultException();
     }
@@ -140,7 +141,7 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
 
         $client = new Client($description);
 
-        $this->setExpectedException(ServiceResponseException::class);
+        $this->expectException(ServiceResponseException::class);
 
         $client->remoteErrorWithoutMatchingException();
     }
@@ -152,7 +153,7 @@ class ResponsesTest extends PHPUnit_Framework_TestCase
     {
         $client = new Client($this->description);
 
-        $this->setExpectedException(ServiceErrorException::class);
+        $this->expectException(ServiceErrorException::class);
 
         $client->remoteErrorWithNoBody();
     }

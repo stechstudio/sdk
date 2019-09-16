@@ -3,8 +3,9 @@ namespace STS\Sdk;
 
 use Closure;
 use STS\Sdk\Request;
+use Tests\TestCase;
 
-class PipelineTest extends \PHPUnit_Framework_TestCase
+class PipelineTest extends TestCase
 {
     protected $description = [
         'name' => 'Test',

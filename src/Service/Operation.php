@@ -1,5 +1,8 @@
 <?php
+
 namespace STS\Sdk\Service;
+
+use Illuminate\Support\Arr;
 
     /**
      * Class Operation
@@ -95,7 +98,7 @@ class Operation
      */
     public function getParameter($name)
     {
-        return array_get($this->parameters, $name);
+        return Arr::get($this->parameters, $name);
     }
 
     /**
@@ -168,7 +171,7 @@ class Operation
      */
     public function wantsCache()
     {
-        return (bool)array_get($this->config, "cache.fallback", $this->getHttpMethod() == "GET");
+        return (bool)Arr::get($this->config, "cache.fallback", $this->getHttpMethod() == "GET");
     }
 
     /**
@@ -176,7 +179,7 @@ class Operation
      */
     public function prefersCache()
     {
-        return (bool)array_get($this->config, "cache.prefers", false);
+        return (bool)Arr::get($this->config, "cache.prefers", false);
     }
 
     /**
@@ -197,7 +200,7 @@ class Operation
             $this->parameters[$name] = new Parameter($name, $value, $config);
         }
 
-        if (is_array(array_get($this->config, 'additionalParameters'))) {
+        if (is_array(Arr::get($this->config, 'additionalParameters'))) {
             $this->resolveAdditionalParameters($this->config['additionalParameters']);
         }
     }
@@ -207,7 +210,7 @@ class Operation
      */
     protected function resolveAdditionalParameters(array $config)
     {
-        $this->additionalParametersAt = array_get($config, "location");
+        $this->additionalParametersAt = Arr::get($config, "location");
 
         // We need to setup parameters for any additional data key/value pairs provided
         $additionalData = array_diff_key($this->data, $this->getParameters());
@@ -249,7 +252,7 @@ class Operation
      */
     public function getOptions()
     {
-        return (array)array_get($this->config, "options");
+        return (array)Arr::get($this->config, "options");
     }
 
     /**
@@ -257,7 +260,7 @@ class Operation
      */
     public function hasResponseModelClass()
     {
-        return array_get($this->config, "response.model") != null;
+        return Arr::get($this->config, "response.model") != null;
     }
 
     /**
@@ -265,7 +268,7 @@ class Operation
      */
     public function getResponseModelClass()
     {
-        return array_get($this->config, "response.model");
+        return Arr::get($this->config, "response.model");
     }
 
     /**
@@ -273,6 +276,6 @@ class Operation
      */
     public function wantsResponseCollection()
     {
-        return array_get($this->config, "response.collection") == true;
+        return Arr::get($this->config, "response.collection") == true;
     }
 }

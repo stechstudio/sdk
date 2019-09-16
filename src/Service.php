@@ -1,6 +1,7 @@
 <?php
 namespace STS\Sdk;
 
+use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
 use Stash\DriverList;
 use Stash\Interfaces\DriverInterface;
@@ -61,7 +62,7 @@ class Service
      */
     public function hasOperation($name)
     {
-        return array_has($this->config['operations'], $name);
+        return Arr::has($this->config['operations'], $name);
     }
 
     /**
@@ -72,7 +73,7 @@ class Service
      */
     public function getOperation($name, $data = [])
     {
-        return array_has($this->config['operations'], $name)
+        return Arr::has($this->config['operations'], $name)
             ? new Operation($name, $this->config['operations'][$name], $data)
             : null;
     }
@@ -106,7 +107,7 @@ class Service
      */
     public function getErrorHandlers()
     {
-        return (array)array_get($this->config, 'errorHandlers');
+        return (array)Arr::get($this->config, 'errorHandlers');
     }
 
     /**
@@ -136,7 +137,7 @@ class Service
      */
     public function wantsCache()
     {
-        return array_has($this->config, 'cache.driver');
+        return Arr::has($this->config, 'cache.driver');
     }
 
     /**
@@ -157,7 +158,7 @@ class Service
     protected function buildCachePool()
     {
         $pool = new Pool($this->buildCacheDriver());
-        $pool->setNamespace(array_get($this->config, "cache.namespace"));
+        $pool->setNamespace(Arr::get($this->config, "cache.namespace"));
 
         return $pool;
     }
@@ -171,13 +172,13 @@ class Service
             throw new \InvalidArgumentException("No valid cache driver config found");
         }
 
-        $driverClass = DriverList::getDriverClass(array_get($this->config, "cache.driver.name"));
+        $driverClass = DriverList::getDriverClass(Arr::get($this->config, "cache.driver.name"));
 
         if (!$driverClass) {
-            throw new \InvalidArgumentException("Invalid cache driver [" . array_get($this->config, "cache.driver.name") . "]");
+            throw new \InvalidArgumentException("Invalid cache driver [" . Arr::get($this->config, "cache.driver.name") . "]");
         }
 
-        $driver = new $driverClass((array)array_get($this->config, "cache.driver.options"));
+        $driver = new $driverClass((array)Arr::get($this->config, "cache.driver.options"));
 
         return $driver;
     }
@@ -187,7 +188,7 @@ class Service
      */
     public function wantsCircuitBreaker()
     {
-        return $this->wantsCache() && is_array(array_get($this->config, 'circuitBreaker'));
+        return $this->wantsCache() && is_array(Arr::get($this->config, 'circuitBreaker'));
     }
 
     /**
@@ -207,7 +208,7 @@ class Service
      */
     protected function buildCircuitBreaker()
     {
-        if(!is_array(array_get($this->config, 'circuitBreaker'))) {
+        if(!is_array(Arr::get($this->config, 'circuitBreaker'))) {
             throw new \InvalidArgumentException("No valid circuit breaker config found");
         }
 
@@ -226,7 +227,7 @@ class Service
      */
     public function getPrependedPipes()
     {
-        return (array)array_get($this->config, "pipeline.prepend");
+        return (array)Arr::get($this->config, "pipeline.prepend");
     }
 
     /**
@@ -234,7 +235,7 @@ class Service
      */
     public function getAppendedPipes()
     {
-        return (array)array_get($this->config, "pipeline.append");
+        return (array)Arr::get($this->config, "pipeline.append");
     }
 
     /**
@@ -242,7 +243,7 @@ class Service
      */
     public function getOptions()
     {
-        return (array)array_get($this->config, "options");
+        return (array)Arr::get($this->config, "options");
     }
 
     /**

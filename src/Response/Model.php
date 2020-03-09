@@ -12,6 +12,7 @@ use ArrayAccess;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
@@ -56,7 +57,7 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
         }
 
         if($this->hasGetMutator($key)) {
-            return $this->mutateAttribute($key, array_get($this->attributes, $key));
+            return $this->mutateAttribute($key, Arr::get($this->attributes, $key));
         }
 
         if (array_key_exists($key, $this->attributes)) {
@@ -75,7 +76,7 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
     {
         if(!array_key_exists($key, $this->relations)) {
             $class = $this->relatedModels[$key];
-            $data = (array) array_get($this->attributes, $key);
+            $data = (array) Arr::get($this->attributes, $key);
             $this->relations[$key] = new $class($data);
         }
 

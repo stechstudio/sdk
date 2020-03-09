@@ -10,6 +10,7 @@ namespace STS\Sdk\Service;
 
 use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use STS\Sdk\CircuitBreaker\Cache;
 use STS\Sdk\CircuitBreaker\History;
 use STS\Sdk\CircuitBreaker\Monitor;
@@ -109,7 +110,7 @@ class CircuitBreaker implements Arrayable
             }
         }
 
-        foreach ((array)array_get($config, 'handlers') AS $event => $handler) {
+        foreach ((array)Arr::get($config, 'handlers') AS $event => $handler) {
             $this->registerCallback($event, $handler);
         }
     }

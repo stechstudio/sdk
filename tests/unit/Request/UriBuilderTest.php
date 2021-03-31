@@ -14,7 +14,7 @@ class UriBuilderTest  extends TestCase
 {
     protected $uri;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->uri = new UriBuilder();
     }

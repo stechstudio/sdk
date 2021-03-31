@@ -26,7 +26,7 @@ class CacheTest extends TestCase
 
     protected $key;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->pool = new Pool();
 

@@ -2,7 +2,7 @@
     "name": "stechstudio/sdk",
     "require": {
         "tedivm/stash": "0.16.*",
-        "psr/log": "^1.0"
+        "psr/log": "^1.0|^2.0|^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0",

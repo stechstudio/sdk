@@ -8,8 +8,8 @@
         "phpunit/phpunit": "^8.0",
         "mockery/mockery": "dev-master",
         "laravel/helpers": "^1.1",
-        "guzzlehttp/guzzle": "^6.1",
-        "laravel/framework": "^8.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "laravel/framework": "^10.0"
     },
     "authors": [
         {

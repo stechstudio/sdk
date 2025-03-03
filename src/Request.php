@@ -5,6 +5,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Utils;
 use Stash\Pool;
 use STS\Sdk\CircuitBreaker\BreakerPanel;
 use STS\Sdk\CircuitBreaker\BreakerSwitch;
@@ -125,7 +126,7 @@ class Request
      */
     public function setBody($contents)
     {
-        $this->request = $this->request->withBody(Psr7\stream_for($contents));
+        $this->request = $this->request->withBody(Utils::streamFor($contents));
     }
 
     /**
